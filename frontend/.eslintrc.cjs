@@ -10,7 +10,7 @@ module.exports = {
   ],
   ignorePatterns: ["dist", ".eslintrc.cjs"],
   parser: "@typescript-eslint/parser",
-  plugins: ["react-refresh"],
+  plugins: ["react-refresh", "import-resolver-alias"],
   rules: {
     "react/jsx-filename-extension": ["warn", { extensions: [".tsx"] }],
     "react/react-in-jsx-scope": "off",
