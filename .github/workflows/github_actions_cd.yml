@@ -1,0 +1,18 @@
+name: github_actions_cd
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - 'frontend/**'
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: pull Docker image
+        run: sudo docker pull ${{secrets.DOCKERHUB_USERNAME}}/boarlog-backend:latest
+      - name: delete old docker container
+        run: sudo docker rm -f boarlog-backend-container || true
+      - name: run docker container
+        run: sudo docker run -d -p 8000:3000 --name boarlog-backend-container ${{secrets.DOCKERHUB_USERNAME}}/boarlog-backend

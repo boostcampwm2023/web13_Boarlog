@@ -1,0 +1,24 @@
+name: github_actions_ci
+
+on:
+  push:
+    branches: ["dev"]
+    paths-ignore:
+      - 'frontend/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Dockerhub Login
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKERHUB_USERNAME}}
+          DOCKER_PASSWORD: ${{secrets.DOCKERHUB_TOKEN}}
+        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - name: Build Docker image
+        run: docker build -t boarlog-backend ./backend
+      - name: taging
+        run: docker tag boarlog-backend:latest ${{secrets.DOCKERHUB_USERNAME}}/boarlog-backend:latest
+      - name: push to Dockerhub
+        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/boarlog-backend:latest
