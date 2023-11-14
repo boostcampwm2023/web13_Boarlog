@@ -1,0 +1,19 @@
+{
+  "name": "boarlog-frontend",
+  "version": "1.0.0",
+  "description": "부스트캠프 웹모바일 8기 그룹프로젝트 프론트엔드",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Byeonjin/web13_Boarlog.git"
+  },
+  "author": "변진상, 이동령, 정주완",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Byeonjin/web13_Boarlog/issues"
+  },
+  "homepage": "https://github.com/Byeonjin/web13_Boarlog#readme"
+}
