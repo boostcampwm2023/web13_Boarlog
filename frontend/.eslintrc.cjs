@@ -13,6 +13,7 @@ module.exports = {
   plugins: ["react-refresh", "import-resolver-alias"],
   rules: {
     "react/jsx-filename-extension": ["warn", { extensions: [".tsx"] }],
+    "prettier/prettier": ["error", { endOfLine: "auto" }],
     "react/react-in-jsx-scope": "off",
     "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
   }
