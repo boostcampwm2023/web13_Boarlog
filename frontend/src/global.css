@@ -47,3 +47,15 @@
 .medium-12 {
   @apply font-pretendard font-medium text-size-12 leading-normal;
 }
+
+.border-default {
+  @apply border border-solid border-grayscale-lightgray;
+}
+
+.shadow-default {
+  box-shadow: 0px 0px 50px 10px rgba(233, 233, 233, 0.25);
+}
+
+.border-header {
+  @apply border-b border-solid border-grayscale-lightgray;
+}
