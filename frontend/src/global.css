@@ -1,3 +1,49 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-dynamic-subset.css");
+
+.bold-260 {
+  @apply font-pretendard font-bold text-size-260 leading-normal;
+}
+
+.semibold-64 {
+  @apply font-pretendard font-semibold text-size-64 leading-normal;
+}
+
+.semibold-32 {
+  @apply font-pretendard font-semibold text-size-32 leading-normal;
+}
+
+.semibold-20 {
+  @apply font-pretendard font-semibold text-size-20 leading-normal;
+}
+
+.semibold-18 {
+  @apply font-pretendard font-semibold text-size-18 leading-normal;
+}
+
+.semibold-16 {
+  @apply font-pretendard font-semibold text-size-16 leading-normal;
+}
+
+.medium-32 {
+  @apply font-pretendard font-medium text-size-32 leading-normal;
+}
+
+.medium-20 {
+  @apply font-pretendard font-medium text-size-20 leading-normal;
+}
+
+.medium-18 {
+  @apply font-pretendard font-medium text-size-18 leading-normal;
+}
+
+.medium-16 {
+  @apply font-pretendard font-medium text-size-16 leading-normal;
+}
+
+.medium-12 {
+  @apply font-pretendard font-medium text-size-12 leading-normal;
+}
