@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './Home';
-import './global.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "@/pages/Home/Home";
+import "./global.css";
 
-function App() {
+const App = () => {
   return (
     <BrowserRouter>
       <Routes>
@@ -10,6 +10,6 @@ function App() {
       </Routes>
     </BrowserRouter>
   );
-}
+};
 
 export default App;
