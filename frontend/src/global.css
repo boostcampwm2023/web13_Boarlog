@@ -47,3 +47,7 @@
 .medium-12 {
   @apply font-pretendard font-medium text-size-12 leading-normal;
 }
+
+.border-header {
+  @apply border-b border-solid border-grayscale-lightgray;
+}
