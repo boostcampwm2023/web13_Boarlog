@@ -65,6 +65,9 @@ const CanvasSection = () => {
       }
     });
 
+    newCanvas.freeDrawingBrush.width = 10;
+    newCanvas.isDrawingMode = true;
+
     // 언마운트 시 캔버스 정리, 이벤트 제거
     return () => {
       newCanvas.dispose();
