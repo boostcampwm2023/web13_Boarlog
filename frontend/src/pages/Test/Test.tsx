@@ -1,15 +1,15 @@
 import Header from "./components/Header";
-import LoginSection from "./components/LoginSection";
+import CanvasSection from "./components/CanvasSection";
 
-const Login = () => {
+const Test = () => {
   return (
     <>
       <Header />
       <div className="flex flex-1 items-center justify-center h-[calc(100vh-80px)]">
-        <LoginSection />
+        <CanvasSection />
       </div>
     </>
   );
 };
 
-export default Login;
+export default Test;
