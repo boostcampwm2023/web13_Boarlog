@@ -1,13 +1,24 @@
-## 바로가기
 
-- [그라운드 룰](https://weak-sugar-603.notion.site/Ground-Rules-43ebfd44b76c482a983c4a47481028ca?pvs=4)
-- [branch/conmmit 컨벤션](https://weak-sugar-603.notion.site/Git-Branch-Commmit-882a35cba1cc433eb0f01abf2e3b134d?pvs=4)
-- [기획/디자인](https://www.figma.com/file/vd1TPvzMNwy6OfVmNFw8cI/Untitled?type=design&node-id=4%3A22&mode=design&t=NS1IQkeFYsr7lSuf-1)
-- [위키](https://github.com/boostcampwm2023/web13_TEAM_528/wiki)
-- [노션](https://weak-sugar-603.notion.site/TEAM_528-7780e03d7e9847b89fdf9f926036987b?pvs=4)
-- [백로그]()
+<img src="https://github.com/boostcampwm2023/web13_Boarlog/assets/54176384/2e33bb1f-cdcd-42df-bbc0-c9a52ab54b61" alt="boarlog logo" width='200px'/>
 
-## TEAM_528
+<br/>
+<br/>
+
+
+## 프로젝트 소개: 기록으로 남기는 실시간 강의, Boarlog
+
+> **필기앱처럼 강의도 기록으로 남기면 어떨까?**
+
+**Boarlog**는 교육 및 협업을 위한 실시간 화이트보드 강의 플랫폼입니다. 음성 기반 강의와 시각적 상호작용을 결합하여 참여자들에게 효과적이고 몰입도 높은 학습 경험을 제공합니다.
+
+- **강의 생성 및 진행**: 강의자는 손쉽게 강의방을 열고, 음성으로 강의하며 화이트보드를 실시간으로 편집할 수 있습니다.
+- **강의 참여**: 참여자들은 강의에 접속하여 강의자의 음성과 화이트보드 내용을 실시간으로 볼 수 있습니다.
+- **상호작용 및 피드백**: 참여자들은 질문을 보내고, 강의자는 이를 포스트잇 형태로 화이트보드에 추가하여 답변할 수 있습니다.
+- **강의 기록 및 재생**: 강의 종료 후에는 AI를 활용하여 음성을 스크립트로 변환, 이를 화이트보드 내용과 함께 저장하여 언제든지 다시볼 수 있습니다.
+
+<br/>
+
+## 팀 소개: TEAM_528
 
 ```jsx
 const teamName = camperIdArray.reduce((team, camperId) => {
@@ -67,3 +78,15 @@ const teamName = camperIdArray.reduce((team, camperId) => {
         </tr>
     </tbody>
 </table>
+
+<br/>
+
+## 바로가기
+
+- [그라운드 룰](https://weak-sugar-603.notion.site/Ground-Rules-43ebfd44b76c482a983c4a47481028ca?pvs=4)
+- [branch/conmmit 컨벤션](https://weak-sugar-603.notion.site/Git-Branch-Commmit-882a35cba1cc433eb0f01abf2e3b134d?pvs=4)
+- [기획/디자인](https://www.figma.com/file/vd1TPvzMNwy6OfVmNFw8cI/Untitled?type=design&node-id=4%3A22&mode=design&t=NS1IQkeFYsr7lSuf-1)
+- [위키](https://github.com/boostcampwm2023/web13_TEAM_528/wiki)
+- [노션](https://weak-sugar-603.notion.site/TEAM_528-7780e03d7e9847b89fdf9f926036987b?pvs=4)
+- [백로그](https://www.notion.so/d1fb2080ff934e859d50c5cd3620e223)
+
