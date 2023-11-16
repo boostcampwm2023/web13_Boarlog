@@ -5,7 +5,7 @@ const Login = () => {
   return (
     <>
       <Header />
-      <div className="flex flex-1 items-center justify-center h-screen">
+      <div className="flex flex-1 items-center justify-center h-[calc(100vh-80px)]">
         <LoginSection />
       </div>
     </>
