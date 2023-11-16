@@ -1,11 +1,18 @@
 import { fabric } from "fabric";
 import { useEffect, useRef, useState } from "react";
 
+import MouseIcon from "@/assets/svgs/whiteboard/mouse.svg?react";
+import PenIcon from "@/assets/svgs/whiteboard/pen.svg?react";
+import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
+import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
+import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
+
 const CanvasSection = () => {
   const canvasContainerRef = useRef(null);
   const canvasRef = useRef(null);
   const [canvas, setCanvas] = useState(null);
-  const [isPenActive, setIsPenActive] = useState(false);
+  const [isMouseActive, setIsMouseActive] = useState(false);
+  const [isPenActive, setIsPenActive] = useState(true);
 
   useEffect(() => {
     const canvasContainer = canvasContainerRef.current;
@@ -98,44 +105,61 @@ const CanvasSection = () => {
     }
   };
 
-  // 펜모드 토글
-  const handlePenToggle = () => {
+  const setDragMode = () => {
+    canvas.isDrawingMode = false;
+    setIsMouseActive(!isMouseActive);
+    if (isPenActive) {
+      setIsPenActive(!isPenActive);
+    }
+  };
+  const setPenMode = () => {
     canvas.freeDrawingBrush.width = 10;
-    canvas.isDrawingMode = !canvas.isDrawingMode;
+    canvas.isDrawingMode = true;
     setIsPenActive(!isPenActive);
+    if (isMouseActive) {
+      setIsMouseActive(!isMouseActive);
+    }
   };
 
   const erase = () => {
+    /*
+    아 어렵다
     canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
     canvas.freeDrawingBrush.width = 10;
     canvas.isDrawingMode = true;
     //canvas.freeDrawingBrush.width = 40;
     //canvas.freeDrawingBrush.color = "white";
-
     //canvas.freeDrawingBrush.globalCompositeOperation = "destination-out";
-
-    //
     setIsPenActive(true);
+    */
   };
 
   return (
-    <div className="relative w-[100vw] h-[80vh]" ref={canvasContainerRef}>
-      <canvas className="border border-alert-100" ref={canvasRef} />
-      <div className="flex flex-col items-center justify-center flex-1 w-20 h-[300px] flex-shrink-0 rounded-[10px] bg-slate-800   shadow-md absolute top-2.5 left-2.5">
-        <button className=" w-8 h-8 text-white" onClick={addRectangle}>
-          사각
+    <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
+      <canvas className="" ref={canvasRef} />
+      <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-[10px] bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
+        <button
+          className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
+          onClick={setDragMode}
+          disabled={isMouseActive}
+        >
+          <MouseIcon className="group-disabled:fill-white" />
         </button>
-        <br />
-        <button className="w-8 h-8 text-white" onClick={addText}>
-          T
+        <button
+          className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
+          onClick={setPenMode}
+          disabled={isPenActive}
+        >
+          <PenIcon className="group-disabled:fill-white" />
         </button>
-        <br />
-        <button className=" w-8 h-8 text-white" onClick={handlePenToggle}>
-          {isPenActive ? "취소" : "펜"}
+        <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={addRectangle}>
+          <StickyNoteIcon />
         </button>
-        <br />
-        <button className="w-8 h-8 text-white" onClick={erase}>
-          지워
+        <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={erase}>
+          <ImageIcon />
+        </button>
+        <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={erase}>
+          <EraserIcon />
         </button>
       </div>
     </div>
