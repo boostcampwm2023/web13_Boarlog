@@ -8,13 +8,15 @@ import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 
 const CanvasSection = () => {
-  const canvasContainerRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [canvas, setCanvas] = useState(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [isMouseActive, setIsMouseActive] = useState(false);
   const [isPenActive, setIsPenActive] = useState(true);
 
   useEffect(() => {
+    if (!canvasContainerRef.current || !canvasRef.current) return;
+
     const canvasContainer = canvasContainerRef.current;
     // 캔버스 생성
     const newCanvas = new fabric.Canvas(canvasRef.current, {
@@ -92,22 +94,8 @@ const CanvasSection = () => {
     }
   };
 
-  const addText = () => {
-    if (canvas) {
-      const text = new fabric.IText("편집 가능한 텍스트", {
-        left: 300,
-        top: 300,
-        fill: "blue",
-        fontSize: 20,
-        fontFamily: "Pretendard",
-        backgroundColor: "#FFE196"
-      });
-
-      canvas.add(text);
-    }
-  };
-
   const setDragMode = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
     canvas.isDrawingMode = false;
     setIsMouseActive(!isMouseActive);
     if (isPenActive) {
@@ -115,6 +103,7 @@ const CanvasSection = () => {
     }
   };
   const setPenMode = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
     canvas.freeDrawingBrush.width = 10;
     canvas.isDrawingMode = true;
     setIsPenActive(!isPenActive);
