@@ -24,8 +24,7 @@ const CanvasSection = () => {
 
     setCanvas(newCanvas);
 
-    // 이벤트 처리
-
+    // 휠을 이용해서 줌인/줌아웃
     newCanvas.on("mouse:wheel", function (opt) {
       var delta = opt.e.deltaY;
       var zoom = newCanvas.getZoom();
@@ -48,6 +47,7 @@ const CanvasSection = () => {
     };
     window.addEventListener("resize", handleResize);
 
+    // delete 키를 이용해서 선택된 객체 삭제
     const handleDelete = () => {
       const activeObjects = newCanvas.getActiveObjects();
       if (activeObjects && activeObjects.length > 0) {
@@ -60,7 +60,6 @@ const CanvasSection = () => {
       }
     };
     window.addEventListener("keydown", (e) => {
-      // Delete 키의 keyCode 또는 key를 확인하여 처리
       if (e.code === "Delete" || e.key === "Delete") {
         handleDelete();
       }

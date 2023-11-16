@@ -1,4 +1,4 @@
-import GoogleIcon from "@/assets/svgs/Google.svg?react";
+import GoogleIcon from "@/assets/svgs/google.svg?react";
 import logoImg from "@/assets/imgs/joinLecture.png";
 
 const Home = () => {
