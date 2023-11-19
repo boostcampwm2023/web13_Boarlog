@@ -7,44 +7,49 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 
 interface ToolbarProps {
   activeTool: string;
-  setSelectMode: () => void;
-  setPenMode: () => void;
-  setHandMode: () => void;
-  addRectangle: () => void;
+  setActiveTool: React.Dispatch<React.SetStateAction<string>>;
   erase: () => void;
 }
 
-const Toolbar = ({ activeTool, setSelectMode, setPenMode, setHandMode, addRectangle, erase }: ToolbarProps) => {
+const Toolbar = ({ activeTool, setActiveTool }: ToolbarProps) => {
   return (
     <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-[10px] bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
       <button
         className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
-        onClick={setSelectMode}
+        onClick={() => setActiveTool("select")}
         disabled={activeTool === "select"}
         title="Select Tool"
       >
         <MouseIcon className="group-disabled:fill-white" />
       </button>
+
       <button
         className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
-        onClick={setPenMode}
+        onClick={() => setActiveTool("pen")}
         disabled={activeTool === "pen"}
         title="Pen Tool"
       >
         <PenIcon className="group-disabled:fill-white" />
       </button>
-      <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={addRectangle}>
+
+      <button
+        className="flex p-2 items-center justify-center rounded-[10px]"
+        onClick={() => setActiveTool("addstikynote")}
+      >
         <StickyNoteIcon />
       </button>
-      <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={erase}>
+
+      <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={() => setActiveTool("image")}>
         <ImageIcon />
       </button>
-      <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={erase}>
+
+      <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={() => setActiveTool("eraser")}>
         <EraserIcon />
       </button>
+
       <button
         className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
-        onClick={setHandMode}
+        onClick={() => setActiveTool("hand")}
         disabled={activeTool === "hand"}
         title="Hand Tool"
       >
