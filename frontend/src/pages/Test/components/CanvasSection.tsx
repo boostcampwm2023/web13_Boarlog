@@ -11,8 +11,7 @@ const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
-  const [isMouseActive, setIsMouseActive] = useState(false);
-  const [isPenActive, setIsPenActive] = useState(true);
+  const [activeTool, setActiveTool] = useState("pen");
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -28,8 +27,8 @@ const CanvasSection = () => {
 
     // 휠을 이용해서 줌인/줌아웃
     newCanvas.on("mouse:wheel", function (opt) {
-      var delta = opt.e.deltaY;
-      var zoom = newCanvas.getZoom();
+      const delta = opt.e.deltaY;
+      let zoom = newCanvas.getZoom();
       zoom *= 0.999 ** delta;
       if (zoom > 20) zoom = 20;
       if (zoom < 0.01) zoom = 0.01;
@@ -44,8 +43,6 @@ const CanvasSection = () => {
         width: canvasContainer.offsetWidth,
         height: canvasContainer.offsetHeight
       });
-      // 필요에 따라 다른 갱신 작업 수행
-      newCanvas.renderAll();
     };
     window.addEventListener("resize", handleResize);
 
@@ -58,7 +55,6 @@ const CanvasSection = () => {
           newCanvas.remove(obj);
         });
         newCanvas.discardActiveObject(); // 선택 해제
-        //newCanvas.renderAll();
       }
     };
     window.addEventListener("keydown", (e) => {
@@ -67,6 +63,7 @@ const CanvasSection = () => {
       }
     });
 
+    // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
     newCanvas.isDrawingMode = true;
 
@@ -94,22 +91,16 @@ const CanvasSection = () => {
     }
   };
 
-  const setDragMode = () => {
+  const setSelectMode = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
     canvas.isDrawingMode = false;
-    setIsMouseActive(!isMouseActive);
-    if (isPenActive) {
-      setIsPenActive(!isPenActive);
-    }
+    setActiveTool("select");
   };
   const setPenMode = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
     canvas.freeDrawingBrush.width = 10;
     canvas.isDrawingMode = true;
-    setIsPenActive(!isPenActive);
-    if (isMouseActive) {
-      setIsMouseActive(!isMouseActive);
-    }
+    setActiveTool("pen");
   };
 
   const erase = () => {
@@ -128,18 +119,21 @@ const CanvasSection = () => {
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
       <canvas className="" ref={canvasRef} />
+
       <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-[10px] bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
         <button
           className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
-          onClick={setDragMode}
-          disabled={isMouseActive}
+          onClick={setSelectMode}
+          disabled={activeTool === "select"}
+          title="Select Tool"
         >
           <MouseIcon className="group-disabled:fill-white" />
         </button>
         <button
           className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
           onClick={setPenMode}
-          disabled={isPenActive}
+          disabled={activeTool === "pen"}
+          title="Pen Tool"
         >
           <PenIcon className="group-disabled:fill-white" />
         </button>
