@@ -92,6 +92,7 @@ const CanvasSection = () => {
         strokeWidth: 1
       });
       canvas.add(rect);
+    } else if (activeTool === "erase") {
     }
 
     if (activeTool === "hand") {
@@ -122,24 +123,11 @@ const CanvasSection = () => {
     }
   }, [activeTool]);
 
-  const erase = () => {
-    /*
-    아 어렵다
-    canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
-    canvas.freeDrawingBrush.width = 10;
-    canvas.isDrawingMode = true;
-    //canvas.freeDrawingBrush.width = 40;
-    //canvas.freeDrawingBrush.color = "white";
-    //canvas.freeDrawingBrush.globalCompositeOperation = "destination-out";
-    setIsPenActive(true);
-    */
-  };
-
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
       <canvas className="" ref={canvasRef} />
 
-      <Toolbar activeTool={activeTool} setActiveTool={setActiveTool} erase={erase} />
+      <Toolbar activeTool={activeTool} setActiveTool={setActiveTool} />
     </div>
   );
 };

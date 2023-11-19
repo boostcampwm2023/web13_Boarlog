@@ -8,7 +8,6 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 interface ToolbarProps {
   activeTool: string;
   setActiveTool: React.Dispatch<React.SetStateAction<string>>;
-  erase: () => void;
 }
 
 const Toolbar = ({ activeTool, setActiveTool }: ToolbarProps) => {
