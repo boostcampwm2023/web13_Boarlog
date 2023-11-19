@@ -90,7 +90,9 @@ const CanvasSection = () => {
   const setSelectMode = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
     canvas.isDrawingMode = false;
+    canvas.selection = true;
     setActiveTool("select");
+    canvas.defaultCursor = "default";
   };
   const setPenMode = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
@@ -98,6 +100,43 @@ const CanvasSection = () => {
     canvas.isDrawingMode = true;
     setActiveTool("pen");
   };
+  const setHandMode = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+    canvas.isDrawingMode = false;
+    canvas.selection = false;
+    setActiveTool("hand");
+    canvas.defaultCursor = "move";
+  };
+
+  useEffect(() => {
+    if (!canvasContainerRef.current || !canvasRef.current) return;
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    let panning = false;
+
+    const handleMouseDown = () => {
+      panning = true;
+    };
+    const handleMouseMove = (event: fabric.IEvent<MouseEvent>) => {
+      if (panning) {
+        var delta = new fabric.Point(event.e.movementX, event.e.movementY);
+        canvas.relativePan(delta);
+      }
+    };
+    const handleMouseUp = () => {
+      panning = false;
+    };
+
+    if (activeTool === "hand") {
+      canvas.on("mouse:down", handleMouseDown);
+      canvas.on("mouse:move", handleMouseMove);
+      canvas.on("mouse:up", handleMouseUp);
+    } else {
+      canvas.off("mouse:down");
+      canvas.off("mouse:move");
+      canvas.off("mouse:up");
+    }
+  }, [activeTool]);
 
   const erase = () => {
     /*
@@ -120,6 +159,7 @@ const CanvasSection = () => {
         activeTool={activeTool}
         setSelectMode={setSelectMode}
         setPenMode={setPenMode}
+        setHandMode={setHandMode}
         addRectangle={addRectangle}
         erase={erase}
       />
