@@ -1,12 +1,10 @@
 import logoSmall from "@/assets/imgs/logoSmall.png";
 
-interface HeaderProps {
+interface LeftSectionProps {
   lecture?: boolean;
-  login?: boolean;
-  main?: boolean;
 }
 
-const LeftSection: React.FC<HeaderProps> = ({ lecture }) => {
+const LeftSection = ({ lecture }: LeftSectionProps) => {
   return (
     <div className="flex items-center gap-4 semibold-20">
       <button type="button" className="flex flex-row items-center gap-4">

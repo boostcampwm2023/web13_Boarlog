@@ -5,7 +5,7 @@ import logoImg from "@/assets/imgs/joinLecture.png";
 const Home = () => {
   return (
     <>
-      <Header lecture main />
+      <Header main />
       <div>
         <GoogleIcon className="w-[50px] h-auto" />
         <img src={logoImg} />

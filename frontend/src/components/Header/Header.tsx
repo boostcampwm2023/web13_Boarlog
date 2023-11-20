@@ -9,7 +9,7 @@ interface HeaderProps {
   main?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ lecture, login, main }) => {
+const Header = ({ lecture, login, main }: HeaderProps) => {
   const [profileClicked, setProfileClicked] = useState(false);
 
   return (

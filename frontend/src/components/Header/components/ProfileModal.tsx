@@ -6,7 +6,7 @@ interface ProfileModalProps {
   profileClicked: boolean;
 }
 
-const ProfileModal: React.FC<ProfileModalProps> = ({ profileClicked }) => {
+const ProfileModal = ({ profileClicked }: ProfileModalProps) => {
   return (
     <div
       className={`flex flex-col absolute top-24 right-4 items-center gap-4 px-6 py-4 w-96 h-fit bg-grayscale-white rounded-xl border-default duration-500 ${

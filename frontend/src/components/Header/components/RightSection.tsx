@@ -1,13 +1,12 @@
 import ProfileSmall from "@/assets/imgs/profileSmall.png";
 
-interface HeaderProps {
-  lecture?: boolean;
+interface RightSectionProps {
   login?: boolean;
   main?: boolean;
   setProfileClicked: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const RightSection: React.FC<HeaderProps> = ({ setProfileClicked, login, main }) => {
+const RightSection = ({ setProfileClicked, login, main }: RightSectionProps) => {
   const handleFocus = () => {
     setProfileClicked(true);
   };
