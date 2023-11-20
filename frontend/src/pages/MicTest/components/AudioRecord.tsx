@@ -46,6 +46,27 @@ const AudioRecord = () => {
         mediaRecorder.start();
         setIsRecording(true);
 
+        const audioContext = new AudioContext();
+        const analyser = audioContext.createAnalyser();
+        const microphone = audioContext.createMediaStreamSource(stream);
+        const scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+        // 2048: FFT의 크기 1: 입력 채널 수 1: 출력 채널 수
+
+        analyser.smoothingTimeConstant = 0.8;
+        analyser.fftSize = 1024;
+
+        microphone.connect(analyser);
+        analyser.connect(scriptProcessor);
+        scriptProcessor.connect(audioContext.destination);
+        scriptProcessor.onaudioprocess = function () {
+          const array = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(array);
+          const arraySum = array.reduce((a, value) => a + value, 0);
+          const average = arraySum / array.length;
+          console.log(`음량 :`, average);
+          colorPids(average);
+        };
+
         setTimeout(() => {
           mediaRecorder.stop();
           setIsRecording(false);
@@ -54,6 +75,22 @@ const AudioRecord = () => {
       .catch((error) => {
         console.error("마이크 권한 획득 실패", error);
       });
+  };
+
+  // Your existing colorPids function
+  const colorPids = (vol) => {
+    const allPids = document.querySelectorAll(".pid") as NodeListOf<HTMLDivElement>;
+    const numberOfPidsToColor = Math.round(vol / 10);
+    const pidsToColor = Array.from(allPids).slice(0, numberOfPidsToColor);
+    console.log(`numberOfPidsToColor :`, numberOfPidsToColor);
+
+    allPids.forEach((pid) => {
+      pid.style.backgroundColor = "#e6e7e8";
+    });
+
+    pidsToColor.forEach((pid) => {
+      pid.style.backgroundColor = "#69ce2b";
+    });
   };
 
   return (
@@ -80,6 +117,19 @@ const AudioRecord = () => {
           </audio>
         </div>
       )}
+
+      <div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+        <div className="pid w-5 h-5 inline-block m-1"></div>
+      </div>
     </div>
   );
 };
