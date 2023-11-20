@@ -73,53 +73,60 @@ const CanvasSection = () => {
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
     if (!(canvas instanceof fabric.Canvas)) return;
+    canvas.off("mouse:down");
+    canvas.off("mouse:move");
+    canvas.off("mouse:up");
 
-    if (activeTool === "select") {
-      canvas.isDrawingMode = false;
-      canvas.selection = true;
-      canvas.defaultCursor = "default";
-    } else if (activeTool === "pen") {
-      canvas.freeDrawingBrush.width = 10;
-      canvas.isDrawingMode = true;
-    } else if (activeTool === "addstikynote") {
-      const rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        width: 187,
-        height: 133,
-        fill: "#FFE196",
-        stroke: "black",
-        strokeWidth: 1
-      });
-      canvas.add(rect);
-    } else if (activeTool === "erase") {
-    }
+    switch (activeTool) {
+      case "select":
+        canvas.isDrawingMode = false;
+        canvas.selection = true;
+        canvas.defaultCursor = "default";
+        break;
 
-    if (activeTool === "hand") {
-      canvas.isDrawingMode = false;
-      canvas.selection = false;
-      canvas.defaultCursor = "move";
+      case "pen":
+        canvas.freeDrawingBrush.width = 10;
+        canvas.isDrawingMode = true;
+        break;
 
-      let panning = false;
-      const handleMouseDown = () => {
-        panning = true;
-      };
-      const handleMouseMove = (event: fabric.IEvent<MouseEvent>) => {
-        if (panning) {
-          const delta = new fabric.Point(event.e.movementX, event.e.movementY);
-          canvas.relativePan(delta);
-        }
-      };
-      const handleMouseUp = () => {
-        panning = false;
-      };
-      canvas.on("mouse:down", handleMouseDown);
-      canvas.on("mouse:move", handleMouseMove);
-      canvas.on("mouse:up", handleMouseUp);
-    } else {
-      canvas.off("mouse:down");
-      canvas.off("mouse:move");
-      canvas.off("mouse:up");
+      case "addstikynote":
+        const rect = new fabric.Rect({
+          left: 100,
+          top: 100,
+          width: 187,
+          height: 133,
+          fill: "#FFE196",
+          stroke: "black",
+          strokeWidth: 1
+        });
+        canvas.add(rect);
+        break;
+
+      case "erase":
+        break;
+
+      case "hand":
+        canvas.isDrawingMode = false;
+        canvas.selection = false;
+        canvas.defaultCursor = "move";
+
+        let panning = false;
+        const handleMouseDown = () => {
+          panning = true;
+        };
+        const handleMouseMove = (event: fabric.IEvent<MouseEvent>) => {
+          if (panning) {
+            const delta = new fabric.Point(event.e.movementX, event.e.movementY);
+            canvas.relativePan(delta);
+          }
+        };
+        const handleMouseUp = () => {
+          panning = false;
+        };
+        canvas.on("mouse:down", handleMouseDown);
+        canvas.on("mouse:move", handleMouseMove);
+        canvas.on("mouse:up", handleMouseUp);
+        break;
     }
   }, [activeTool]);
 
