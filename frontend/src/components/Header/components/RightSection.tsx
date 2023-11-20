@@ -4,9 +4,18 @@ interface HeaderProps {
   lecture?: boolean;
   login?: boolean;
   main?: boolean;
+  setProfileClicked: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const RightSection: React.FC<HeaderProps> = ({ login, main }) => {
+const RightSection: React.FC<HeaderProps> = ({ setProfileClicked, login, main }) => {
+  const handleFocus = () => {
+    setProfileClicked(true);
+  };
+
+  const handleBlur = () => {
+    setProfileClicked(false);
+  };
+
   return (
     <div className="flex items-center gap-4">
       {login && (
@@ -22,7 +31,7 @@ const RightSection: React.FC<HeaderProps> = ({ login, main }) => {
           <button type="button" className="medium-16">
             이전 강의 다시보기
           </button>
-          <button type="button" className="">
+          <button type="button" className="" onFocus={handleFocus} onBlur={handleBlur}>
             <img src={ProfileSmall} alt="내 프로필" />
           </button>
         </>

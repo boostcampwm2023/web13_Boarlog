@@ -1,3 +1,5 @@
+import { useState } from "react";
+import ProfileModal from "./components/ProfileModal";
 import LeftSection from "./components/LeftSection";
 import RightSection from "./components/RightSection";
 
@@ -8,10 +10,13 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ lecture, login, main }) => {
+  const [profileClicked, setProfileClicked] = useState(false);
+
   return (
-    <header className="flex w-100 items-center justify-between px-6 py-4 bg-white border-header box-border">
+    <header className="flex w-100 relative items-center justify-between px-6 py-4 bg-white border-header box-border">
       <LeftSection lecture={lecture} />
-      <RightSection login={login} main={main} />
+      <RightSection setProfileClicked={setProfileClicked} login={login} main={main} />
+      <ProfileModal profileClicked={profileClicked} />
     </header>
   );
 };
