@@ -8,10 +8,19 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import { useState, useEffect } from "react";
 import { fabric } from "fabric";
 import ToolButton from "./ToolButton";
+import ColorPanel from "./ColorPannel";
 
 interface ToolbarProps {
   canvasElementRef: fabric.Canvas | null;
 }
+
+const showPenColorPannel = () => {};
+
+const handlePenTool = (canvasElementRef: fabric.Canvas) => {
+  if (!(canvasElementRef instanceof fabric.Canvas)) return;
+  canvasElementRef.freeDrawingBrush.width = 10;
+  canvasElementRef.isDrawingMode = true;
+};
 
 const Toolbar = ({ canvasElementRef: canvas }: ToolbarProps) => {
   const [activeTool, setActiveTool] = useState("pen");
@@ -30,8 +39,7 @@ const Toolbar = ({ canvasElementRef: canvas }: ToolbarProps) => {
         break;
 
       case "pen":
-        canvas.freeDrawingBrush.width = 10;
-        canvas.isDrawingMode = true;
+        handlePenTool(canvas);
         break;
 
       case "addstikynote":
@@ -97,6 +105,8 @@ const Toolbar = ({ canvasElementRef: canvas }: ToolbarProps) => {
         disabled={activeTool === "addstikynote"}
         title="Add Stikynote (포스트잇 추가)"
       />
+
+      <ColorPanel selectedTool={activeTool} />
 
       <ToolButton
         icon={ImageIcon}
