@@ -1,11 +1,13 @@
 import Header from "@/components/Header/Header";
 import GoogleIcon from "@/assets/svgs/google.svg?react";
 import logoImg from "@/assets/imgs/joinLecture.png";
+import ProfileModal from "@/components/Header/components/ProfileModal";
 
 const Home = () => {
   return (
     <>
       <Header lecture main />
+      <ProfileModal />
       <div>
         <GoogleIcon className="w-[50px] h-auto" />
         <img src={logoImg} />
