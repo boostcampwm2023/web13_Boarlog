@@ -1,18 +1,13 @@
 import { fabric } from "fabric";
 import { useEffect, useRef, useState } from "react";
 
-import MouseIcon from "@/assets/svgs/whiteboard/mouse.svg?react";
-import PenIcon from "@/assets/svgs/whiteboard/pen.svg?react";
-import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
-import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
-import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
+import Toolbar from "./Toolbar";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
-  const [isMouseActive, setIsMouseActive] = useState(false);
-  const [isPenActive, setIsPenActive] = useState(true);
+  const [activeTool, setActiveTool] = useState("pen");
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -28,8 +23,8 @@ const CanvasSection = () => {
 
     // 휠을 이용해서 줌인/줌아웃
     newCanvas.on("mouse:wheel", function (opt) {
-      var delta = opt.e.deltaY;
-      var zoom = newCanvas.getZoom();
+      const delta = opt.e.deltaY;
+      let zoom = newCanvas.getZoom();
       zoom *= 0.999 ** delta;
       if (zoom > 20) zoom = 20;
       if (zoom < 0.01) zoom = 0.01;
@@ -44,8 +39,6 @@ const CanvasSection = () => {
         width: canvasContainer.offsetWidth,
         height: canvasContainer.offsetHeight
       });
-      // 필요에 따라 다른 갱신 작업 수행
-      newCanvas.renderAll();
     };
     window.addEventListener("resize", handleResize);
 
@@ -58,7 +51,6 @@ const CanvasSection = () => {
           newCanvas.remove(obj);
         });
         newCanvas.discardActiveObject(); // 선택 해제
-        //newCanvas.renderAll();
       }
     };
     window.addEventListener("keydown", (e) => {
@@ -67,6 +59,7 @@ const CanvasSection = () => {
       }
     });
 
+    // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
     newCanvas.isDrawingMode = true;
 
@@ -77,82 +70,70 @@ const CanvasSection = () => {
     };
   }, []);
 
-  const addRectangle = () => {
-    if (canvas) {
-      // 버튼 클릭 시 새로운 사각형 추가
-      const rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        width: 187,
-        height: 133,
-        fill: "#FFE196",
-        stroke: "black",
-        strokeWidth: 1
-      });
-
-      canvas.add(rect);
-    }
-  };
-
-  const setDragMode = () => {
+  useEffect(() => {
+    if (!canvasContainerRef.current || !canvasRef.current) return;
     if (!(canvas instanceof fabric.Canvas)) return;
-    canvas.isDrawingMode = false;
-    setIsMouseActive(!isMouseActive);
-    if (isPenActive) {
-      setIsPenActive(!isPenActive);
-    }
-  };
-  const setPenMode = () => {
-    if (!(canvas instanceof fabric.Canvas)) return;
-    canvas.freeDrawingBrush.width = 10;
-    canvas.isDrawingMode = true;
-    setIsPenActive(!isPenActive);
-    if (isMouseActive) {
-      setIsMouseActive(!isMouseActive);
-    }
-  };
+    canvas.off("mouse:down");
+    canvas.off("mouse:move");
+    canvas.off("mouse:up");
 
-  const erase = () => {
-    /*
-    아 어렵다
-    canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
-    canvas.freeDrawingBrush.width = 10;
-    canvas.isDrawingMode = true;
-    //canvas.freeDrawingBrush.width = 40;
-    //canvas.freeDrawingBrush.color = "white";
-    //canvas.freeDrawingBrush.globalCompositeOperation = "destination-out";
-    setIsPenActive(true);
-    */
-  };
+    switch (activeTool) {
+      case "select":
+        canvas.isDrawingMode = false;
+        canvas.selection = true;
+        canvas.defaultCursor = "default";
+        break;
+
+      case "pen":
+        canvas.freeDrawingBrush.width = 10;
+        canvas.isDrawingMode = true;
+        break;
+
+      case "addstikynote":
+        const rect = new fabric.Rect({
+          left: 100,
+          top: 100,
+          width: 187,
+          height: 133,
+          fill: "#FFE196",
+          stroke: "black",
+          strokeWidth: 1
+        });
+        canvas.add(rect);
+        break;
+
+      case "erase":
+        break;
+
+      case "hand":
+        canvas.isDrawingMode = false;
+        canvas.selection = false;
+        canvas.defaultCursor = "move";
+
+        let panning = false;
+        const handleMouseDown = () => {
+          panning = true;
+        };
+        const handleMouseMove = (event: fabric.IEvent<MouseEvent>) => {
+          if (panning) {
+            const delta = new fabric.Point(event.e.movementX, event.e.movementY);
+            canvas.relativePan(delta);
+          }
+        };
+        const handleMouseUp = () => {
+          panning = false;
+        };
+        canvas.on("mouse:down", handleMouseDown);
+        canvas.on("mouse:move", handleMouseMove);
+        canvas.on("mouse:up", handleMouseUp);
+        break;
+    }
+  }, [activeTool]);
 
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
       <canvas className="" ref={canvasRef} />
-      <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-[10px] bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
-        <button
-          className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
-          onClick={setDragMode}
-          disabled={isMouseActive}
-        >
-          <MouseIcon className="group-disabled:fill-white" />
-        </button>
-        <button
-          className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
-          onClick={setPenMode}
-          disabled={isPenActive}
-        >
-          <PenIcon className="group-disabled:fill-white" />
-        </button>
-        <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={addRectangle}>
-          <StickyNoteIcon />
-        </button>
-        <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={erase}>
-          <ImageIcon />
-        </button>
-        <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={erase}>
-          <EraserIcon />
-        </button>
-      </div>
+      <Toolbar activeTool={activeTool} setActiveTool={setActiveTool} />
     </div>
   );
 };
