@@ -1,3 +1,5 @@
+import ProfileSmall from "@/assets/imgs/profileSmall.png";
+
 interface HeaderProps {
   lecture?: boolean;
   login?: boolean;
@@ -21,7 +23,7 @@ const RightSection: React.FC<HeaderProps> = ({ login, main }) => {
             이전 강의 다시보기
           </button>
           <button type="button" className="">
-            <img></img>
+            <img src={ProfileSmall} alt="내 프로필" />
           </button>
         </>
       )}
