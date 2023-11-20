@@ -15,8 +15,8 @@ const Header = ({ lecture, login, main }: HeaderProps) => {
   return (
     <header className="flex w-100 relative items-center justify-between px-6 py-4 bg-white border-header box-border">
       <LeftSection lecture={lecture} />
-      <RightSection setProfileClicked={setProfileClicked} login={login} main={main} />
-      <ProfileModal profileClicked={profileClicked} />
+      <RightSection profileClicked={profileClicked} setProfileClicked={setProfileClicked} login={login} main={main} />
+      <ProfileModal profileClicked={profileClicked} setProfileClicked={setProfileClicked} />
     </header>
   );
 };

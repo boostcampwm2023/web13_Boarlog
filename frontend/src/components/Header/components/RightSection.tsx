@@ -3,16 +3,13 @@ import ProfileSmall from "@/assets/imgs/profileSmall.png";
 interface RightSectionProps {
   login?: boolean;
   main?: boolean;
+  profileClicked: boolean;
   setProfileClicked: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const RightSection = ({ setProfileClicked, login, main }: RightSectionProps) => {
-  const handleFocus = () => {
-    setProfileClicked(true);
-  };
-
-  const handleBlur = () => {
-    setProfileClicked(false);
+const RightSection = ({ profileClicked, setProfileClicked, login, main }: RightSectionProps) => {
+  const handleProfileClick = () => {
+    setProfileClicked(!profileClicked);
   };
 
   return (
@@ -30,7 +27,7 @@ const RightSection = ({ setProfileClicked, login, main }: RightSectionProps) => 
           <button type="button" className="medium-16">
             이전 강의 다시보기
           </button>
-          <button type="button" className="" onFocus={handleFocus} onBlur={handleBlur}>
+          <button type="button" className="" onClick={handleProfileClick}>
             <img src={ProfileSmall} alt="내 프로필" />
           </button>
         </>
