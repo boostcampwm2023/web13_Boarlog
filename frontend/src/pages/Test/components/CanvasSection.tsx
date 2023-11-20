@@ -133,7 +133,6 @@ const CanvasSection = () => {
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
       <canvas className="" ref={canvasRef} />
-
       <Toolbar activeTool={activeTool} setActiveTool={setActiveTool} />
     </div>
   );

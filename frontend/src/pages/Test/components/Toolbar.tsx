@@ -5,6 +5,8 @@ import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 
+import ToolButton from "./ToolButton";
+
 interface ToolbarProps {
   activeTool: string;
   setActiveTool: React.Dispatch<React.SetStateAction<string>>;
@@ -13,47 +15,47 @@ interface ToolbarProps {
 const Toolbar = ({ activeTool, setActiveTool }: ToolbarProps) => {
   return (
     <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-[10px] bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
-      <button
-        className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
+      <ToolButton
+        icon={MouseIcon}
         onClick={() => setActiveTool("select")}
         disabled={activeTool === "select"}
         title="Select Tool"
-      >
-        <MouseIcon className="group-disabled:fill-white" />
-      </button>
+      />
 
-      <button
-        className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
+      <ToolButton
+        icon={PenIcon}
         onClick={() => setActiveTool("pen")}
         disabled={activeTool === "pen"}
         title="Pen Tool"
-      >
-        <PenIcon className="group-disabled:fill-white" />
-      </button>
+      />
 
-      <button
-        className="flex p-2 items-center justify-center rounded-[10px]"
+      <ToolButton
+        icon={StickyNoteIcon}
         onClick={() => setActiveTool("addstikynote")}
-      >
-        <StickyNoteIcon />
-      </button>
+        disabled={activeTool === "addstikynote"}
+        title="Add Stikynote (포스트잇 추가)"
+      />
 
-      <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={() => setActiveTool("image")}>
-        <ImageIcon />
-      </button>
+      <ToolButton
+        icon={ImageIcon}
+        onClick={() => setActiveTool("image")}
+        disabled={activeTool === "image"}
+        title="Image Tool"
+      />
 
-      <button className="flex p-2 items-center justify-center rounded-[10px]" onClick={() => setActiveTool("eraser")}>
-        <EraserIcon />
-      </button>
+      <ToolButton
+        icon={EraserIcon}
+        onClick={() => setActiveTool("eraser")}
+        disabled={activeTool === "eraser"}
+        title="Eraser Tool"
+      />
 
-      <button
-        className="flex p-2 items-center justify-center rounded-[10px] disabled:bg-boarlog-80 group"
+      <ToolButton
+        icon={HandIcon}
         onClick={() => setActiveTool("hand")}
         disabled={activeTool === "hand"}
         title="Hand Tool"
-      >
-        <HandIcon className="group-disabled:fill-white" />
-      </button>
+      />
     </div>
   );
 };
