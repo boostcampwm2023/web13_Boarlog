@@ -3,7 +3,7 @@ import Header from "@/components/Header/Header";
 const MyPage = () => {
   return (
     <>
-      <Header main />
+      <Header type="main" />
       마이 페이지
     </>
   );
