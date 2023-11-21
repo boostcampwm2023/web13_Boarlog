@@ -4,6 +4,7 @@ import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
 import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
+import addStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
 
 import { useState, useEffect } from "react";
 import { useRecoilValue } from "recoil";
@@ -14,19 +15,42 @@ import ColorPanel from "./ColorPanel";
 
 import canvasInstanceState from "./stateCanvasInstance";
 
+type ToolType = "select" | "pen" | "stickynote" | "image" | "eraser" | "hand";
+
 const Toolbar = () => {
-  const [activeTool, setActiveTool] = useState("pen");
+  const [activeTool, setActiveTool] = useState<ToolType>("pen");
   const canvas = useRecoilValue(canvasInstanceState);
+
+  /**
+   * @description 화이트 보드에 그려져 있는 요소들을 클릭을 통해 선택 가능한지 여부를 제어하기 위한 함수입니다.
+   */
+  const setIsObjectSelectable = (isSelectable: boolean) => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+    canvas.forEachObject((o) => (o.selectable = isSelectable));
+  };
+
+  /**
+   * @description 캔버스의 옵션을 리셋하는 함수입니다.
+   * @description 그래픽 요소 선택 기능: off, 드로잉 모드: off, 드래그 블럭지정모드: off, 커서: 디폴트 포인터
+   */
+  const initCanvasOption = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+    setIsObjectSelectable(false);
+    canvas.isDrawingMode = false;
+    canvas.selection = false;
+    canvas.defaultCursor = "default";
+  };
 
   useEffect(() => {
     if (!(canvas instanceof fabric.Canvas)) return;
     canvas.off("mouse:down");
     canvas.off("mouse:move");
     canvas.off("mouse:up");
+    initCanvasOption();
 
     switch (activeTool) {
       case "select":
-        canvas.isDrawingMode = false;
+        setIsObjectSelectable(true);
         canvas.selection = true;
         canvas.defaultCursor = "default";
         break;
@@ -36,25 +60,36 @@ const Toolbar = () => {
         canvas.isDrawingMode = true;
         break;
 
-      case "addstickynote":
-        const rect = new fabric.Rect({
-          left: 100,
-          top: 100,
-          width: 187,
-          height: 133,
-          fill: "#FFE196",
-          stroke: "black",
-          strokeWidth: 1
+      case "stickynote":
+        canvas.defaultCursor = `url("${addStickyNoteCursorSVG}"), auto`;
+
+        canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
+          if (!absolutePointer) return;
+          const { x: mousePositionX, y: mousePositionY, ...rest } = absolutePointer;
+
+          const rect = new fabric.Rect({
+            left: mousePositionX,
+            top: mousePositionY,
+            width: 187,
+            height: 133,
+            fill: "#FFE196",
+            stroke: "black",
+            strokeWidth: 1
+          });
+          canvas.add(rect);
+
+          setActiveTool("select");
         });
-        canvas.add(rect);
+
         break;
 
-      case "erase":
+      case "image":
+        break;
+
+      case "eraser":
         break;
 
       case "hand":
-        canvas.isDrawingMode = false;
-        canvas.selection = false;
         canvas.defaultCursor = "move";
 
         let panning = false;
@@ -95,8 +130,8 @@ const Toolbar = () => {
 
       <ToolButton
         icon={StickyNoteIcon}
-        onClick={() => setActiveTool("addstickynote")}
-        disabled={activeTool === "addstickynote"}
+        onClick={() => setActiveTool("stickynote")}
+        disabled={activeTool === "stickynote"}
         title="Add Stikynote (포스트잇 추가)"
       />
 
