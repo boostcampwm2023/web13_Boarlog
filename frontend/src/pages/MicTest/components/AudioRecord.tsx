@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const AudioRecord = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -6,6 +6,8 @@ const AudioRecord = () => {
 
   const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
+
+  const volumeMeterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // 마이크 장치 목록 가져오기
@@ -64,7 +66,7 @@ const AudioRecord = () => {
           const arraySum = array.reduce((a, value) => a + value, 0);
           const average = arraySum / array.length;
           console.log(`음량 :`, average);
-          colorPids(average);
+          colorVolumeMeter(average);
         };
 
         setTimeout(() => {
@@ -78,17 +80,18 @@ const AudioRecord = () => {
   };
 
   // Your existing colorPids function
-  const colorPids = (vol) => {
-    const allPids = document.querySelectorAll(".pid") as NodeListOf<HTMLDivElement>;
-    const numberOfPidsToColor = Math.round(vol / 10);
-    const pidsToColor = Array.from(allPids).slice(0, numberOfPidsToColor);
-    console.log(`numberOfPidsToColor :`, numberOfPidsToColor);
+  const colorVolumeMeter = (vol: number) => {
+    if (!volumeMeterRef.current) return;
+    const childrens = volumeMeterRef.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
+    const numberOfChildToColor = Math.round(vol / 10);
+    const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
+    console.log(`numberOfChildToColor :`, coloredChild);
 
-    allPids.forEach((pid) => {
+    childrens.forEach((pid) => {
       pid.style.backgroundColor = "#e6e7e8";
     });
 
-    pidsToColor.forEach((pid) => {
+    coloredChild.forEach((pid) => {
       pid.style.backgroundColor = "#69ce2b";
     });
   };
@@ -118,17 +121,10 @@ const AudioRecord = () => {
         </div>
       )}
 
-      <div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
-        <div className="pid w-5 h-5 inline-block m-1"></div>
+      <div className="volume-meter w-[150px] h-[20px] flex gap-1" ref={volumeMeterRef}>
+        {Array.from({ length: 10 }, (_, index) => (
+          <div key={index} className="w-[8%] rounded"></div>
+        ))}
       </div>
     </div>
   );
