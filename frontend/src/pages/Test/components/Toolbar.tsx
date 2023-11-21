@@ -26,14 +26,14 @@ const Toolbar = () => {
    */
   const setIsObjectSelectable = (isSelectable: boolean) => {
     if (!(canvas instanceof fabric.Canvas)) return;
-    canvas.forEachObject((o) => (o.selectable = isSelectable));
+    canvas.forEachObject((object) => (object.selectable = isSelectable));
   };
 
   /**
    * @description 캔버스의 옵션을 리셋하는 함수입니다.
    * @description 그래픽 요소 선택 기능: off, 드로잉 모드: off, 드래그 블럭지정모드: off, 커서: 디폴트 포인터
    */
-  const initCanvasOption = () => {
+  const resetCanvasOption = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
     setIsObjectSelectable(false);
     canvas.isDrawingMode = false;
@@ -46,7 +46,7 @@ const Toolbar = () => {
     canvas.off("mouse:down");
     canvas.off("mouse:move");
     canvas.off("mouse:up");
-    initCanvasOption();
+    resetCanvasOption();
 
     switch (activeTool) {
       case "select":
