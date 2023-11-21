@@ -1,10 +1,10 @@
-import Header from "./components/Header";
+import Header from "@/components/Header/Header";
 import AudioRecord from "./components/AudioRecord";
 
 const MicTest = () => {
   return (
     <>
-      <Header />
+      <Header type="instructor" />
       <AudioRecord />
     </>
   );

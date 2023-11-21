@@ -9,14 +9,16 @@ import { RecoilRoot } from "recoil";
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/test" element={<Test />} />
-        <Route path="/mictest" element={<MicTest />} />
-      </Routes>
-    </BrowserRouter>
+    <RecoilRoot>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/test" element={<Test />} />
+          <Route path="/mictest" element={<MicTest />} />
+        </Routes>
+      </BrowserRouter>
+    </RecoilRoot>
   );
 };
 
