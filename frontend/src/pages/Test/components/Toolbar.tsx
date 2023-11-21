@@ -78,7 +78,7 @@ const Toolbar = () => {
   }, [activeTool]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-[10px] bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
+    <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-xl bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
       <ToolButton
         icon={MouseIcon}
         onClick={() => setActiveTool("select")}
