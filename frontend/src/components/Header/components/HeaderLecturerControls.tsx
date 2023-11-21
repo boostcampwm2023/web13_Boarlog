@@ -8,7 +8,7 @@ import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
-import Dialog from "@/components/Modal/Modal";
+import Modal from "@/components/Modal/Modal";
 
 import selectedMicrophoneState from "./stateMicrophone";
 
@@ -138,8 +138,8 @@ const HeaderLecturerControls = () => {
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
       </SmallButton>
-      <Dialog
-        dialogText="강의를 종료하시겠습니까?"
+      <Modal
+        modalText="강의를 종료하시겠습니까?"
         cancelText="취소"
         confirmText="강의 종료하기"
         cancelButtonClass="bg-grayscale-black text-grayscale-white"

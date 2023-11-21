@@ -1,27 +1,27 @@
 import Button from "../Button/Button";
 
-interface DialogProps {
+interface ModalProps {
   confirmClick?: () => void;
   cancelText: string;
   confirmText: string;
   cancelButtonClass: string;
   confirmButtonClass: string;
-  dialogText: string;
+  modalText: string;
   className?: string;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Dialog = ({
+const Modal = ({
   confirmClick,
   cancelText,
   confirmText,
   cancelButtonClass,
   confirmButtonClass,
-  dialogText,
+  modalText,
   isModalOpen,
   setIsModalOpen
-}: DialogProps) => {
+}: ModalProps) => {
   return (
     <>
       <div
@@ -35,7 +35,7 @@ const Dialog = ({
           isModalOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
-        <p className="py-6 medium-18">{dialogText}</p>
+        <p className="py-6 medium-18">{modalText}</p>
         <menu className="flex flex-row w-full gap-4">
           <Button type="grow" value="cancel" onClick={() => setIsModalOpen(false)} className={cancelButtonClass}>
             {cancelText}
@@ -49,4 +49,4 @@ const Dialog = ({
   );
 };
 
-export default Dialog;
+export default Modal;
