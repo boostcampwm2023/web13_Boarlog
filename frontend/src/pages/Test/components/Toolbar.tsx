@@ -65,7 +65,7 @@ const Toolbar = () => {
 
         canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
           if (!absolutePointer) return;
-          const { x: mousePositionX, y: mousePositionY, ...rest } = absolutePointer;
+          const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
 
           const rect = new fabric.Rect({
             left: mousePositionX,
