@@ -8,6 +8,7 @@ const AudioRecord = () => {
   const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
 
   const volumeMeterRef = useRef<HTMLDivElement>(null);
+  const volumeMeterRef2 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // 마이크 장치 목록 가져오기
@@ -48,29 +49,6 @@ const AudioRecord = () => {
         mediaRecorder.start();
         setIsRecording(true);
 
-        /*
-        const audioContext = new AudioContext();
-        const analyser = audioContext.createAnalyser();
-        const microphone = audioContext.createMediaStreamSource(stream);
-        const scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
-        // 2048: FFT의 크기 1: 입력 채널 수 1: 출력 채널 수
-
-        analyser.smoothingTimeConstant = 0.8;
-        analyser.fftSize = 1024;
-
-        microphone.connect(analyser);
-        analyser.connect(scriptProcessor);
-        scriptProcessor.connect(audioContext.destination);
-        scriptProcessor.onaudioprocess = function () {
-          const array = new Uint8Array(analyser.frequencyBinCount);
-          analyser.getByteFrequencyData(array);
-          const arraySum = array.reduce((a, value) => a + value, 0);
-          const average = arraySum / array.length;
-          console.log(`음량 :`, average);
-          //colorVolumeMeter(average);
-        };
-        */
-
         const context = new AudioContext();
         const analyser = context.createAnalyser();
         const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
@@ -85,6 +63,7 @@ const AudioRecord = () => {
           const rms = Math.sqrt(sum / pcmData.length);
           const normalizedVolume = Math.min(1, rms / 0.5); // 볼륨 값 정규화 (0~1)
           colorVolumeMeter(normalizedVolume);
+          colorVolumeMeter2(normalizedVolume);
           window.requestAnimationFrame(onFrame);
         };
         window.requestAnimationFrame(onFrame);
@@ -106,13 +85,27 @@ const AudioRecord = () => {
 
   const colorVolumeMeter = (vol: number) => {
     if (!volumeMeterRef.current) return;
-    const VOL_METER_MAX = 10; // 표시할 볼륨 미터 개수
+    const VOL_METER_MAX = 6; // 표시할 볼륨 미터 개수
     const childrens = volumeMeterRef.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
+    const numberOfChildToColor = normalizeToInteger(vol, 0, VOL_METER_MAX);
+    console.log(`vol :`, vol, numberOfChildToColor);
+    const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
+    childrens.forEach((pid) => {
+      pid.style.backgroundColor = "#e6e6e6";
+    });
+    coloredChild.forEach((pid) => {
+      pid.style.backgroundColor = "#4F4FFB";
+    });
+  };
+  const colorVolumeMeter2 = (vol: number) => {
+    if (!volumeMeterRef2.current) return;
+    const VOL_METER_MAX = 10; // 표시할 볼륨 미터 개수
+    const childrens = volumeMeterRef2.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
     const numberOfChildToColor = normalizeToInteger(vol, 1, VOL_METER_MAX);
     console.log(`vol :`, vol, numberOfChildToColor);
     const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
     childrens.forEach((pid) => {
-      pid.style.backgroundColor = "#e6e7e8";
+      pid.style.backgroundColor = "#e6e6e6";
     });
     coloredChild.forEach((pid) => {
       pid.style.backgroundColor = "#69ce2b";
@@ -144,10 +137,21 @@ const AudioRecord = () => {
         </div>
       )}
 
-      <div className="volume-meter w-[150px] h-[20px] flex gap-1" ref={volumeMeterRef}>
+      <div className="volume-meter2 w-[150px] h-[20px] flex gap-1" ref={volumeMeterRef2}>
         {Array.from({ length: 10 }, (_, index) => (
           <div key={index} className="w-[8%] rounded"></div>
         ))}
+      </div>
+
+      <br></br>
+
+      <div className="volume-meter flex w-[40px] h-[28px] gap-1 justify-center items-center" ref={volumeMeterRef}>
+        <div className="w-[10%] h-[35%] rounded bg-grayscale-lightgray"></div>
+        <div className="w-[10%] h-[100%] rounded bg-grayscale-lightgray"></div>
+        <div className="w-[10%] h-[60%] rounded bg-grayscale-lightgray"></div>
+        <div className="w-[10%] h-[70%] rounded bg-grayscale-lightgray"></div>
+        <div className="w-[10%] h-[45%] rounded bg-grayscale-lightgray"></div>
+        <div className="w-[10%] h-[50%] rounded bg-grayscale-lightgray"></div>
       </div>
     </div>
   );
