@@ -4,6 +4,7 @@ import HeaderLoginButton from "./components/HeaderLoginButton";
 import HeaderMainButtons from "./components/HeaderMainButtons";
 import HeaderLecturerControls from "./components/HeaderLecturerControls";
 import HeaderProfileButton from "./components/HeaderProfileButton";
+import HeaderSettingButton from "./components/HeaderSettingButton";
 
 interface HeaderProps {
   type: "login" | "main" | "lecturer" | "participant";
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 const Header = ({ type }: HeaderProps) => {
   const [isProfileClicked, setIsProfileClicked] = useState(false);
+  const [isSettingClicked, setIsSettingClicked] = useState(false);
 
   return (
     <header className="flex w-100 relative items-center justify-between px-6 py-4 bg-white border-header box-border">
@@ -30,6 +32,7 @@ const Header = ({ type }: HeaderProps) => {
         {type === "lecturer" && (
           <>
             <HeaderLecturerControls />
+            <HeaderSettingButton isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>
         )}

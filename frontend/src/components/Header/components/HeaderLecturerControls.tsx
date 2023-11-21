@@ -1,7 +1,6 @@
 import { useState } from "react";
 import PlayIcon from "@/assets/svgs/play.svg?react";
 import StopIcon from "@/assets/svgs/stop.svg?react";
-import SettingIcon from "@/assets/svgs/setting.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
@@ -37,9 +36,6 @@ const HeaderLecturerControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
-      </SmallButton>
-      <SmallButton className="bg-grayscale-lightgray text-grayscale-white" onClick={() => console.log("digh")}>
-        <SettingIcon className="w-5 h-5 fill-grayscale-black" />
       </SmallButton>
     </>
   );
