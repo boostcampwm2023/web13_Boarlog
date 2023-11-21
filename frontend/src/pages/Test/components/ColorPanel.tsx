@@ -34,7 +34,7 @@ const ColorPanel = ({ className }: ColorPannelInterface) => {
       }
     >
       <button
-        className="w-6  h-6 block rounded-[0.625rem] bg-[#DF5536] border border-[#BB452A] flex justify-center items-center	"
+        className="w-6  h-6 block rounded-[0.625rem] bg-pen-red border border-pen-border-red flex justify-center items-center	"
         type="button"
         aria-label="빨간색 펜"
         onClick={() => {
@@ -44,7 +44,7 @@ const ColorPanel = ({ className }: ColorPannelInterface) => {
         <CheckSVG className={`${penColor === "red" ? "" : "hidden"}`} />
       </button>
       <button
-        className="w-6 h-6 block rounded-[0.625rem] bg-[#F2C947] border border-[#C5A339] flex justify-center items-center"
+        className="w-6 h-6 block rounded-[0.625rem] bg-pen-yellow border border-pen-border-yellow flex justify-center items-center"
         type="button"
         aria-label="노란색 펜"
         onClick={() => {
@@ -54,7 +54,7 @@ const ColorPanel = ({ className }: ColorPannelInterface) => {
         <CheckSVG className={`${penColor === "yellow" ? "" : "hidden"}`} />
       </button>
       <button
-        className="w-6 h-6 block rounded-[0.625rem] bg-[#FCF467] border border-[#BDB74D] flex justify-center items-center"
+        className="w-6 h-6 block rounded-[0.625rem] bg-pen-forsythia border border-pen-border-forsythia flex justify-center items-center"
         type="button"
         aria-label="개나리색 펜"
         onClick={() => {
@@ -64,7 +64,7 @@ const ColorPanel = ({ className }: ColorPannelInterface) => {
         <CheckSVG className={`${penColor === "forsythia" ? "" : "hidden"}`} />
       </button>
       <button
-        className="w-6 h-6 block rounded-[0.625rem] bg-[#D3E660] border border-[#A1AF4B] flex justify-center items-center"
+        className="w-6 h-6 block rounded-[0.625rem] bg-pen-lightgreen border border-pen-border-lightgreen flex justify-center items-center"
         type="button"
         aria-label="연두색 펜"
         onClick={() => {
@@ -74,7 +74,7 @@ const ColorPanel = ({ className }: ColorPannelInterface) => {
         <CheckSVG className={`${penColor === "lightGreen" ? "" : "hidden"}`} />
       </button>
       <button
-        className="w-6 h-6 block rounded-[0.625rem] bg-[#5099E9] border border-[#3D76B5] flex justify-center items-center"
+        className="w-6 h-6 block rounded-[0.625rem] bg-pen-blue border border-pen-border-blue flex justify-center items-center"
         type="button"
         aria-label="파란색 펜"
         onClick={() => {
