@@ -1,12 +1,14 @@
 import { fabric } from "fabric";
-import { useEffect, useRef, useState } from "react";
+import { useSetRecoilState } from "recoil";
+import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
+import cavasInstanceState from "./stateCanvasInstance";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+  const setCanvas = useSetRecoilState(cavasInstanceState);
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -72,7 +74,7 @@ const CanvasSection = () => {
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
       <canvas className="" ref={canvasRef} />
-      <Toolbar canvasElementRef={canvas} />
+      <Toolbar />
     </div>
   );
 };

@@ -6,24 +6,17 @@ import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 
 import { useState, useEffect } from "react";
+import { useRecoilValue } from "recoil";
 import { fabric } from "fabric";
+
 import ToolButton from "./ToolButton";
-import ColorPanel from "./ColorPannel";
+import ColorPanel from "./ColorPanel";
 
-interface ToolbarProps {
-  canvasElementRef: fabric.Canvas | null;
-}
+import canvasInstanceState from "./stateCanvasInstance";
 
-const showPenColorPannel = () => {};
-
-const handlePenTool = (canvasElementRef: fabric.Canvas) => {
-  if (!(canvasElementRef instanceof fabric.Canvas)) return;
-  canvasElementRef.freeDrawingBrush.width = 10;
-  canvasElementRef.isDrawingMode = true;
-};
-
-const Toolbar = ({ canvasElementRef: canvas }: ToolbarProps) => {
+const Toolbar = () => {
   const [activeTool, setActiveTool] = useState("pen");
+  const canvas = useRecoilValue(canvasInstanceState);
 
   useEffect(() => {
     if (!(canvas instanceof fabric.Canvas)) return;
@@ -39,10 +32,11 @@ const Toolbar = ({ canvasElementRef: canvas }: ToolbarProps) => {
         break;
 
       case "pen":
-        handlePenTool(canvas);
+        canvas.freeDrawingBrush.width = 10;
+        canvas.isDrawingMode = true;
         break;
 
-      case "addstikynote":
+      case "addstickynote":
         const rect = new fabric.Rect({
           left: 100,
           top: 100,
@@ -101,12 +95,12 @@ const Toolbar = ({ canvasElementRef: canvas }: ToolbarProps) => {
 
       <ToolButton
         icon={StickyNoteIcon}
-        onClick={() => setActiveTool("addstikynote")}
-        disabled={activeTool === "addstikynote"}
+        onClick={() => setActiveTool("addstickynote")}
+        disabled={activeTool === "addstickynote"}
         title="Add Stikynote (포스트잇 추가)"
       />
 
-      <ColorPanel selectedTool={activeTool} />
+      <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
 
       <ToolButton
         icon={ImageIcon}
