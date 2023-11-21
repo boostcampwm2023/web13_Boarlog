@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import ProfileSmall from "@/assets/imgs/profileSmall.png";
 import LogoutIcon from "@/assets/svgs/logout.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
@@ -8,6 +9,12 @@ interface ProfileModalProps {
 }
 
 const ProfileModal = ({ profileClicked, setProfileClicked }: ProfileModalProps) => {
+  const navigate = useNavigate();
+
+  const moveToMyPage = () => {
+    navigate("/mypage");
+  };
+
   const handleBackgroundClick = () => {
     setProfileClicked(!profileClicked);
   };
@@ -43,6 +50,7 @@ const ProfileModal = ({ profileClicked, setProfileClicked }: ProfileModalProps) 
           <button
             className="flex flex-row flex-grow justify-center items-center gap-1 py-3 rounded-xl bg-grayscale-black semibold-18 text-grayscale-white hover:bg-grayscale-darkgray duration-500"
             type="button"
+            onClick={moveToMyPage}
           >
             <UserIcon className="fill-grayscale-white" />
             마이페이지
