@@ -7,7 +7,7 @@ import HeaderProfileButton from "./components/HeaderProfileButton";
 import HeaderSettingButton from "./components/HeaderSettingButton";
 
 interface HeaderProps {
-  type: "login" | "main" | "lecturer" | "participant";
+  type: "login" | "main" | "instructor" | "participant";
 }
 
 const Header = ({ type }: HeaderProps) => {
@@ -18,7 +18,7 @@ const Header = ({ type }: HeaderProps) => {
     <header className="flex w-100 relative items-center justify-between px-6 py-4 bg-white border-header box-border">
       <div className="flex items-center gap-4 semibold-20">
         {(type === "login" || type === "main") && <HeaderLogo type="normal" />}
-        {(type === "lecturer" || type === "participant") && <HeaderLogo type="lecture" />}
+        {(type === "instructor" || type === "participant") && <HeaderLogo type="lecture" />}
       </div>
 
       <div className="flex items-center gap-4 semibold-20">
@@ -29,7 +29,7 @@ const Header = ({ type }: HeaderProps) => {
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>
         )}
-        {type === "lecturer" && (
+        {type === "instructor" && (
           <>
             <HeaderLecturerControls />
             <HeaderSettingButton isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />

@@ -7,7 +7,7 @@ const Home = () => {
     <>
       <Header type="login" />
       <Header type="main" />
-      <Header type="lecturer" />
+      <Header type="instructor" />
       <div>
         <GoogleIcon className="w-[50px] h-auto" />
         <img src={logoImg} />
