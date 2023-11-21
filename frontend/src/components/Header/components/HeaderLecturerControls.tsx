@@ -1,41 +1,34 @@
 import { useState, useEffect, useRef } from "react";
+import { useRecoilValue } from "recoil";
 import PlayIcon from "@/assets/svgs/play.svg?react";
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 
+import selectedMicrophoneState from "./MicState";
+
 const HeaderLecturerControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
 
   const [audioURL, setAudioURL] = useState<string | null>(null);
-  const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
+  //const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
+  //const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingTimerRef = useRef<number | null>(null);
   const onFrameIdRef = useRef<number | null>(null);
   const volumeMeterRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // 마이크 장치 목록 가져오기
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then((devices) => {
-        const microphones = devices.filter((device) => device.kind === "audioinput");
-        setMicrophoneDevices(microphones);
-      })
-      .catch((error) => {
-        console.error("입력 장치 목록 불러오기 실패", error);
-      });
-  }, []);
+  const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
 
   const startRecording = () => {
-    //if (!selectedMicrophone) return;
+    console.log(selectedMicrophone);
+    if (!selectedMicrophone) return;
+
     navigator.mediaDevices
-      .getUserMedia({ audio: true }) // 오디오 엑세스 요청 audio: { deviceId: selectedMicrophone }
+      .getUserMedia({ audio: { deviceId: selectedMicrophone } }) // 오디오 엑세스 요청 audio: { deviceId: selectedMicrophone }
       .then((stream) => {
         console.log(`강의 시작`);
         // 요청이 승인되면 실행
