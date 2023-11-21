@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSetRecoilState } from "recoil";
 import selectedMicrophoneState from "./MicState";
 
@@ -41,7 +41,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
           <p className="semibold-18">입력 장치 설정</p>
         </div>
 
-        <select className="border semibold-18" onChange={(e) => setSelectedMicrophone(e.target.value)}>
+        <select className="border semibold-18 w-[100%]" onChange={(e) => setSelectedMicrophone(e.target.value)}>
           {microphoneDevices.map((device) => (
             <option value={device.deviceId}>{device.label || `마이크 ${microphoneDevices.indexOf(device) + 1}`}</option>
           ))}

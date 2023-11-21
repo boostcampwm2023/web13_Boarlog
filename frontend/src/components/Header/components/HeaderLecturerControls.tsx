@@ -1,5 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useRecoilValue } from "recoil";
+
+import VolumeMeter from "./VolumeMeter";
+
 import PlayIcon from "@/assets/svgs/play.svg?react";
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
@@ -11,32 +14,32 @@ import selectedMicrophoneState from "./MicState";
 const HeaderLecturerControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
-
   const [audioURL, setAudioURL] = useState<string | null>(null);
-  //const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
-  //const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
+
+  const [micVolume, setMicVolume] = useState<number>(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingTimerRef = useRef<number | null>(null);
   const onFrameIdRef = useRef<number | null>(null);
-  const volumeMeterRef = useRef<HTMLDivElement>(null);
+
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
 
   const startRecording = () => {
-    console.log(selectedMicrophone);
     if (!selectedMicrophone) return;
 
     navigator.mediaDevices
-      .getUserMedia({ audio: { deviceId: selectedMicrophone } }) // 오디오 엑세스 요청 audio: { deviceId: selectedMicrophone }
+      .getUserMedia({ audio: { deviceId: selectedMicrophone } }) // 오디오 엑세스 요청
       .then((stream) => {
-        console.log(`강의 시작`);
         // 요청이 승인되면 실행
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder; // mediaRecorder 상태 업데이트
-        const chunks: BlobPart[] = [];
+
+        mediaRecorder.start();
+        setIsLectureStart(true);
 
         // 향후 녹음된 오디오 데이터 전송을 위한 부분입니다-----------
+        const chunks: BlobPart[] = [];
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             chunks.push(event.data);
@@ -51,9 +54,7 @@ const HeaderLecturerControls = () => {
         };
         //-------------------------------------------------------------
 
-        mediaRecorder.start();
-        setIsLectureStart(true);
-
+        // 마이크 볼륨 측정을 위한 부분입니다
         const context = new AudioContext();
         const analyser = context.createAnalyser();
         const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
@@ -67,11 +68,12 @@ const HeaderLecturerControls = () => {
           }
           const rms = Math.sqrt(sum / pcmData.length);
           const normalizedVolume = Math.min(1, rms / 0.5); // 볼륨 값 정규화 (0~1)
-          colorVolumeMeter(normalizedVolume);
+          setMicVolume(normalizedVolume);
           onFrameIdRef.current = window.requestAnimationFrame(onFrame);
         };
         onFrameIdRef.current = window.requestAnimationFrame(onFrame);
 
+        // 경과 시간을 표시하기 위한 부분입니다
         let startTime: number = Date.now();
         const updateRecordingTime = () => {
           const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
@@ -95,36 +97,10 @@ const HeaderLecturerControls = () => {
     }
   };
 
-  const normalizeToInteger = (volume: number, min: number, max: number) => {
-    const scaledValue = Math.min(max, Math.max(min, volume * (max - min) + min));
-    return Math.round(scaledValue);
-  };
-
-  const colorVolumeMeter = (vol: number) => {
-    if (!volumeMeterRef.current) return;
-    const VOL_METER_MAX = 6; // 표시할 볼륨 미터 개수
-    const childrens = volumeMeterRef.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
-    const numberOfChildToColor = normalizeToInteger(vol, 0, VOL_METER_MAX);
-    const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
-    childrens.forEach((pid) => {
-      pid.style.backgroundColor = "#e6e6e6";
-    });
-    coloredChild.forEach((pid) => {
-      pid.style.backgroundColor = "#4F4FFB";
-    });
-  };
-
   return (
     <>
       <div className="flex gap-2">
-        <div className="volume-meter flex w-[40px] h-[28px] gap-1 justify-center items-center" ref={volumeMeterRef}>
-          <div className="w-[10%] h-[35%] rounded bg-grayscale-lightgray"></div>
-          <div className="w-[10%] h-[100%] rounded bg-grayscale-lightgray"></div>
-          <div className="w-[10%] h-[60%] rounded bg-grayscale-lightgray"></div>
-          <div className="w-[10%] h-[70%] rounded bg-grayscale-lightgray"></div>
-          <div className="w-[10%] h-[45%] rounded bg-grayscale-lightgray"></div>
-          <div className="w-[10%] h-[50%] rounded bg-grayscale-lightgray"></div>
-        </div>
+        <VolumeMeter micVolume={micVolume} />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(recordingTime / 60)
             .toString()
@@ -132,7 +108,7 @@ const HeaderLecturerControls = () => {
           :{(recordingTime % 60).toString().padStart(2, "0")}
         </p>
       </div>
-      test
+
       <SmallButton
         className={`text-grayscale-white ${isLectureStart ? "bg-alert-100" : "bg-boarlog-100"}`}
         onClick={!isLectureStart ? startRecording : stopRecording}

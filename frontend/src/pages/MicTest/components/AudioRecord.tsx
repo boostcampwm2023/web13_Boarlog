@@ -1,3 +1,5 @@
+// 디버깅을 위해서 임시로 남겨둔 프로토타입 컴포넌트입니다. 리뷰할 때 무시해주세요.
+
 import { useState, useEffect, useRef } from "react";
 
 const AudioRecord = () => {
@@ -108,7 +110,6 @@ const AudioRecord = () => {
     const VOL_METER_MAX = 6; // 표시할 볼륨 미터 개수
     const childrens = volumeMeterRef.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
     const numberOfChildToColor = normalizeToInteger(vol, 0, VOL_METER_MAX);
-    //console.log(`vol :`, vol, numberOfChildToColor);
     const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
     childrens.forEach((pid) => {
       pid.style.backgroundColor = "#e6e6e6";
@@ -122,7 +123,6 @@ const AudioRecord = () => {
     const VOL_METER_MAX = 10; // 표시할 볼륨 미터 개수
     const childrens = volumeMeterRef2.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
     const numberOfChildToColor = normalizeToInteger(vol, 1, VOL_METER_MAX);
-    //console.log(`vol :`, vol, numberOfChildToColor);
     const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
     childrens.forEach((pid) => {
       pid.style.backgroundColor = "#e6e6e6";
