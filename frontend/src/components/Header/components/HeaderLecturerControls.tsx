@@ -9,7 +9,7 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 
-import selectedMicrophoneState from "./MicState";
+import selectedMicrophoneState from "./stateMicrophone";
 
 const HeaderLecturerControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);

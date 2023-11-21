@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSetRecoilState } from "recoil";
-import selectedMicrophoneState from "./MicState";
+import selectedMicrophoneState from "./stateMicrophone";
 
 interface HeaderSettingModalProps {
   isSettingClicked: boolean;
