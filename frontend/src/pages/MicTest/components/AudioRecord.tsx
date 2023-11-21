@@ -48,6 +48,7 @@ const AudioRecord = () => {
         mediaRecorder.start();
         setIsRecording(true);
 
+        /*
         const audioContext = new AudioContext();
         const analyser = audioContext.createAnalyser();
         const microphone = audioContext.createMediaStreamSource(stream);
@@ -66,8 +67,27 @@ const AudioRecord = () => {
           const arraySum = array.reduce((a, value) => a + value, 0);
           const average = arraySum / array.length;
           console.log(`음량 :`, average);
-          colorVolumeMeter(average);
+          //colorVolumeMeter(average);
         };
+        */
+
+        const context = new AudioContext();
+        const analyser = context.createAnalyser();
+        const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
+        mediaStreamAudioSourceNode.connect(analyser, 0);
+        const pcmData = new Float32Array(analyser.fftSize);
+        const onFrame = () => {
+          analyser.getFloatTimeDomainData(pcmData);
+          let sum = 0.0;
+          for (const amplitude of pcmData) {
+            sum += amplitude * amplitude;
+          }
+          const rms = Math.sqrt(sum / pcmData.length);
+          const normalizedVolume = Math.min(1, rms / 0.5); // 볼륨 값 정규화 (0~1)
+          colorVolumeMeter(normalizedVolume);
+          window.requestAnimationFrame(onFrame);
+        };
+        window.requestAnimationFrame(onFrame);
 
         setTimeout(() => {
           mediaRecorder.stop();
@@ -79,18 +99,21 @@ const AudioRecord = () => {
       });
   };
 
-  // Your existing colorPids function
+  const normalizeToInteger = (volume: number, min: number, max: number) => {
+    const scaledValue = Math.min(max, Math.max(min, volume * (max - min) + min));
+    return Math.round(scaledValue);
+  };
+
   const colorVolumeMeter = (vol: number) => {
     if (!volumeMeterRef.current) return;
+    const VOL_METER_MAX = 10; // 표시할 볼륨 미터 개수
     const childrens = volumeMeterRef.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
-    const numberOfChildToColor = Math.round(vol / 10);
+    const numberOfChildToColor = normalizeToInteger(vol, 1, VOL_METER_MAX);
+    console.log(`vol :`, vol, numberOfChildToColor);
     const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
-    console.log(`numberOfChildToColor :`, coloredChild);
-
     childrens.forEach((pid) => {
       pid.style.backgroundColor = "#e6e7e8";
     });
-
     coloredChild.forEach((pid) => {
       pid.style.backgroundColor = "#69ce2b";
     });
