@@ -1,29 +1,39 @@
 import { useState } from "react";
-import ProfileModal from "./components/ProfileModal";
-import LeftSection from "./components/LeftSection";
-import RightSection from "./components/RightSection";
+import HeaderLogo from "./components/HeaderLogo";
+import HeaderLoginButton from "./components/HeaderLoginButton";
+import HeaderMainButtons from "./components/HeaderMainButtons";
+import HeaderLecturerControls from "./components/HeaderLecturerControls";
+import HeaderProfileButton from "./components/HeaderProfileButton";
 
 interface HeaderProps {
-  lecture?: boolean;
-  lecturer?: boolean;
-  login?: boolean;
-  main?: boolean;
+  type: "login" | "main" | "lecturer" | "participant";
 }
 
-const Header = ({ lecture, lecturer, login, main }: HeaderProps) => {
+const Header = ({ type }: HeaderProps) => {
   const [isProfileClicked, setIsProfileClicked] = useState(false);
 
   return (
     <header className="flex w-100 relative items-center justify-between px-6 py-4 bg-white border-header box-border">
-      <LeftSection lecture={lecture} />
-      <RightSection
-        isProfileClicked={isProfileClicked}
-        setIsProfileClicked={setIsProfileClicked}
-        lecturer={lecturer}
-        login={login}
-        main={main}
-      />
-      <ProfileModal isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
+      <div className="flex items-center gap-4 semibold-20">
+        {(type === "login" || type === "main") && <HeaderLogo type="normal" />}
+        {(type === "lecturer" || type === "participant") && <HeaderLogo type="lecture" />}
+      </div>
+
+      <div className="flex items-center gap-4 semibold-20">
+        {type === "login" && <HeaderLoginButton />}
+        {type === "main" && (
+          <>
+            <HeaderMainButtons />
+            <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
+          </>
+        )}
+        {type === "lecturer" && (
+          <>
+            <HeaderLecturerControls />
+            <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
+          </>
+        )}
+      </div>
     </header>
   );
 };

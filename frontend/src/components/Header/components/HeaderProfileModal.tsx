@@ -3,12 +3,12 @@ import ProfileSmall from "@/assets/imgs/profileSmall.png";
 import LogoutIcon from "@/assets/svgs/logout.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
 
-interface ProfileModalProps {
+interface HeaderProfileModalProps {
   isProfileClicked: boolean;
   setIsProfileClicked: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ProfileModal = ({ isProfileClicked, setIsProfileClicked }: ProfileModalProps) => {
+const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderProfileModalProps) => {
   const navigate = useNavigate();
 
   const moveToMyPage = () => {
@@ -57,4 +57,4 @@ const ProfileModal = ({ isProfileClicked, setIsProfileClicked }: ProfileModalPro
   );
 };
 
-export default ProfileModal;
+export default HeaderProfileModal;
