@@ -5,7 +5,6 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
-import configuration from './config/configuration';
 
 dotenv.config();
 
@@ -14,8 +13,7 @@ dotenv.config();
     AuthModule,
     MongooseModule.forRoot(process.env.MONGODB_URI),
     ConfigModule.forRoot({
-      isGlobal: true,
-      load: [configuration]
+      isGlobal: true
     })
   ],
   controllers: [AppController],
