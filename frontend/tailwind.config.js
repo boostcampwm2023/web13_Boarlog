@@ -32,7 +32,17 @@ export default {
         "grayscale-darkgray": "#595959",
         "grayscale-gray": "#b3b3b3",
         "grayscale-lightgray": "#e6e6e6",
-        "grayscale-white": "#ffffff"
+        "grayscale-white": "#ffffff",
+        "pen-red": "#DF5536",
+        "pen-yellow": "#F2C947",
+        "pen-forsythia": "#FCF467",
+        "pen-lightgreen": "#D3E660",
+        "pen-blue": "#5099E9",
+        "pen-border-red": "#BB452A",
+        "pen-border-yellow": "#C5A339",
+        "pen-border-forsythia": "#BDB74D",
+        "pen-border-lightgreen": "#A1AF4B",
+        "pen-border-blue": "#3D76B5"
       }
     }
   },

@@ -1,13 +1,14 @@
 import { fabric } from "fabric";
-import { useEffect, useRef, useState } from "react";
+import { useSetRecoilState } from "recoil";
+import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
+import cavasInstanceState from "./stateCanvasInstance";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
-  const [activeTool, setActiveTool] = useState("pen");
+  const setCanvas = useSetRecoilState(cavasInstanceState);
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -22,7 +23,7 @@ const CanvasSection = () => {
     setCanvas(newCanvas);
 
     // 휠을 이용해서 줌인/줌아웃
-    newCanvas.on("mouse:wheel", function (opt) {
+    newCanvas.on("mouse:wheel", (opt) => {
       const delta = opt.e.deltaY;
       let zoom = newCanvas.getZoom();
       zoom *= 0.999 ** delta;
@@ -70,70 +71,10 @@ const CanvasSection = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!canvasContainerRef.current || !canvasRef.current) return;
-    if (!(canvas instanceof fabric.Canvas)) return;
-    canvas.off("mouse:down");
-    canvas.off("mouse:move");
-    canvas.off("mouse:up");
-
-    switch (activeTool) {
-      case "select":
-        canvas.isDrawingMode = false;
-        canvas.selection = true;
-        canvas.defaultCursor = "default";
-        break;
-
-      case "pen":
-        canvas.freeDrawingBrush.width = 10;
-        canvas.isDrawingMode = true;
-        break;
-
-      case "addstikynote":
-        const rect = new fabric.Rect({
-          left: 100,
-          top: 100,
-          width: 187,
-          height: 133,
-          fill: "#FFE196",
-          stroke: "black",
-          strokeWidth: 1
-        });
-        canvas.add(rect);
-        break;
-
-      case "erase":
-        break;
-
-      case "hand":
-        canvas.isDrawingMode = false;
-        canvas.selection = false;
-        canvas.defaultCursor = "move";
-
-        let panning = false;
-        const handleMouseDown = () => {
-          panning = true;
-        };
-        const handleMouseMove = (event: fabric.IEvent<MouseEvent>) => {
-          if (panning) {
-            const delta = new fabric.Point(event.e.movementX, event.e.movementY);
-            canvas.relativePan(delta);
-          }
-        };
-        const handleMouseUp = () => {
-          panning = false;
-        };
-        canvas.on("mouse:down", handleMouseDown);
-        canvas.on("mouse:move", handleMouseMove);
-        canvas.on("mouse:up", handleMouseUp);
-        break;
-    }
-  }, [activeTool]);
-
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
       <canvas className="" ref={canvasRef} />
-      <Toolbar activeTool={activeTool} setActiveTool={setActiveTool} />
+      <Toolbar />
     </div>
   );
 };

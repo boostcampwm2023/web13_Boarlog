@@ -5,6 +5,8 @@ import Login from "./pages/Login/Login";
 import Test from "./pages/Test/Test";
 import MicTest from "./pages/MicTest/MicTest";
 
+import { RecoilRoot } from "recoil";
+
 const App = () => {
   return (
     <BrowserRouter>
