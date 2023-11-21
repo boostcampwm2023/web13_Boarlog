@@ -6,8 +6,6 @@ const MicTest = () => {
     <>
       <Header />
       <AudioRecord />
-      <br></br>
-      test
     </>
   );
 };

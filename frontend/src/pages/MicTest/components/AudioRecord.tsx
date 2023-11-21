@@ -6,7 +6,11 @@ const AudioRecord = () => {
 
   const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
+  const [recordingTime, setRecordingTime] = useState<number>(0);
 
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingTimerRef = useRef<number | null>(null);
+  const onFrameIdRef = useRef<number | null>(null);
   const volumeMeterRef = useRef<HTMLDivElement>(null);
   const volumeMeterRef2 = useRef<HTMLDivElement>(null);
 
@@ -30,6 +34,7 @@ const AudioRecord = () => {
       .then((stream) => {
         // 요청이 승인되면 실행
         const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder; // mediaRecorder 상태 업데이트
         const chunks: BlobPart[] = [];
 
         mediaRecorder.ondataavailable = (event) => {
@@ -64,18 +69,33 @@ const AudioRecord = () => {
           const normalizedVolume = Math.min(1, rms / 0.5); // 볼륨 값 정규화 (0~1)
           colorVolumeMeter(normalizedVolume);
           colorVolumeMeter2(normalizedVolume);
-          window.requestAnimationFrame(onFrame);
+          onFrameIdRef.current = window.requestAnimationFrame(onFrame);
         };
-        window.requestAnimationFrame(onFrame);
+        onFrameIdRef.current = window.requestAnimationFrame(onFrame);
 
-        setTimeout(() => {
-          mediaRecorder.stop();
-          setIsRecording(false);
-        }, 3000); // 녹음 시간 (3초)
+        let startTime: number = Date.now();
+        const updateRecordingTime = () => {
+          const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+          setRecordingTime(elapsedTime);
+        };
+        const recordingTimer = setInterval(updateRecordingTime, 1000);
+        recordingTimerRef.current = recordingTimer;
       })
       .catch((error) => {
         console.error("마이크 권한 획득 실패", error);
       });
+  };
+
+  const stopRecording = () => {
+    console.log(mediaRecorderRef.current, isRecording);
+    if (mediaRecorderRef.current && isRecording) {
+      console.log(`녹음 중지`);
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setRecordingTime(0);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
+    }
   };
 
   const normalizeToInteger = (volume: number, min: number, max: number) => {
@@ -88,7 +108,7 @@ const AudioRecord = () => {
     const VOL_METER_MAX = 6; // 표시할 볼륨 미터 개수
     const childrens = volumeMeterRef.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
     const numberOfChildToColor = normalizeToInteger(vol, 0, VOL_METER_MAX);
-    console.log(`vol :`, vol, numberOfChildToColor);
+    //console.log(`vol :`, vol, numberOfChildToColor);
     const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
     childrens.forEach((pid) => {
       pid.style.backgroundColor = "#e6e6e6";
@@ -102,7 +122,7 @@ const AudioRecord = () => {
     const VOL_METER_MAX = 10; // 표시할 볼륨 미터 개수
     const childrens = volumeMeterRef2.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
     const numberOfChildToColor = normalizeToInteger(vol, 1, VOL_METER_MAX);
-    console.log(`vol :`, vol, numberOfChildToColor);
+    //console.log(`vol :`, vol, numberOfChildToColor);
     const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
     childrens.forEach((pid) => {
       pid.style.backgroundColor = "#e6e6e6";
@@ -124,8 +144,11 @@ const AudioRecord = () => {
       </select>
       <br></br>
 
-      <button className="border" onClick={startRecording} disabled={isRecording || !selectedMicrophone}>
-        {isRecording ? "녹음 중..." : "녹음 시작"}
+      <button className="border" onClick={startRecording} disabled={!selectedMicrophone || isRecording}>
+        녹음 시작
+      </button>
+      <button className="border" onClick={stopRecording} disabled={!isRecording}>
+        녹음 중지
       </button>
 
       {audioURL && (
@@ -145,13 +168,21 @@ const AudioRecord = () => {
 
       <br></br>
 
-      <div className="volume-meter flex w-[40px] h-[28px] gap-1 justify-center items-center" ref={volumeMeterRef}>
-        <div className="w-[10%] h-[35%] rounded bg-grayscale-lightgray"></div>
-        <div className="w-[10%] h-[100%] rounded bg-grayscale-lightgray"></div>
-        <div className="w-[10%] h-[60%] rounded bg-grayscale-lightgray"></div>
-        <div className="w-[10%] h-[70%] rounded bg-grayscale-lightgray"></div>
-        <div className="w-[10%] h-[45%] rounded bg-grayscale-lightgray"></div>
-        <div className="w-[10%] h-[50%] rounded bg-grayscale-lightgray"></div>
+      <div className="flex gap-2">
+        <div className="volume-meter flex w-[40px] h-[28px] gap-1 justify-center items-center" ref={volumeMeterRef}>
+          <div className="w-[10%] h-[35%] rounded bg-grayscale-lightgray"></div>
+          <div className="w-[10%] h-[100%] rounded bg-grayscale-lightgray"></div>
+          <div className="w-[10%] h-[60%] rounded bg-grayscale-lightgray"></div>
+          <div className="w-[10%] h-[70%] rounded bg-grayscale-lightgray"></div>
+          <div className="w-[10%] h-[45%] rounded bg-grayscale-lightgray"></div>
+          <div className="w-[10%] h-[50%] rounded bg-grayscale-lightgray"></div>
+        </div>
+        <p className="semibold-20 text-boarlog-100">
+          {Math.floor(recordingTime / 60)
+            .toString()
+            .padStart(2, "0")}
+          :{(recordingTime % 60).toString().padStart(2, "0")}
+        </p>
       </div>
     </div>
   );
