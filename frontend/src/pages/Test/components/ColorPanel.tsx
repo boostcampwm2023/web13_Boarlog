@@ -9,7 +9,7 @@ interface ColorPannelInterface {
 }
 type PenColorTypes = "red" | "yellow" | "forsythia" | "lightGreen" | "blue" | "black";
 
-const colorCode = {
+const COLOR_CODE = {
   red: "#DF5536",
   yellow: "#F2C947",
   forsythia: "#FCF467",
@@ -24,7 +24,7 @@ const ColorPanel = ({ className }: ColorPannelInterface) => {
 
   useEffect(() => {
     if (!(canvas instanceof fabric.Canvas)) return;
-    canvas.freeDrawingBrush.color = colorCode[penColor];
+    canvas.freeDrawingBrush.color = COLOR_CODE[penColor];
   }, [penColor]);
 
   return (
