@@ -11,19 +11,19 @@ interface HeaderProps {
 }
 
 const Header = ({ lecture, lecturer, login, main }: HeaderProps) => {
-  const [profileClicked, setProfileClicked] = useState(false);
+  const [isProfileClicked, setIsProfileClicked] = useState(false);
 
   return (
     <header className="flex w-100 relative items-center justify-between px-6 py-4 bg-white border-header box-border">
       <LeftSection lecture={lecture} />
       <RightSection
-        profileClicked={profileClicked}
-        setProfileClicked={setProfileClicked}
+        isProfileClicked={isProfileClicked}
+        setIsProfileClicked={setIsProfileClicked}
         lecturer={lecturer}
         login={login}
         main={main}
       />
-      <ProfileModal profileClicked={profileClicked} setProfileClicked={setProfileClicked} />
+      <ProfileModal isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
     </header>
   );
 };
