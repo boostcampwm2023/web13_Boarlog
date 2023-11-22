@@ -4,7 +4,7 @@ import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
 import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
-import addStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
+import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
 
 import { useState, useEffect } from "react";
 import { useRecoilValue } from "recoil";
@@ -41,6 +41,40 @@ const Toolbar = () => {
     canvas.defaultCursor = "default";
   };
 
+  const handleStickyNoteTool = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    canvas.defaultCursor = `url("${AddStickyNoteCursorSVG}"), auto`;
+
+    canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
+      if (!absolutePointer) return;
+      const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
+
+      const note = new fabric.Rect({
+        left: mousePositionX,
+        top: mousePositionY,
+        width: 187,
+        height: 133,
+        fill: "#FFE196",
+        stroke: "black",
+        strokeWidth: 1
+      });
+
+      const text = new fabric.IText("텍스트 내용", {
+        left: mousePositionX + 10,
+        top: mousePositionY + 10,
+        fill: "black",
+        fontSize: 16
+      });
+
+      const stickyMemo = new fabric.Group([note, text]);
+
+      canvas.add(stickyMemo);
+
+      setActiveTool("select");
+    });
+  };
+
   useEffect(() => {
     if (!(canvas instanceof fabric.Canvas)) return;
     canvas.off("mouse:down");
@@ -61,26 +95,7 @@ const Toolbar = () => {
         break;
 
       case "stickynote":
-        canvas.defaultCursor = `url("${addStickyNoteCursorSVG}"), auto`;
-
-        canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
-          if (!absolutePointer) return;
-          const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
-
-          const rect = new fabric.Rect({
-            left: mousePositionX,
-            top: mousePositionY,
-            width: 187,
-            height: 133,
-            fill: "#FFE196",
-            stroke: "black",
-            strokeWidth: 1
-          });
-          canvas.add(rect);
-
-          setActiveTool("select");
-        });
-
+        handleStickyNoteTool();
         break;
 
       case "image":
@@ -120,37 +135,31 @@ const Toolbar = () => {
         disabled={activeTool === "select"}
         title="Select Tool"
       />
-
       <ToolButton
         icon={PenIcon}
         onClick={() => setActiveTool("pen")}
         disabled={activeTool === "pen"}
         title="Pen Tool"
       />
-
       <ToolButton
         icon={StickyNoteIcon}
         onClick={() => setActiveTool("stickynote")}
         disabled={activeTool === "stickynote"}
         title="Add Stikynote (포스트잇 추가)"
       />
-
       <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
-
       <ToolButton
         icon={ImageIcon}
         onClick={() => setActiveTool("image")}
         disabled={activeTool === "image"}
         title="Image Tool"
       />
-
       <ToolButton
         icon={EraserIcon}
         onClick={() => setActiveTool("eraser")}
         disabled={activeTool === "eraser"}
         title="Eraser Tool"
       />
-
       <ToolButton
         icon={HandIcon}
         onClick={() => setActiveTool("hand")}
