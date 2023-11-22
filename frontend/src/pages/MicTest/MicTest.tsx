@@ -1,11 +1,12 @@
 import Header from "@/components/Header/Header";
-import VideoCall from "./components/VideoCall";
+import AudioRecord from "./components/AudioRecord";
 
 const MicTest = () => {
   return (
     <>
       <Header type="instructor" />
-      <VideoCall />
+      <hr />
+      <AudioRecord />
     </>
   );
 };
