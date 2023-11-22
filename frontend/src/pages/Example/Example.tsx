@@ -2,9 +2,11 @@ import { useState } from "react";
 import Header from "@/components/Header/Header";
 import Button from "@/components/Button/Button";
 import Modal from "@/components/Modal/Modal";
+import { useToast } from "@/components/Toast/useToast";
 
 const Example = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const showToast = useToast();
 
   return (
     <>
@@ -85,6 +87,8 @@ const Example = () => {
       />
 
       <hr className="mt-3" />
+
+      <button onClick={() => showToast("토스트 메시지!")}>토스트 메시지 표시</button>
     </>
   );
 };

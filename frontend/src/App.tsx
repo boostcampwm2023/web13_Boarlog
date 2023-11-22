@@ -8,9 +8,12 @@ import MicTest from "./pages/MicTest/MicTest";
 import { RecoilRoot } from "recoil";
 import Example from "./pages/Example/Example";
 
+import ToastContainer from "./components/Toast/ToastContainer";
+
 const App = () => {
   return (
     <RecoilRoot>
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
