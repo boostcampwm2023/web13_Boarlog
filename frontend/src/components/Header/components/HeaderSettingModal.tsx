@@ -43,7 +43,9 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
 
         <select className="border semibold-18 w-[100%]" onChange={(e) => setSelectedMicrophone(e.target.value)}>
           {microphoneDevices.map((device) => (
-            <option value={device.deviceId}>{device.label || `마이크 ${microphoneDevices.indexOf(device) + 1}`}</option>
+            <option key={device.deviceId} value={device.deviceId}>
+              {device.label || `마이크 ${microphoneDevices.indexOf(device) + 1}`}
+            </option>
           ))}
         </select>
 
