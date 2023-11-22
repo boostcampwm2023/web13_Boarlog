@@ -6,6 +6,7 @@ import Test from "./pages/Test/Test";
 import MicTest from "./pages/MicTest/MicTest";
 
 import { RecoilRoot } from "recoil";
+import Example from "./pages/Example/Example";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/test" element={<Test />} />
           <Route path="/mictest" element={<MicTest />} />
+          <Route path="/example" element={<Example />} />
         </Routes>
       </BrowserRouter>
     </RecoilRoot>
