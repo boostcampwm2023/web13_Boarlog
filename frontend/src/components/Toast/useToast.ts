@@ -2,11 +2,16 @@ import { useRecoilState } from "recoil";
 import { toastListState } from "./toastAtom";
 import { ToastMessage } from "./toastTypes";
 
+interface UseToastProps {
+  message: string;
+  type: "alert" | "success" | "default";
+}
+
 export const useToast = () => {
   const [toastList, setToastList] = useRecoilState(toastListState);
 
-  const showToast = (message: string) => {
-    const newToast: ToastMessage = { id: Date.now(), message };
+  const showToast = ({ message, type }: UseToastProps) => {
+    const newToast: ToastMessage = { id: Date.now(), message, type };
     setToastList([...toastList, newToast]);
 
     setTimeout(() => {
