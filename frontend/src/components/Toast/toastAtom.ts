@@ -1,4 +1,3 @@
-// toastAtom.ts 파일
 import { atom } from "recoil";
 import { ToastMessage } from "./toastTypes";
 
