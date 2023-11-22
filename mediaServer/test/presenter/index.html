@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="kr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="description" content="test WebRTC">
-    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-    <link rel="stylesheet" href="../commons/css/main.css"/>
+  <meta charset="UTF-8">
+  <meta name="description" content="test WebRTC">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../commons/css/main.css"/>
 </head>
 <body>
 <div id="container">
-    <h1>발표자</h1>
-    <video id="localVideo" playsinline autoplay muted></video>
-    <canvas></canvas>
-    <div>
-        <button id="startButton">시작</button>
-        <button id="callButton">방 생성</button>
-        <button id="hangupButton">방 나가기</button>
-    </div>
+  <h1>발표자</h1>
+  <video id="localVideo" playsinline autoplay muted></video>
+  <canvas></canvas>
+  <div>
+    <button id="startButton">시작</button>
+    <button id="callButton">방 생성</button>
+    <button id="hangupButton">방 나가기</button>
+  </div>
 </div>
 <script type="module">
   import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
@@ -29,19 +29,15 @@
 
   const canvas = document.querySelector('canvas');
   const localVideo = document.getElementById('localVideo');
-  localVideo.addEventListener('loadedmetadata', () => {});
 
-  let localStream;
+  let localStream = undefined;
   let presenterRTCPC;
+  let tmp = []
   const pc_config = {
     iceServers: [
       {
         urls: [
-        "stun:stun.l.google.com:19302",
-        "stun:stun1.l.google.com:19302",
-        "stun:stun2.l.google.com:19302",
-        "stun:stun3.l.google.com:19302",
-        "stun:stun4.l.google.com:19302"
+          "stun:stun.l.google.com:19302",
         ]
       },
     ],
@@ -53,100 +49,79 @@
       startButton.disabled = true;
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: {
-          width: 300,
-          height: 300
-        }
+        video: true
       });
       localStream = stream;
       localVideo.srcObject = stream;
       callButton.disabled = false;
-      console.log('1. 로컬 stream 요청 완료');
-      presenterRTCPC = new RTCPeerConnection(pc_config);
+      console.log('1. 로컬 stream 생성 완료');
+      presenterRTCPC = new RTCPeerConnection();
       console.log('2. 로컬 RTCPeerConnection 생성 완료');
-      createPresenterRTCPC();
-      await createPresenterOffer();
-      getServerReceiveStreamAnswer();
+      if (localStream) {
+        console.log(localStream)
+        console.log('track 추가')
+        localStream.getTracks().forEach((track) => {
+          console.log(track);
+          presenterRTCPC.addTrack(track, localStream);
+        });
+      } else {
+        console.log('no stream')
+      }
     } catch (e) {
       alert(`getUserMedia() error: ${e.name}`)
     }
   }
 
-  // TODO: 발표자 RTCPeerConnection 생성
-  function createPresenterRTCPC() {
+  start().then(setStream)
+
+  async function setStream() {
+    console.log('setstream 실행')
+    try {
+      await createPresenterOffer();
+      await setServerAnswer();
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  function getPresenterCandidate() {
     presenterRTCPC.onicecandidate = (e) => {
       if (e.candidate) {
-        console.log('3. 내 onicecandidate 서버로 전송');
+        console.log('발표자 candidate 수집')
         socket.emit('presenterCandidate', {
           candidate: e.candidate,
           presenterSocketId: socket.id
-        })
+        });
       }
     }
-    presenterRTCPC.oniceconnectionstatechange = (e) => {
-      console.log('oniceconnectionstatechange')
+  }
+
+  async function createPresenterOffer() {
+    try {
+      console.log('offer 생성')
+      console.log(presenterRTCPC)
+      const SDP = await presenterRTCPC.createOffer();
+      console.log(presenterRTCPC)
+      socket.emit('presenterOffer', {
+        socketId: socket.id,
+        SDP: SDP
+      });
+      console.log('발표자 localDescription 설정 완료');
+      presenterRTCPC.setLocalDescription(SDP);
+      getPresenterCandidate()
+    } catch (e) {
       console.log(e);
     }
-    if (localStream) {
-      console.log('4. 내 media tracks 설정 완료. localStream 출력');
-      console.log(localStream)
-      localStream.getTracks().forEach((track) => {
-        if (!localStream) {
-          return;
-        }
-        presenterRTCPC.addTrack(track, localStream);
-      });
-      console.log('내 local tracks 출력');
-      console.log(localStream.getTracks());
-    } else {
-      console.log('[ERR] local stream 없음');
-    }
   }
 
-  // TODO: 발표자 offer 생성
-  async function createPresenterOffer() {
-    if (presenterRTCPC) {
-      const sdp = await presenterRTCPC.createOffer({
-        offerToReceiveAudio: false,
-        offerToReceiveVideo: false,
-      })
-      console.log('5. 발표자 sdp 생성 완료. SDP 출력');
-      console.log(sdp);
-      await presenterRTCPC.setLocalDescription(
-        new RTCSessionDescription(sdp)
-      )
-      socket.emit('presenterOffer', {
-        sdp: sdp,
-        presenterSocketId: socket.id,
-        roomId: 1
-      })
-    }
-    socket.on(`${socket.id}-serverCandidate`, async (data) => {
-      try {
-        console.log('6. 서버로부터 candidate 받음. 서버로부터 받은 candidate 출력');
-        console.log(data.candidate);
-        await presenterRTCPC.addIceCandidate(
-          new RTCIceCandidate(data.candidate)
-        );
-        console.log('7. candidate 추가 완료');
-      } catch(e) {
-        console.log(e);
-      }
+  async function setServerAnswer() {
+    socket.on(`${socket.id}-serverAnswer`, (data) => {
+      console.log('remoteDescription 설정완료')
+      presenterRTCPC.setRemoteDescription(data.SDP)
     })
-  }
-
-  function getServerReceiveStreamAnswer() {
-    socket.on(socket.id, async (data) => {
-      try {
-        console.log('6. 서버로부터 SDP 받음. SDP 출력');
-        console.log(data.sdp);
-        await presenterRTCPC.setRemoteDescription(
-          new RTCSessionDescription(data.sdp)
-        );
-      } catch (err) {
-        console.log('[ERR] server-receive-stream-answer');
-        console.log(err);
-      }
+    socket.on(`${socket.id}-serverCandidate`, (data) => {
+      console.log('서버로부터 candidate 받음')
+      presenterRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate))
     });
   }
 
