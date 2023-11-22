@@ -7,10 +7,36 @@ const VideoCall = () => {
   const pcRef = useRef<RTCPeerConnection>();
 
   const startButtonRef = useRef<HTMLButtonElement>(null);
-  const callButtonRef = useRef<HTMLButtonElement>(null);
-  const hangupButtonRef = useRef<HTMLButtonElement>(null);
+  const stopButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {}, []);
+
+  const startLecture = () => {
+    if (startButtonRef.current) startButtonRef.current.disabled = true;
+    if (stopButtonRef.current) stopButtonRef.current.disabled = false;
+
+    start().then(setStream);
+  };
+  const stopLecture = () => {
+    if (startButtonRef.current) startButtonRef.current.disabled = false;
+    if (stopButtonRef.current) stopButtonRef.current.disabled = true;
+
+    if (socketRef.current) {
+      console.log("socket disconnect");
+      socketRef.current.disconnect();
+    }
+    if (pcRef.current) {
+      console.log("pcRef disconnect");
+      pcRef.current.close();
+    }
+    // 카메라 및 비디오 중지
+    const stream = myVideoRef.current?.srcObject as MediaStream;
+    if (stream && myVideoRef.current) {
+      const tracks = stream.getTracks();
+      tracks.forEach((track) => track.stop());
+      myVideoRef.current.srcObject = null;
+    }
+  };
 
   // TODO: 발표자 브라우저에서 미디어 track 설정 & 화면에 영상 출력
   const start = async () => {
@@ -60,8 +86,6 @@ const VideoCall = () => {
       console.log(e);
     }
   }
-
-  start().then(setStream);
 
   function getPresenterCandidate() {
     if (!pcRef.current) return;
@@ -129,14 +153,11 @@ const VideoCall = () => {
       />
 
       <div>
-        <button className="border" ref={startButtonRef}>
-          시작
+        <button className="border disabled:bg-slate-200" onClick={startLecture} ref={startButtonRef}>
+          강의 시작
         </button>
-        <button className="border" id="callButton" ref={callButtonRef}>
-          방 생성
-        </button>
-        <button className="border" id="hangupButton" ref={hangupButtonRef}>
-          방 나가기
+        <button className="border disabled:bg-slate-200" onClick={stopLecture} ref={stopButtonRef}>
+          강의 종료
         </button>
       </div>
     </div>
