@@ -1,22 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import { RTCIceCandidate, RTCPeerConnection } from 'wrtc';
 
-const pc_config = {
-  iceServers: [
-    {
-      urls: [
-        'stun:stun.l.google.com:19302',
-        'stun:stun1.l.google.com:19302',
-        'stun:stun2.l.google.com:19302',
-        'stun:stun3.l.google.com:19302',
-        'stun:stun4.l.google.com:19302'
-      ]
-    }
-  ]
-};
-
 export class RelayServer {
   private readonly io;
+  private relayServerRTCPC: RTCPeerConnection;
   private readonly socketToRoom: Map<string, string>;
   // 접속한 user의 RTCPeerConnection
   private readonly receiveStreamRTCPC: Map<string, RTCPeerConnection>;
@@ -24,6 +11,7 @@ export class RelayServer {
   private readonly mediaStreams: Map<string, Array<{ id: string; stream: MediaStream }>>;
 
   constructor(port: number) {
+    this.relayServerRTCPC = new RTCPeerConnection();
     this.socketToRoom = new Map();
     this.receiveStreamRTCPC = new Map();
     this.mediaStreams = new Map();
@@ -41,75 +29,50 @@ export class RelayServer {
   };
 
   createRoom = (socket: Socket) => {
-    socket.on('presenterOffer', async (data) => {
-      try {
-        this.socketToRoom.set(data.presenterSocketId, data.roomId);
-        const RTCPC = this.createReceiveStreamRTCPC(data.presenterSocketId, socket, data.roomId);
-        console.log('1. 발표자로 부터 SDP 받음. SDP 출력');
-        console.log(data.sdp);
-        await RTCPC.setRemoteDescription(data.sdp);
-        const sdp = await RTCPC.createAnswer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true
+    try {
+      socket.on('presenterOffer', async (data) => {
+        const RTCPC = new RTCPeerConnection();
+        this.relayServerRTCPC = RTCPC;
+        RTCPC.ontrack = (event) => {
+          RTCPC.getTransceivers().forEach((receiver) => {
+            console.log(receiver);
+          });
+          const stream = event.streams[0];
+          console.log(stream);
+        };
+
+        this.getServerCandidate(socket, data.socketId);
+
+        await RTCPC.setRemoteDescription(data.SDP).then(() => console.log('sever remote description 설정 완료'));
+        const SDP = await RTCPC.createAnswer();
+        socket.emit(`${data.socketId}-serverAnswer`, {
+          SDP: SDP
         });
-        await RTCPC.setLocalDescription(sdp);
-        socket.emit(data.presenterSocketId, {
-          sdp: sdp
-        });
-      } catch (err) {
-        console.log(err);
-      }
-    });
-    socket.on('presenterCandidate', async (data) => {
-      try {
-        const RTCPC = this.receiveStreamRTCPC.get(data.presenterSocketId) as RTCPeerConnection;
-        console.log('2. 발표자의 candidate 추가');
-        await RTCPC.addIceCandidate(new RTCIceCandidate(data.candidate));
-      } catch (e) {
-        console.log(e);
-      }
-    });
+        RTCPC.setLocalDescription(SDP);
+        console.log(RTCPC);
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
 
-  private createReceiveStreamRTCPC = (socketId: string, socket: Socket, roomId: string): RTCPeerConnection => {
-    const RTCPC = new RTCPeerConnection(pc_config);
-    this.receiveStreamRTCPC.set(socketId, RTCPC);
-    RTCPC.onicecandidate = (e) => {
-      if (e.candidate) {
-        console.log('3. candidate 생성완료. candidate 출력');
-        console.log(e.candidate);
-        socket.emit(`${socketId}-serverCandidate`, {
-          candidate: e.candidate
-        });
-      }
-    };
+  getServerCandidate = (socket: Socket, presenterSocketId: string) => {
     try {
-      RTCPC.oniceconnectionstatechange = (e) => console.log(e);
-      RTCPC.ontrack = (e) => {
-        console.log(e.streams);
-        if (this.mediaStreams.has(roomId)) {
-          if (!this.mediaStreams.get(roomId)?.some((mediaStream) => mediaStream.id === socketId)) {
-            this.mediaStreams.get(roomId)?.push({
-              id: socketId,
-              stream: e.streams[0]
-            });
-          } else {
-            return;
-          }
-        } else {
-          this.mediaStreams.set(roomId, [
-            {
-              id: socketId,
-              stream: e.streams[0]
-            }
-          ]);
+      this.relayServerRTCPC.onicecandidate = (e) => {
+        if (e.candidate) {
+          console.log('서버의 candidate 수집');
+          socket.emit(`${presenterSocketId}-serverCandidate`, {
+            candidate: e.candidate
+          });
         }
-        socket.broadcast.to(roomId).emit('userEnter', { id: socketId });
       };
-    } catch (err) {
-      console.log('[ERR] !!');
-      console.log(err);
+      socket.on('presenterCandidate', (data) => {
+        this.relayServerRTCPC
+          .addIceCandidate(new RTCIceCandidate(data.candidate))
+          .then(() => console.log('발표자로부터 candidate 받음'));
+      });
+    } catch (e) {
+      console.log(e);
     }
-    return RTCPC;
   };
 }
