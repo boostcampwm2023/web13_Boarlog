@@ -37,27 +37,27 @@ const Example = () => {
       </p>
 
       <h3 className="semibold-20 ml-3 mt-3 mb-3">type="fit"</h3>
-      <Button type="fit" className="bg-grayscale-black text-grayscale-white">
+      <Button type="fit" buttonStyle="black">
         내부 요소 기준 맞춤 버튼
       </Button>
 
       <h3 className="semibold-20 ml-3 mt-3 mb-3">type="full"</h3>
-      <Button type="full" className="bg-alert-100 text-grayscale-white">
+      <Button type="full" buttonStyle="black">
         상위 컴포넌트 요소 맞춤 버튼
       </Button>
 
       <h3 className="semibold-20 ml-3 mt-3 mb-3">type="grow, 4 colors"</h3>
       <div className="w-full flex flex-row gap-1">
-        <Button type="grow" className="bg-grayscale-black text-grayscale-white">
+        <Button type="grow" buttonStyle="black">
           박스의
         </Button>
-        <Button type="grow" className="bg-boarlog-100 text-grayscale-white">
+        <Button type="grow" buttonStyle="gray">
           크기에
         </Button>
-        <Button type="grow" className="bg-boarlog-100 text-grayscale-white">
+        <Button type="grow" buttonStyle="red">
           따라서
         </Button>
-        <Button type="grow" className="bg-boarlog-100 text-grayscale-white">
+        <Button type="grow" buttonStyle="blue">
           균등하게
         </Button>
       </div>
@@ -70,15 +70,15 @@ const Example = () => {
       </p>
 
       <h3 className="semibold-20 ml-3 mt-3 mb-3">example</h3>
-      <Button type="fit" className="bg-grayscale-black text-grayscale-white" onClick={() => setIsModalOpen(true)}>
+      <Button type="fit" buttonStyle="black" onClick={() => setIsModalOpen(true)}>
         이 버튼을 클릭하면 모달이 표시됩니다.
       </Button>
       <Modal
         modalText="모달에 표시되는 텍스트"
         cancelText="취소"
         confirmText="확인"
-        cancelButtonClass="bg-grayscale-black text-grayscale-white"
-        confirmButtonClass="bg-alert-100 text-grayscale-white"
+        cancelButtonStyle="black"
+        confirmButtonStyle="red"
         confirmClick={() => console.log("확인 버튼 클릭")}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}

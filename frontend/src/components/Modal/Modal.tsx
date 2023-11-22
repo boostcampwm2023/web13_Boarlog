@@ -4,8 +4,8 @@ interface ModalProps {
   confirmClick?: () => void;
   cancelText: string;
   confirmText: string;
-  cancelButtonClass: string;
-  confirmButtonClass: string;
+  cancelButtonStyle: "black" | "gray" | "red" | "blue";
+  confirmButtonStyle: "black" | "gray" | "red" | "blue";
   modalText: string;
   className?: string;
   isModalOpen: boolean;
@@ -16,8 +16,8 @@ const Modal = ({
   confirmClick,
   cancelText,
   confirmText,
-  cancelButtonClass,
-  confirmButtonClass,
+  cancelButtonStyle,
+  confirmButtonStyle,
   modalText,
   isModalOpen,
   setIsModalOpen
@@ -37,10 +37,10 @@ const Modal = ({
       >
         <p className="py-6 medium-18">{modalText}</p>
         <menu className="flex flex-row w-full gap-4">
-          <Button type="grow" value="cancel" onClick={() => setIsModalOpen(false)} className={cancelButtonClass}>
+          <Button type="grow" value="cancel" onClick={() => setIsModalOpen(false)} buttonStyle={cancelButtonStyle}>
             {cancelText}
           </Button>
-          <Button type="grow" value="default" onClick={confirmClick} className={confirmButtonClass}>
+          <Button type="grow" value="default" onClick={confirmClick} buttonStyle={confirmButtonStyle}>
             {confirmText}
           </Button>
         </menu>
