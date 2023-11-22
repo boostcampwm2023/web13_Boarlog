@@ -1,4 +1,4 @@
-// 디버깅을 위해서 임시로 남겨둔 프로토타입 컴포넌트입니다. 리뷰할 때 무시해주세요.
+// 비디오,오디오 전송을 테스트하기 위한 프로토타입 컴포넌트입니다.
 
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
@@ -119,7 +119,7 @@ const AudioRecord = () => {
         socketId: socketRef.current.id,
         SDP: SDP
       });
-      console.log("발표자 localDescription 설정 완료");
+      console.log("4. 발표자 localDescription 설정 완료");
       pcRef.current.setLocalDescription(SDP);
       getPresenterCandidate();
     } catch (e) {
@@ -133,7 +133,7 @@ const AudioRecord = () => {
     pcRef.current.onicecandidate = (e) => {
       if (e.candidate) {
         if (!socketRef.current) return;
-        console.log("발표자 candidate 수집");
+        console.log("5. 발표자 candidate 수집");
         socketRef.current.emit("presenterCandidate", {
           candidate: e.candidate,
           presenterSocketId: socketRef.current.id
@@ -147,12 +147,12 @@ const AudioRecord = () => {
     if (!socketRef.current) return;
     socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
       if (!pcRef.current) return;
-      console.log("remoteDescription 설정완료");
+      console.log("6. remoteDescription 설정완료");
       pcRef.current.setRemoteDescription(data.SDP);
     });
     socketRef.current.on(`${socketRef.current.id}-serverCandidate`, (data) => {
       if (!pcRef.current) return;
-      console.log("서버로부터 candidate 받음");
+      console.log("7. 서버로부터 candidate 받음");
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
     });
   }
