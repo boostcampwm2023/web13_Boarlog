@@ -67,3 +67,33 @@
 .display-center {
   @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
 }
+
+@keyframes fadeIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-20%);
+    opacity: 0;
+  }
+}
+
+.toast-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.toast-fade-out {
+  animation: fadeOut 0.5s ease-in-out;
+}

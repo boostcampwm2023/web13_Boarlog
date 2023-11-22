@@ -2,8 +2,6 @@ import { useRecoilState } from "recoil";
 import { toastListState } from "./toastAtom";
 import { ToastMessage } from "./toastTypes";
 
-const TOAST_MAX_COUNT = 3;
-
 export const useToast = () => {
   const [toastList, setToastList] = useRecoilState(toastListState);
 
