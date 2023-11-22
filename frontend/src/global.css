@@ -59,3 +59,11 @@
 .border-header {
   @apply border-b border-solid border-grayscale-lightgray;
 }
+
+.dimmer {
+  background: hsla(230, 4%, 8%, 0.8);
+}
+
+.display-center {
+  @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+}

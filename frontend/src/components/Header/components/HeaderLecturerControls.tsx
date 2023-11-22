@@ -8,12 +8,14 @@ import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
+import Modal from "@/components/Modal/Modal";
 
 import selectedMicrophoneState from "./stateMicrophone";
 
 const HeaderLecturerControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
 
@@ -92,6 +94,7 @@ const HeaderLecturerControls = () => {
       mediaRecorderRef.current.stop();
       setIsLectureStart(false);
       setRecordingTime(0);
+      setIsModalOpen(true);
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
       if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
     }
@@ -135,6 +138,16 @@ const HeaderLecturerControls = () => {
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
       </SmallButton>
+      <Modal
+        modalText="강의를 종료하시겠습니까?"
+        cancelText="취소"
+        confirmText="강의 종료하기"
+        cancelButtonStyle="black"
+        confirmButtonStyle="red"
+        confirmClick={() => console.log("확인 버튼 클릭")}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+      />
     </>
   );
 };
