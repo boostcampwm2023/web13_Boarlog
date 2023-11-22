@@ -5,6 +5,7 @@ interface ButtonProps {
   className?: string;
   value?: string;
   buttonStyle: "black" | "gray" | "red" | "blue";
+  ariaLabel?: string;
 }
 
 const BUTTON_STYLES = {
@@ -14,7 +15,9 @@ const BUTTON_STYLES = {
   blue: "bg-boarlog-100 text-grayscale-white"
 };
 
-const Button = ({ type, onClick, className, children, value, buttonStyle }: ButtonProps) => {
+Object.freeze(BUTTON_STYLES);
+
+const Button = ({ type, onClick, className, children, value, buttonStyle, ariaLabel }: ButtonProps) => {
   return (
     <button
       type="button"
@@ -25,6 +28,7 @@ const Button = ({ type, onClick, className, children, value, buttonStyle }: Butt
       } ${className}`}
       onClick={onClick}
       value={value}
+      aria-label={ariaLabel}
     >
       {children}
     </button>

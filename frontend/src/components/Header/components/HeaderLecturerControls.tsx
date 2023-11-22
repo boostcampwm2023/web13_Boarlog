@@ -142,8 +142,8 @@ const HeaderLecturerControls = () => {
         modalText="강의를 종료하시겠습니까?"
         cancelText="취소"
         confirmText="강의 종료하기"
-        cancelButtonClass="bg-grayscale-black text-grayscale-white"
-        confirmButtonClass="bg-alert-100 text-grayscale-white"
+        cancelButtonStyle="black"
+        confirmButtonStyle="red"
         confirmClick={() => console.log("확인 버튼 클릭")}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
