@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 const VideoCall = () => {
@@ -9,26 +9,22 @@ const VideoCall = () => {
   const startButtonRef = useRef<HTMLButtonElement>(null);
   const stopButtonRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {}, []);
-
-  const startLecture = () => {
+  const startLecture = async () => {
     if (startButtonRef.current) startButtonRef.current.disabled = true;
     if (stopButtonRef.current) stopButtonRef.current.disabled = false;
 
-    start().then(setStream);
+    await initConnection();
+    await createPresenterOffer();
+    listenForServerAnswer();
   };
+
   const stopLecture = () => {
     if (startButtonRef.current) startButtonRef.current.disabled = false;
     if (stopButtonRef.current) stopButtonRef.current.disabled = true;
 
-    if (socketRef.current) {
-      console.log("socket disconnect");
-      socketRef.current.disconnect();
-    }
-    if (pcRef.current) {
-      console.log("pcRef disconnect");
-      pcRef.current.close();
-    }
+    if (socketRef.current) socketRef.current.disconnect();
+    if (pcRef.current) pcRef.current.close();
+
     // 카메라 및 비디오 중지
     const stream = myVideoRef.current?.srcObject as MediaStream;
     if (stream && myVideoRef.current) {
@@ -38,29 +34,27 @@ const VideoCall = () => {
     }
   };
 
-  // TODO: 발표자 브라우저에서 미디어 track 설정 & 화면에 영상 출력
-  const start = async () => {
+  const initConnection = async () => {
     try {
+      // 0. 소켓 연결
       socketRef.current = io("http://localhost:3000/create-room");
 
-      //startButton.disabled = true;
+      // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정) + 화면에 영상 출력
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: true
       });
 
-      //localVideo.srcObject = stream;
       if (myVideoRef.current) {
         myVideoRef.current.srcObject = stream;
       }
-
-      //callButton.disabled = false;
       console.log("1. 로컬 stream 생성 완료");
 
-      //presenterRTCPC = new RTCPeerConnection();
+      // 2. 로컬 RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection();
-
       console.log("2. 로컬 RTCPeerConnection 생성 완료");
+
+      // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
       if (stream) {
         console.log(stream);
         console.log("3.track 추가");
@@ -70,24 +64,32 @@ const VideoCall = () => {
           pcRef.current.addTrack(track, stream);
         });
       } else {
-        console.log("no stream");
+        console.error("no stream");
       }
     } catch (e) {
-      alert(`getUserMedia() error: ${e.name}`);
+      console.error(e);
     }
   };
 
-  async function setStream() {
-    console.log("4.setstream 실행");
+  async function createPresenterOffer() {
+    // 4. 발표자의 offer 생성
     try {
-      await createPresenterOffer();
-      await setServerAnswer();
+      if (!pcRef.current || !socketRef.current) return;
+      const SDP = await pcRef.current.createOffer();
+      socketRef.current.emit("presenterOffer", {
+        socketId: socketRef.current.id,
+        SDP: SDP
+      });
+      console.log("발표자 localDescription 설정 완료");
+      pcRef.current.setLocalDescription(SDP);
+      getPresenterCandidate();
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 
   function getPresenterCandidate() {
+    // 5. 발표자의 candidate 수집
     if (!pcRef.current) return;
     pcRef.current.onicecandidate = (e) => {
       if (e.candidate) {
@@ -101,30 +103,8 @@ const VideoCall = () => {
     };
   }
 
-  async function createPresenterOffer() {
-    try {
-      if (!pcRef.current || !socketRef.current) return;
-      console.log("offer 생성");
-      //console.log(pcRef.current);
-      const SDP = await pcRef.current.createOffer();
-      //console.log(pcRef.current);
-      // presenterRTCPC.ontrack((e) => {
-      //   console.log(e.streams)
-      // })
-      socketRef.current.emit("presenterOffer", {
-        socketId: socketRef.current.id,
-        SDP: SDP
-      });
-      console.log("발표자 localDescription 설정 완료");
-      pcRef.current.setLocalDescription(SDP);
-      // presenterRTCPC.setLocalDescription(new RTCSessionDescription(SDP))
-      getPresenterCandidate();
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function setServerAnswer() {
+  async function listenForServerAnswer() {
+    // 6. 서버로부터 answer 받음
     if (!socketRef.current) return;
     socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
       if (!pcRef.current) return;
