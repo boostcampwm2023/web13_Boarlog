@@ -1,14 +1,17 @@
 import { fabric } from "fabric";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
+import StickyNoteEditPanel from "./StickyNoteEditPanel";
 import cavasInstanceState from "./stateCanvasInstance";
+import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const setCanvas = useSetRecoilState(cavasInstanceState);
+  const isEditPanelVisible = useRecoilValue(stickyNoteEditPanelVisibilityState);
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -73,8 +76,9 @@ const CanvasSection = () => {
 
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
-      <canvas className="" ref={canvasRef} />
+      <canvas ref={canvasRef} />
       <Toolbar />
+      {isEditPanelVisible && <StickyNoteEditPanel />}
     </div>
   );
 };
