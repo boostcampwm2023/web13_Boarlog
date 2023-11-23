@@ -1,6 +1,7 @@
 import { useRecoilState } from "recoil";
 import { toastListState } from "./toastAtom";
-import { ToastMessage } from "./toastTypes";
+import { ToastMessage } from "./toastType";
+import { TOAST_AVAILABLE_TIME } from "./constants";
 
 interface UseToastProps {
   message: string;
@@ -16,7 +17,7 @@ export const useToast = () => {
 
     setTimeout(() => {
       setToastList((currentList) => currentList.filter((toast) => toast.id !== newToast.id));
-    }, 3000);
+    }, TOAST_AVAILABLE_TIME);
   };
 
   return showToast;

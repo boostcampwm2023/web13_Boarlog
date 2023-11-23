@@ -6,6 +6,7 @@ import ReactDOM from "react-dom";
 import SuccessIcon from "@/assets/svgs/toast/success.svg?react";
 import AlertIcon from "@/assets/svgs/toast/alert.svg?react";
 import DefaultIcon from "@/assets/svgs/toast/default.svg?react";
+import { TOAST_AVAILABLE_TIME, TOAST_ANIMATION_TIME } from "./constants";
 
 interface ToastProps {
   toastKey: number;
@@ -19,7 +20,7 @@ const Toast = ({ toastKey, message, type }: ToastProps) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimation(false);
-    }, 2500);
+    }, TOAST_AVAILABLE_TIME - TOAST_ANIMATION_TIME);
 
     return () => clearTimeout(timer);
   }, []);
@@ -27,7 +28,7 @@ const Toast = ({ toastKey, message, type }: ToastProps) => {
   return (
     <div
       key={toastKey}
-      className={`rounded-xl medium-16 w-full text-grayscale-black px-4 py-4 flex flex-row items-center justify-start gap-3 shadow-ml ${
+      className={`rounded-xl medium-16 w-full text-grayscale-black px-4 py-4 flex flex-row items-center justify-start gap-3 cursor-pointer shadow-ml ${
         animation ? "toast-fade-in" : "toast-fade-out"
       } ${type === "alert" && "bg-alert-10"} ${type === "success" && "bg-boarlog-10"} ${
         type === "default" && "bg-grayscale-lightgray"

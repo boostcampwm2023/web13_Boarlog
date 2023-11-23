@@ -1,5 +1,5 @@
 import { atom } from "recoil";
-import { ToastMessage } from "./toastTypes";
+import { ToastMessage } from "./toastType";
 
 export const toastListState = atom<ToastMessage[]>({
   key: "toastListState",
