@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useRecoilValue } from "recoil";
+import { io, Socket } from "socket.io-client";
 
 import VolumeMeter from "./VolumeMeter";
 
@@ -12,92 +13,161 @@ import Modal from "@/components/Modal/Modal";
 
 import selectedMicrophoneState from "./stateMicrophone";
 
-const HeaderLecturerControls = () => {
+const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [audioURL, setAudioURL] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
 
   const [micVolume, setMicVolume] = useState<number>(0);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordingTimerRef = useRef<number | null>(null);
-  const onFrameIdRef = useRef<number | null>(null);
+  const recordingTimerRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
+  const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+  const socketRef = useRef<Socket>();
+  const pcRef = useRef<RTCPeerConnection>();
+  const mediaStreamRef = useRef<MediaStream>();
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
 
-  const startRecording = () => {
-    if (!selectedMicrophone) return;
+  const startLecture = async () => {
+    if (!selectedMicrophone) return alert("음성 입력장치(마이크)를 먼저 선택해주세요");
 
-    navigator.mediaDevices
-      .getUserMedia({ audio: { deviceId: selectedMicrophone } }) // 오디오 엑세스 요청
-      .then((stream) => {
-        // 요청이 승인되면 실행
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder; // mediaRecorder 상태 업데이트
-
-        mediaRecorder.start();
-        setIsLectureStart(true);
-
-        // 향후 녹음된 오디오 데이터 전송을 위한 부분입니다-----------
-        const chunks: BlobPart[] = [];
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            chunks.push(event.data);
-          }
-        };
-        mediaRecorder.onstop = () => {
-          if (audioURL) {
-            URL.revokeObjectURL(audioURL);
-          }
-          const blob = new Blob(chunks, { type: "audio/wav" });
-          setAudioURL(URL.createObjectURL(blob));
-        };
-        //-------------------------------------------------------------
-
-        // 마이크 볼륨 측정을 위한 부분입니다
-        const context = new AudioContext();
-        const analyser = context.createAnalyser();
-        const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
-        mediaStreamAudioSourceNode.connect(analyser, 0);
-        const pcmData = new Float32Array(analyser.fftSize);
-        const onFrame = () => {
-          analyser.getFloatTimeDomainData(pcmData);
-          let sum = 0.0;
-          for (const amplitude of pcmData) {
-            sum += amplitude * amplitude;
-          }
-          const rms = Math.sqrt(sum / pcmData.length);
-          const normalizedVolume = Math.min(1, rms / 0.5); // 볼륨 값 정규화 (0~1)
-          setMicVolume(normalizedVolume);
-          onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-        };
-        onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-
-        // 경과 시간을 표시하기 위한 부분입니다
-        let startTime: number = Date.now();
-        const updateRecordingTime = () => {
-          const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-          setRecordingTime(elapsedTime);
-        };
-        const recordingTimer = setInterval(updateRecordingTime, 1000);
-        recordingTimerRef.current = recordingTimer;
-      })
-      .catch((error) => {
-        console.error("마이크 권한 획득 실패", error);
-      });
+    await initConnection();
+    await createPresenterOffer();
+    listenForServerAnswer();
   };
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isLectureStart) {
-      mediaRecorderRef.current.stop();
-      setIsLectureStart(false);
-      setRecordingTime(0);
-      setIsModalOpen(true);
-      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-      if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
+  const stopLecture = () => {
+    if (!isLectureStart) return alert("강의가 시작되지 않았습니다.");
+
+    setIsLectureStart(false);
+    setRecordingTime(0);
+
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current); // 경과 시간 표시 타이머 중지
+    if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
+    if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
+    if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
+    if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
+
+    setIsModalOpen(false); // 일단은 모달만 닫습니다.
+  };
+
+  const initConnection = async () => {
+    try {
+      // 0. 소켓 연결
+      socketRef.current = io("http://localhost:3000/create-room");
+
+      // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: selectedMicrophone }
+      });
+      mediaStreamRef.current = stream;
+      console.log("1. 로컬 stream 생성 완료");
+
+      setIsLectureStart(true);
+      setupAudioAnalysis(stream);
+      startRecordingTimer();
+
+      // 2. 로컬 RTCPeerConnection 생성
+      pcRef.current = new RTCPeerConnection();
+      console.log("2. 로컬 RTCPeerConnection 생성 완료");
+
+      // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
+      if (stream) {
+        console.log(stream);
+        console.log("3.track 추가");
+        stream.getTracks().forEach((track) => {
+          console.log("track:", track);
+          if (!pcRef.current) return;
+          pcRef.current.addTrack(track, stream);
+        });
+      } else {
+        console.error("no stream");
+      }
+    } catch (e) {
+      console.error(e);
     }
+  };
+
+  async function createPresenterOffer() {
+    // 4. 발표자의 offer 생성
+    try {
+      if (!pcRef.current || !socketRef.current) return;
+      const SDP = await pcRef.current.createOffer();
+      socketRef.current.emit("presenterOffer", {
+        socketId: socketRef.current.id,
+        SDP: SDP
+      });
+      console.log("4. 발표자 localDescription 설정 완료");
+      pcRef.current.setLocalDescription(SDP);
+      getPresenterCandidate();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function getPresenterCandidate() {
+    // 5. 발표자의 candidate 수집
+    if (!pcRef.current) return;
+    pcRef.current.onicecandidate = (e) => {
+      if (e.candidate) {
+        if (!socketRef.current) return;
+        console.log("5. 발표자 candidate 수집");
+        socketRef.current.emit("presenterCandidate", {
+          candidate: e.candidate,
+          presenterSocketId: socketRef.current.id
+        });
+      }
+    };
+  }
+
+  async function listenForServerAnswer() {
+    // 6. 서버로부터 answer 받음
+    if (!socketRef.current) return;
+    socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
+      if (!pcRef.current) return;
+      console.log("6. remoteDescription 설정완료");
+      pcRef.current.setRemoteDescription(data.SDP);
+    });
+    socketRef.current.on(`${socketRef.current.id}-serverCandidate`, (data) => {
+      if (!pcRef.current) return;
+      console.log("7. 서버로부터 candidate 받음");
+      pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+    });
+  }
+
+  // 마이크 볼륨 측정을 위한 부분입니다
+  const setupAudioAnalysis = (stream: MediaStream) => {
+    const context = new AudioContext();
+    const analyser = context.createAnalyser();
+    const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
+    mediaStreamAudioSourceNode.connect(analyser, 0);
+    const pcmData = new Float32Array(analyser.fftSize);
+
+    const onFrame = () => {
+      analyser.getFloatTimeDomainData(pcmData);
+      let sum = 0.0;
+      for (const amplitude of pcmData) {
+        sum += amplitude * amplitude;
+      }
+      const rms = Math.sqrt(sum / pcmData.length);
+      const normalizedVolume = Math.min(1, rms / 0.5);
+      setMicVolume(normalizedVolume);
+      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    };
+    onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+  };
+
+  // 경과 시간을 표시하기 위한 부분입니다
+  const startRecordingTimer = () => {
+    let startTime = Date.now();
+    const updateRecordingTime = () => {
+      const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      setRecordingTime(elapsedTime);
+    };
+    const recordingTimer = setInterval(updateRecordingTime, 1000);
+    recordingTimerRef.current = recordingTimer;
   };
 
   return (
@@ -114,7 +184,7 @@ const HeaderLecturerControls = () => {
 
       <SmallButton
         className={`text-grayscale-white ${isLectureStart ? "bg-alert-100" : "bg-boarlog-100"}`}
-        onClick={!isLectureStart ? startRecording : stopRecording}
+        onClick={!isLectureStart ? startLecture : () => setIsModalOpen(true)}
       >
         {isLectureStart ? (
           <>
@@ -144,7 +214,7 @@ const HeaderLecturerControls = () => {
         confirmText="강의 종료하기"
         cancelButtonStyle="black"
         confirmButtonStyle="red"
-        confirmClick={() => console.log("확인 버튼 클릭")}
+        confirmClick={stopLecture}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       />
@@ -152,4 +222,4 @@ const HeaderLecturerControls = () => {
   );
 };
 
-export default HeaderLecturerControls;
+export default HeaderInstructorControls;

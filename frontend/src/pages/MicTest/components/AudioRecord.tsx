@@ -83,6 +83,8 @@ const AudioRecord = () => {
       });
 
       handleRecordingStart(stream);
+      setupAudioAnalysis(stream);
+      startRecordingTimer();
 
       if (myVideoRef.current) {
         myVideoRef.current.srcObject = stream;
@@ -159,6 +161,7 @@ const AudioRecord = () => {
 
   //----------------------------------------------------------------------------------
 
+  // 디버깅을 위한 녹음을 시작하는 부분입니다.
   const handleRecordingStart = (stream: MediaStream) => {
     const mediaRecorder = new MediaRecorder(stream);
     mediaRecorderRef.current = mediaRecorder;
@@ -180,11 +183,9 @@ const AudioRecord = () => {
 
     mediaRecorder.start();
     setIsRecording(true);
-
-    setupAudioAnalysis(stream);
-    startRecordingTimer();
   };
 
+  // 마이크 볼륨 측정을 위한 부분입니다
   const setupAudioAnalysis = (stream: MediaStream) => {
     const context = new AudioContext();
     const analyser = context.createAnalyser();
@@ -207,6 +208,7 @@ const AudioRecord = () => {
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
   };
 
+  // 경과 시간을 표시하기 위한 부분입니다
   const startRecordingTimer = () => {
     let startTime = Date.now();
     const updateRecordingTime = () => {
