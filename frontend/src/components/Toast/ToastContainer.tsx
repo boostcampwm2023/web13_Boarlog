@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { toastListState } from "./toastAtom";
+import { useRecoilValue } from "recoil";
 import usePortal from "./usePortal";
 import ReactDOM from "react-dom";
 import SuccessIcon from "@/assets/svgs/toast/success.svg?react";
@@ -16,6 +17,11 @@ interface ToastProps {
 
 const Toast = ({ toastKey, message, type }: ToastProps) => {
   const [animation, setAnimation] = useState(true);
+  const [toastList, setToastList] = useRecoilState(toastListState);
+
+  const handleClickToast = (id: number) => {
+    setToastList(() => toastList.filter((toast) => toast.id !== id));
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -34,6 +40,7 @@ const Toast = ({ toastKey, message, type }: ToastProps) => {
         type === "default" && "bg-grayscale-lightgray"
       }`}
       style={{ transform: `translateY(-${top}px)`, transition: "transform 0.5s ease" }}
+      onClick={() => handleClickToast(toastKey)}
     >
       {type === "alert" && <AlertIcon className="fill-alert-100 w-5 h-5" />}
       {type === "success" && <SuccessIcon className="fill-boarlog-100 w-5 h-5" />}
