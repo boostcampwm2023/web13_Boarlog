@@ -38,12 +38,20 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         }`}
       >
         <div className="flex flex-row gap-3 w-full h-14 justify-start">
-          <p className="semibold-18">입력 장치 설정</p>
+          <p className="semibold-18" id="input-device-label">
+            입력 장치 설정
+          </p>
         </div>
 
-        <select className="border semibold-18 w-[100%]" onChange={(e) => setSelectedMicrophone(e.target.value)}>
+        <select
+          aria-labelledby="input-device-label"
+          className="border semibold-18 w-[100%]"
+          onChange={(e) => setSelectedMicrophone(e.target.value)}
+        >
           {microphoneDevices.map((device) => (
-            <option value={device.deviceId}>{device.label || `마이크 ${microphoneDevices.indexOf(device) + 1}`}</option>
+            <option key={device.deviceId} value={device.deviceId}>
+              {device.label || `마이크 ${microphoneDevices.indexOf(device) + 1}`}
+            </option>
           ))}
         </select>
 

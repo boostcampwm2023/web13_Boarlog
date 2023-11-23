@@ -1,6 +1,7 @@
-// 디버깅을 위해서 임시로 남겨둔 프로토타입 컴포넌트입니다. 리뷰할 때 무시해주세요.
+// 비디오,오디오 전송을 테스트하기 위한 프로토타입 컴포넌트입니다.
 
 import { useState, useEffect, useRef } from "react";
+import { io, Socket } from "socket.io-client";
 
 const AudioRecord = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -16,6 +17,13 @@ const AudioRecord = () => {
   const volumeMeterRef = useRef<HTMLDivElement>(null);
   const volumeMeterRef2 = useRef<HTMLDivElement>(null);
 
+  const socketRef = useRef<Socket>();
+  const myVideoRef = useRef<HTMLVideoElement>(null);
+  const pcRef = useRef<RTCPeerConnection>();
+
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+  const stopButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     // 마이크 장치 목록 가져오기
     navigator.mediaDevices
@@ -29,75 +37,186 @@ const AudioRecord = () => {
       });
   }, []);
 
-  const startRecording = () => {
-    if (!selectedMicrophone) return;
-    navigator.mediaDevices
-      .getUserMedia({ audio: { deviceId: selectedMicrophone } }) // 오디오 엑세스 요청
-      .then((stream) => {
-        // 요청이 승인되면 실행
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder; // mediaRecorder 상태 업데이트
-        const chunks: BlobPart[] = [];
+  const startLecture = async () => {
+    if (startButtonRef.current) startButtonRef.current.disabled = true;
+    if (stopButtonRef.current) stopButtonRef.current.disabled = false;
 
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            chunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          if (audioURL) {
-            URL.revokeObjectURL(audioURL);
-          }
-          const blob = new Blob(chunks, { type: "audio/wav" });
-          setAudioURL(URL.createObjectURL(blob));
-        };
-
-        mediaRecorder.start();
-        setIsRecording(true);
-
-        const context = new AudioContext();
-        const analyser = context.createAnalyser();
-        const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
-        mediaStreamAudioSourceNode.connect(analyser, 0);
-        const pcmData = new Float32Array(analyser.fftSize);
-        const onFrame = () => {
-          analyser.getFloatTimeDomainData(pcmData);
-          let sum = 0.0;
-          for (const amplitude of pcmData) {
-            sum += amplitude * amplitude;
-          }
-          const rms = Math.sqrt(sum / pcmData.length);
-          const normalizedVolume = Math.min(1, rms / 0.5); // 볼륨 값 정규화 (0~1)
-          colorVolumeMeter(normalizedVolume);
-          colorVolumeMeter2(normalizedVolume);
-          onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-        };
-        onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-
-        let startTime: number = Date.now();
-        const updateRecordingTime = () => {
-          const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-          setRecordingTime(elapsedTime);
-        };
-        const recordingTimer = setInterval(updateRecordingTime, 1000);
-        recordingTimerRef.current = recordingTimer;
-      })
-      .catch((error) => {
-        console.error("마이크 권한 획득 실패", error);
-      });
+    await initConnection();
+    await createPresenterOffer();
+    listenForServerAnswer();
   };
 
-  const stopRecording = () => {
-    console.log(mediaRecorderRef.current, isRecording);
+  const stopLecture = () => {
+    if (startButtonRef.current) startButtonRef.current.disabled = false;
+    if (stopButtonRef.current) stopButtonRef.current.disabled = true;
+
+    if (socketRef.current) socketRef.current.disconnect();
+    if (pcRef.current) pcRef.current.close();
+
+    // 카메라 및 비디오 중지
+    const stream = myVideoRef.current?.srcObject as MediaStream;
+    if (stream && myVideoRef.current) {
+      const tracks = stream.getTracks();
+      tracks.forEach((track) => track.stop());
+      myVideoRef.current.srcObject = null;
+    }
+
     if (mediaRecorderRef.current && isRecording) {
-      console.log(`녹음 중지`);
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       setRecordingTime(0);
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
       if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
     }
+  };
+
+  const initConnection = async () => {
+    try {
+      // 0. 소켓 연결
+      socketRef.current = io("http://localhost:3000/create-room");
+
+      // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정) + 화면에 영상 출력
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: selectedMicrophone },
+        video: true
+      });
+
+      handleRecordingStart(stream);
+      setupAudioAnalysis(stream);
+      startRecordingTimer();
+
+      if (myVideoRef.current) {
+        myVideoRef.current.srcObject = stream;
+      }
+      console.log("1. 로컬 stream 생성 완료");
+
+      // 2. 로컬 RTCPeerConnection 생성
+      pcRef.current = new RTCPeerConnection();
+      console.log("2. 로컬 RTCPeerConnection 생성 완료");
+
+      // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
+      if (stream) {
+        console.log(stream);
+        console.log("3.track 추가");
+        stream.getTracks().forEach((track) => {
+          console.log("track:", track);
+          if (!pcRef.current) return;
+          pcRef.current.addTrack(track, stream);
+        });
+      } else {
+        console.error("no stream");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  async function createPresenterOffer() {
+    // 4. 발표자의 offer 생성
+    try {
+      if (!pcRef.current || !socketRef.current) return;
+      const SDP = await pcRef.current.createOffer();
+      socketRef.current.emit("presenterOffer", {
+        socketId: socketRef.current.id,
+        SDP: SDP
+      });
+      console.log("4. 발표자 localDescription 설정 완료");
+      pcRef.current.setLocalDescription(SDP);
+      getPresenterCandidate();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function getPresenterCandidate() {
+    // 5. 발표자의 candidate 수집
+    if (!pcRef.current) return;
+    pcRef.current.onicecandidate = (e) => {
+      if (e.candidate) {
+        if (!socketRef.current) return;
+        console.log("5. 발표자 candidate 수집");
+        socketRef.current.emit("presenterCandidate", {
+          candidate: e.candidate,
+          presenterSocketId: socketRef.current.id
+        });
+      }
+    };
+  }
+
+  async function listenForServerAnswer() {
+    // 6. 서버로부터 answer 받음
+    if (!socketRef.current) return;
+    socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
+      if (!pcRef.current) return;
+      console.log("6. remoteDescription 설정완료");
+      pcRef.current.setRemoteDescription(data.SDP);
+    });
+    socketRef.current.on(`${socketRef.current.id}-serverCandidate`, (data) => {
+      if (!pcRef.current) return;
+      console.log("7. 서버로부터 candidate 받음");
+      pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+    });
+  }
+
+  //----------------------------------------------------------------------------------
+
+  // 디버깅을 위한 녹음을 시작하는 부분입니다.
+  const handleRecordingStart = (stream: MediaStream) => {
+    const mediaRecorder = new MediaRecorder(stream);
+    mediaRecorderRef.current = mediaRecorder;
+    const chunks: BlobPart[] = [];
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.onstop = () => {
+      if (audioURL) {
+        URL.revokeObjectURL(audioURL);
+      }
+      const blob = new Blob(chunks, { type: "audio/wav" });
+      setAudioURL(URL.createObjectURL(blob));
+    };
+
+    mediaRecorder.start();
+    setIsRecording(true);
+  };
+
+  // 마이크 볼륨 측정을 위한 부분입니다
+  const setupAudioAnalysis = (stream: MediaStream) => {
+    const context = new AudioContext();
+    const analyser = context.createAnalyser();
+    const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
+    mediaStreamAudioSourceNode.connect(analyser, 0);
+    const pcmData = new Float32Array(analyser.fftSize);
+
+    const onFrame = () => {
+      analyser.getFloatTimeDomainData(pcmData);
+      let sum = 0.0;
+      for (const amplitude of pcmData) {
+        sum += amplitude * amplitude;
+      }
+      const rms = Math.sqrt(sum / pcmData.length);
+      const normalizedVolume = Math.min(1, rms / 0.5);
+      colorVolumeMeter(normalizedVolume * 2);
+      colorVolumeMeter2(normalizedVolume * 2);
+      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    };
+    onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+  };
+
+  // 경과 시간을 표시하기 위한 부분입니다
+  const startRecordingTimer = () => {
+    let startTime = Date.now();
+    const updateRecordingTime = () => {
+      const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      setRecordingTime(elapsedTime);
+    };
+    const recordingTimer = setInterval(updateRecordingTime, 1000);
+    recordingTimerRef.current = recordingTimer;
   };
 
   const normalizeToInteger = (volume: number, min: number, max: number) => {
@@ -133,7 +252,7 @@ const AudioRecord = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col justify-center items-center m-4 gap-2">
       <select className="border" onChange={(e) => setSelectedMicrophone(e.target.value)}>
         <option value="">입력 장치(마이크)를 선택하세요</option>
         {microphoneDevices.map((device) => (
@@ -144,21 +263,26 @@ const AudioRecord = () => {
       </select>
       <br></br>
 
-      <button className="border" onClick={startRecording} disabled={!selectedMicrophone || isRecording}>
-        녹음 시작
-      </button>
-      <button className="border" onClick={stopRecording} disabled={!isRecording}>
-        녹음 중지
-      </button>
+      <video
+        id="remotevideo"
+        style={{
+          width: 240,
+          height: 240,
+          backgroundColor: "black"
+        }}
+        ref={myVideoRef}
+        autoPlay
+        muted
+      />
 
-      {audioURL && (
-        <div>
-          <p>녹음된 음성:</p>
-          <audio controls>
-            <source src={audioURL} type="audio/wav" />
-          </audio>
-        </div>
-      )}
+      <div>
+        <button className="border disabled:bg-slate-200" onClick={startLecture} ref={startButtonRef}>
+          강의 시작
+        </button>
+        <button className="border disabled:bg-slate-200" onClick={stopLecture} ref={stopButtonRef}>
+          강의 종료
+        </button>
+      </div>
 
       <div className="volume-meter2 w-[150px] h-[20px] flex gap-1" ref={volumeMeterRef2}>
         {Array.from({ length: 10 }, (_, index) => (
@@ -184,6 +308,15 @@ const AudioRecord = () => {
           :{(recordingTime % 60).toString().padStart(2, "0")}
         </p>
       </div>
+
+      {audioURL && (
+        <div>
+          <p>녹음된 음성:</p>
+          <audio controls>
+            <source src={audioURL} type="audio/wav" />
+          </audio>
+        </div>
+      )}
     </div>
   );
 };
