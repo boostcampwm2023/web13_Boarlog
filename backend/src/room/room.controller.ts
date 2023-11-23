@@ -8,8 +8,8 @@ export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
   @Post()
-  createRoom(@Body() createRoomDto: CreateRoomDto, @Res() res: Response) {
-    this.roomService.create(createRoomDto);
+  create(@Body() createRoomDto: CreateRoomDto, @Res() res: Response) {
+    this.roomService.createRoom(createRoomDto);
     res.status(HttpStatus.CREATED).send({ code: this.roomService.generateRoomCode() });
   }
 }

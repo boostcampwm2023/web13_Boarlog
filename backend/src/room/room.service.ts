@@ -14,7 +14,7 @@ export class RoomService {
     this.currentRoomCode = new Set();
   }
 
-  async create(createRoomDto: CreateRoomDto): Promise<void> {
+  async createRoom(createRoomDto: CreateRoomDto): Promise<void> {
     const createdRoom = new this.roomModel(createRoomDto);
     await createdRoom.save();
   }
