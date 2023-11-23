@@ -15,7 +15,7 @@ const HeaderLogo = ({ type }: LogoButtonProps) => {
   return (
     <>
       <button type="button" className="flex flex-row items-center gap-4" onClick={moveToMainPage}>
-        <img src={logoSmall} />
+        <img src={logoSmall} alt="로고" />
         {type === "normal" && <h1>Boarlog</h1>}
       </button>
       {type === "lecture" && <h1>lecture name</h1>}

@@ -2,9 +2,11 @@ import { useState } from "react";
 import Header from "@/components/Header/Header";
 import Button from "@/components/Button/Button";
 import Modal from "@/components/Modal/Modal";
+import { useToast } from "@/components/Toast/useToast";
 
 const Example = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const showToast = useToast();
 
   return (
     <>
@@ -85,6 +87,26 @@ const Example = () => {
       />
 
       <hr className="mt-3" />
+
+      <h2 className="semibold-32 ml-3 mt-3">Toast Component</h2>
+      <p className="semibold-16 ml-3 mt-2 mb-3 text-grayscale-darkgray">
+        Toast 컴포넌트입니다. 경우에 따라 Alert, Success, Default로 나누어 사용할 수 있습니다.
+      </p>
+
+      <h3 className="semibold-20 ml-3 mt-3 mb-3">Alert Toast</h3>
+      <Button type="fit" buttonStyle="red" onClick={() => showToast({ message: "경고 메세지", type: "alert" })}>
+        Alert Toast
+      </Button>
+
+      <h3 className="semibold-20 ml-3 mt-3 mb-3">Success Toast</h3>
+      <Button type="fit" buttonStyle="blue" onClick={() => showToast({ message: "성공 메세지", type: "success" })}>
+        Success Toast
+      </Button>
+
+      <h3 className="semibold-20 ml-3 mt-3 mb-3">Black Toast</h3>
+      <Button type="fit" buttonStyle="black" onClick={() => showToast({ message: "안내 메세지", type: "default" })}>
+        Black Toast
+      </Button>
     </>
   );
 };
