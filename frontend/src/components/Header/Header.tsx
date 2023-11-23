@@ -2,7 +2,7 @@ import { useState } from "react";
 import HeaderLogo from "./components/HeaderLogo";
 import HeaderLoginButton from "./components/HeaderLoginButton";
 import HeaderMainButtons from "./components/HeaderMainButtons";
-import HeaderLecturerControls from "./components/HeaderLecturerControls";
+import HeaderInstructorControls from "./components/HeaderInstructorControls";
 import HeaderProfileButton from "./components/HeaderProfileButton";
 import HeaderSettingButton from "./components/HeaderSettingButton";
 
@@ -31,7 +31,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "instructor" && (
           <>
-            <HeaderLecturerControls />
+            <HeaderInstructorControls />
             <HeaderSettingButton isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>
