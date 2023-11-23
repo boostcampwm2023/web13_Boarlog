@@ -18,7 +18,6 @@ const HeaderInstructorControls = () => {
   const [isMicOn, setIsMicOn] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [recordingTime, setRecordingTime] = useState<number>(0);
-
   const [micVolume, setMicVolume] = useState<number>(0);
 
   const recordingTimerRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
@@ -28,6 +27,7 @@ const HeaderInstructorControls = () => {
   const mediaStreamRef = useRef<MediaStream>();
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
+  const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
 
   const startLecture = async () => {
     if (!selectedMicrophone) return alert("음성 입력장치(마이크)를 먼저 선택해주세요");
@@ -55,7 +55,7 @@ const HeaderInstructorControls = () => {
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
-      socketRef.current = io("http://localhost:3000/create-room");
+      socketRef.current = io(MEDIA_SERVER_URL);
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
