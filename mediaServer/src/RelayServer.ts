@@ -4,17 +4,12 @@ import { RTCIceCandidate, RTCPeerConnection } from 'wrtc';
 export class RelayServer {
   private readonly io;
   private relayServerRTCPC: RTCPeerConnection;
-  private readonly socketToRoom: Map<string, string>;
-  // 접속한 user의 RTCPeerConnection
-  private readonly receiveStreamRTCPC: Map<string, RTCPeerConnection>;
-  // receiveStreamRTCPC에서 받은 MediaStream 저장
-  private readonly mediaStreams: Map<string, Array<{ id: string; stream: MediaStream }>>;
+  private readonly studentRTCPCs: Map<string, RTCPeerConnection>;
+  private presenterStream: any;
 
   constructor(port: number) {
     this.relayServerRTCPC = new RTCPeerConnection();
-    this.socketToRoom = new Map();
-    this.receiveStreamRTCPC = new Map();
-    this.mediaStreams = new Map();
+    this.studentRTCPCs = new Map();
     this.io = new Server(port, {
       cors: {
         origin: '*',
@@ -24,7 +19,6 @@ export class RelayServer {
   }
 
   listen = (path: string, event: string, method: (socket: Socket) => void) => {
-    // TODO: API 서버를 통해 인증 과정을 거친다.
     this.io.of(path).on(event, method);
   };
 
@@ -33,23 +27,42 @@ export class RelayServer {
       socket.on('presenterOffer', async (data) => {
         const RTCPC = new RTCPeerConnection();
         this.relayServerRTCPC = RTCPC;
+
         RTCPC.ontrack = (event) => {
-          RTCPC.getTransceivers().forEach((receiver) => {
-            console.log(receiver);
-          });
           const stream = event.streams[0];
-          console.log(stream);
+          this.presenterStream = stream;
         };
 
         this.getServerCandidate(socket, data.socketId);
 
-        await RTCPC.setRemoteDescription(data.SDP).then(() => console.log('sever remote description 설정 완료'));
+        await RTCPC.setRemoteDescription(data.SDP);
         const SDP = await RTCPC.createAnswer();
         socket.emit(`${data.socketId}-serverAnswer`, {
+          isStudent: false,
           SDP: SDP
         });
         RTCPC.setLocalDescription(SDP);
-        console.log(RTCPC);
+      });
+
+      socket.on('studentOffer', async (data) => {
+        const socketId = data.socketId;
+        const RTCPC = new RTCPeerConnection();
+
+        this.presenterStream.getTracks().forEach((track: any) => {
+          RTCPC.addTrack(track);
+        });
+
+        this.studentRTCPCs.set(socketId, RTCPC);
+
+        this.exchangeCandidate(socket, socketId);
+
+        await RTCPC.setRemoteDescription(data.SDP);
+        const SDP = await RTCPC.createAnswer();
+        socket.emit(`${data.socketId}-serverAnswer`, {
+          isStudent: true,
+          SDP: SDP
+        });
+        RTCPC.setLocalDescription(SDP);
       });
     } catch (e) {
       console.log(e);
@@ -60,16 +73,33 @@ export class RelayServer {
     try {
       this.relayServerRTCPC.onicecandidate = (e) => {
         if (e.candidate) {
-          console.log('서버의 candidate 수집');
           socket.emit(`${presenterSocketId}-serverCandidate`, {
             candidate: e.candidate
           });
         }
       };
       socket.on('presenterCandidate', (data) => {
-        this.relayServerRTCPC
-          .addIceCandidate(new RTCIceCandidate(data.candidate))
-          .then(() => console.log('발표자로부터 candidate 받음'));
+        this.relayServerRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate));
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  exchangeCandidate = (socket: Socket, socketId: any) => {
+    try {
+      const RTCPC = this.studentRTCPCs.get(socketId);
+      if (RTCPC) {
+        RTCPC.onicecandidate = (e) => {
+          if (e.candidate) {
+            socket.emit(`${socketId}-serverCandidate`, {
+              candidate: e.candidate
+            });
+          }
+        };
+      }
+      socket.on('studentCandidate', (data) => {
+        RTCPC?.addIceCandidate(new RTCIceCandidate(data.candidate));
       });
     } catch (e) {
       console.log(e);
