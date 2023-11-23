@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "frontend/build"
+  ignore = "git diff --quiet HEAD^ HEAD frontend/"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
