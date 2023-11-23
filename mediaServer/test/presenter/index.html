@@ -43,39 +43,33 @@
     ],
   };
 
-  // TODO: 발표자 브라우저에서 미디어 track 설정 & 화면에 영상 출력
   const start = async () => {
     try {
       startButton.disabled = true;
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: true, 
+        video: true 
       });
       localStream = stream;
       localVideo.srcObject = stream;
       callButton.disabled = false;
-      console.log('1. 로컬 stream 생성 완료');
       presenterRTCPC = new RTCPeerConnection();
-      console.log('2. 로컬 RTCPeerConnection 생성 완료');
+    
       if (localStream) {
-        console.log(localStream)
-        console.log('track 추가')
-        localStream.getTracks().forEach((track) => {
-          console.log(track);
+        localStream.getTracks().forEach((track) => { 
           presenterRTCPC.addTrack(track, localStream);
         });
       } else {
         console.log('no stream')
       }
     } catch (e) {
-      alert(`getUserMedia() error: ${e.name}`)
+      console.log(e)
     }
   }
 
   start().then(setStream)
 
   async function setStream() {
-    console.log('setstream 실행')
     try {
       await createPresenterOffer();
       await setServerAnswer();
@@ -87,7 +81,6 @@
   function getPresenterCandidate() {
     presenterRTCPC.onicecandidate = (e) => {
       if (e.candidate) {
-        console.log('발표자 candidate 수집')
         socket.emit('presenterCandidate', {
           candidate: e.candidate,
           presenterSocketId: socket.id
@@ -98,15 +91,16 @@
 
   async function createPresenterOffer() {
     try {
-      console.log('offer 생성')
-      console.log(presenterRTCPC)
-      const SDP = await presenterRTCPC.createOffer();
-      console.log(presenterRTCPC)
+      const SDP = await presenterRTCPC.createOffer({
+        offerToReceiveAudio:true,
+        offerToReceiveVedio:true
+      });
+    
       socket.emit('presenterOffer', {
         socketId: socket.id,
         SDP: SDP
       });
-      console.log('발표자 localDescription 설정 완료');
+      
       presenterRTCPC.setLocalDescription(SDP);
       getPresenterCandidate()
     } catch (e) {
@@ -116,11 +110,9 @@
 
   async function setServerAnswer() {
     socket.on(`${socket.id}-serverAnswer`, (data) => {
-      console.log('remoteDescription 설정완료')
       presenterRTCPC.setRemoteDescription(data.SDP)
     })
     socket.on(`${socket.id}-serverCandidate`, (data) => {
-      console.log('서버로부터 candidate 받음')
       presenterRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate))
     });
   }
