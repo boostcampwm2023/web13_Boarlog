@@ -13,6 +13,7 @@ const AudioRecord = () => {
 
   const [gainValue, setGainValue] = useState(1);
 
+  const gainNodeRef = useRef<GainNode | null>(null);
   const gainValueRef = useRef<number>(1);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -87,7 +88,12 @@ const AudioRecord = () => {
         video: true
       });
 
-      handleRecordingStart(stream);
+      const audioContext = new AudioContext();
+      const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
+      gainNodeRef.current = audioContext.createGain();
+      mediaStreamAudioSourceNode.connect(gainNodeRef.current);
+
+      //handleRecordingStart(stream);
       setupAudioAnalysis(stream);
       startRecordingTimer();
 
@@ -200,14 +206,19 @@ const AudioRecord = () => {
     const gainNode = audioContext.createGain();
     mediaStreamAudioSourceNode.connect(gainNode);
     gainNode.connect(analyser);
-    //mediaStreamAudioSourceNode.connect(analyser, 0);
+    //gainNode.connect(audioContext.destination);
+
+    const mediaStreamDestination = audioContext.createMediaStreamDestination();
+    gainNode.connect(mediaStreamDestination);
+    const updatedStream = mediaStreamDestination.stream;
+
+    handleRecordingStart(updatedStream);
 
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
       console.log("Gain value:", gainValueRef.current);
       gainNode.gain.value = gainValueRef.current;
-      mediaStreamAudioSourceNode.connect(gainNode).connect(audioContext.destination);
 
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
