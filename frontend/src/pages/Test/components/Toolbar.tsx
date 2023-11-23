@@ -7,19 +7,28 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
 
 import { useState, useEffect } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { fabric } from "fabric";
 
 import ToolButton from "./ToolButton";
 import ColorPanel from "./ColorPanel";
 
 import canvasInstanceState from "./stateCanvasInstance";
+import stickyNoteInstance from "./stateStickyNoteInstance";
+import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
 type ToolType = "select" | "pen" | "stickynote" | "image" | "eraser" | "hand";
+
+const MEMO_COLOR = {
+  "memo-yellow": "#FEE490",
+  "memo-border-yellow": "#F2C947"
+};
 
 const Toolbar = () => {
   const [activeTool, setActiveTool] = useState<ToolType>("pen");
   const canvas = useRecoilValue(canvasInstanceState);
+  const setVisibilityEditPanel = useSetRecoilState(stickyNoteEditPanelVisibilityState);
+  const setStickyNoteInstance = useSetRecoilState(stickyNoteInstance);
 
   /**
    * @description 화이트 보드에 그려져 있는 요소들을 클릭을 통해 선택 가능한지 여부를 제어하기 위한 함수입니다.
@@ -53,23 +62,52 @@ const Toolbar = () => {
       const note = new fabric.Rect({
         left: mousePositionX,
         top: mousePositionY,
-        width: 187,
-        height: 133,
-        fill: "#FFE196",
-        stroke: "black",
+        width: 200,
+        height: 150,
+        fill: MEMO_COLOR["memo-yellow"],
+        stroke: MEMO_COLOR["memo-border-yellow"],
         strokeWidth: 1
       });
 
-      const text = new fabric.IText("텍스트 내용", {
+      const text = new fabric.Textbox("텍스트 내용\n텍스트 내용텍스트", {
         left: mousePositionX + 10,
         top: mousePositionY + 10,
+        width: 180,
         fill: "black",
-        fontSize: 16
+        fontSize: 18,
+        splitByGrapheme: true
       });
 
       const stickyMemo = new fabric.Group([note, text]);
+      stickyMemo.set("name", "stickyMemo");
 
       canvas.add(stickyMemo);
+
+      const handleClear = () => {
+        canvas.fire("visiOff");
+      };
+
+      const handleUpdate = ({ selected }: fabric.IEvent<Event>) => {
+        if (!selected) return;
+        const selectedObjectName = selected[0].name;
+        if (selectedObjectName !== "stickyMemo") {
+          canvas.fire("visiOff");
+        }
+      };
+
+      stickyMemo.on("selected", ({ target }) => {
+        if (!target) return;
+        setVisibilityEditPanel(true);
+        setStickyNoteInstance(target);
+        canvas.on("selection:cleared", handleClear);
+        canvas.on("selection:updated", handleUpdate);
+      });
+
+      canvas.on("visiOff", () => {
+        setVisibilityEditPanel(false);
+        canvas.off("selection:updated", handleUpdate);
+        canvas.off("selection:cleared", handleClear);
+      });
 
       setActiveTool("select");
     });
@@ -80,6 +118,7 @@ const Toolbar = () => {
     canvas.off("mouse:down");
     canvas.off("mouse:move");
     canvas.off("mouse:up");
+
     resetCanvasOption();
 
     switch (activeTool) {

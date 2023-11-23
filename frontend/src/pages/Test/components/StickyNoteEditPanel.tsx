@@ -8,18 +8,64 @@ import AlignRightSVG from "@/assets/svgs/formatAlignRight.svg?react";
 import PalletteSVG from "@/assets/svgs/palette.svg?react";
 import DeleteMemoSVG from "@/assets/svgs/deleteMemo.svg?react";
 import CheckSVG from "@/assets/svgs/check.svg?react";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
+import { useRecoilValue } from "recoil";
+import stickyNoteInstance from "./stateStickyNoteInstance";
+import cavasInstanceState from "./stateCanvasInstance";
 
 type FontSize = "s" | "m" | "l" | "xl";
+type FontSizePixel = 12 | 18 | 24 | 30;
 type FormatAlign = "left" | "center" | "right";
 type StickyNoteColor = "red" | "yellow" | "forsythia" | "lightgreen" | "blue";
+
+const MEMO_COLOR = {
+  "memo-red": "#FB9B86",
+  "memo-yellow": "#FEE490",
+  "memo-forsythia": "#FEFAAC",
+  "memo-lightgreen": "#EBFA8E",
+  "memo-blue": "#AAD3FF",
+  "memo-border-red": "#DF5536",
+  "memo-border-yellow": "#F2C947",
+  "memo-border-forsythia": "#FCF467",
+  "memo-border-lightgreen": "#D3E660",
+  "memo-border-blue": "#5099E9"
+};
+
+const getFontSizeByPixel = (pixel: FontSizePixel): FontSize => {
+  switch (pixel) {
+    case 12:
+      return "s";
+    case 18:
+      return "m";
+    case 24:
+      return "l";
+    case 30:
+      return "xl";
+  }
+};
+
+const getFontSizePixelByCode = (code: FontSize): FontSizePixel => {
+  switch (code) {
+    case "s":
+      return 12;
+    case "m":
+      return 18;
+    case "l":
+      return 24;
+    case "xl":
+      return 30;
+  }
+};
 
 const ACTIVE_COLOR = "#7272fc";
 
 const StickyNoteEditPanel = () => {
   const [isPalletteActive, setIsPalletteActive] = useState(false);
-  const [fontSize, setFontSize] = useState<FontSize>("s");
+  const [fontSize, setFontSize] = useState<FontSize>("m");
   const [formatAlign, setFormatAlign] = useState<FormatAlign>("left");
+  const noteInstance = useRecoilValue(stickyNoteInstance);
+  const canvas = useRecoilValue(cavasInstanceState);
 
   const handlePalletteButtonClick = () => {
     setIsPalletteActive(!isPalletteActive);
@@ -30,8 +76,54 @@ const StickyNoteEditPanel = () => {
   };
 
   const handleFormatAlignButtonClick = (align: FormatAlign) => {
+    if (!noteInstance || !canvas) return;
+
+    // @ts-ignore
+    const textBox = noteInstance.item(1);
     setFormatAlign(align);
   };
+
+  const handleDeleteNote = () => {
+    if (!noteInstance || !canvas) return;
+
+    // @ts-ignore
+    canvas.remove(noteInstance);
+    canvas.renderAll();
+  };
+
+  useEffect(() => {
+    if (!noteInstance || !canvas) return;
+
+    // @ts-ignore
+    const textBox = noteInstance.item(1);
+
+    const fontPixel = getFontSizePixelByCode(fontSize);
+
+    textBox.set({ fontSize: fontPixel });
+    canvas.renderAll();
+  }, [fontSize]);
+
+  useEffect(() => {
+    if (!noteInstance || !canvas) return;
+
+    // @ts-ignore
+    const textBox = noteInstance.item(1);
+    textBox.set({ textAlign: formatAlign });
+
+    canvas.renderAll();
+  }, [formatAlign]);
+
+  useEffect(() => {
+    if (!noteInstance) return;
+
+    // @ts-ignore
+    const textBox = noteInstance.item(1);
+    const textAlign: FormatAlign = textBox.get("textAlign");
+    const textFontSize = textBox.get("fontSize");
+
+    setFontSize(getFontSizeByPixel(textFontSize));
+    setFormatAlign(textAlign);
+  }, [noteInstance]);
 
   return (
     <div className="absolute top-2.5 left-1/2 translate-x-[-50%] ">
@@ -135,6 +227,9 @@ const StickyNoteEditPanel = () => {
             type="button"
             className="h-6 w-6 bg-transparent flex justify-center items-center"
             aria-label="메모지 제거"
+            onClick={() => {
+              handleDeleteNote();
+            }}
           >
             <DeleteMemoSVG />
           </button>
@@ -146,10 +241,49 @@ const StickyNoteEditPanel = () => {
 
 const StickyNoteColorPanel = () => {
   const [stickyNoteColor, setStickyNoteColor] = useState<StickyNoteColor>("yellow");
+  const noteInstance = useRecoilValue(stickyNoteInstance);
+  const canvas = useRecoilValue(cavasInstanceState);
 
   const handleColorButtonClick = (color: StickyNoteColor) => {
+    if (!noteInstance || !canvas) return;
+
+    // @ts-ignore
+    const memoBackground = noteInstance.item(0);
+    memoBackground.set({
+      fill: MEMO_COLOR[`memo-${color}`],
+      stroke: MEMO_COLOR[`memo-border-${color}`]
+    });
+
+    canvas.renderAll();
+
     setStickyNoteColor(color);
   };
+
+  const getColorNameByCode = (
+    colorCode: "#FB9B86" | "#FEE490" | "#FEFAAC" | "#EBFA8E" | "#AAD3FF"
+  ): StickyNoteColor => {
+    switch (colorCode) {
+      case "#FB9B86":
+        return "red";
+      case "#FEE490":
+        return "yellow";
+      case "#FEFAAC":
+        return "forsythia";
+      case "#EBFA8E":
+        return "lightgreen";
+      case "#AAD3FF":
+        return "blue";
+    }
+  };
+
+  useEffect(() => {
+    if (!noteInstance) return;
+
+    // @ts-ignore
+    const memoBackground = noteInstance.item(0);
+    const memoFill = memoBackground.get("fill");
+    setStickyNoteColor(getColorNameByCode(memoFill));
+  }, [stickyNoteColor]);
 
   return (
     <div className="w-[9.5rem] h-[2.5rem] p-2 rounded-xl flex items-center gap-1 bg-grayscale-lightgray right-[2.75rem] bottom-[-3.125rem] absolute shadow-md">
