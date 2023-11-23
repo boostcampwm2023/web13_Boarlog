@@ -11,7 +11,6 @@ const AudioRecord = () => {
   const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
 
-  const gainNodeRef = useRef<GainNode | null>(null);
   const gainValueRef = useRef<number>(1);
   const updatedStreamRef = useRef<MediaStream | null>(null);
 
