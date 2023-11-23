@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRecoilValue } from "recoil";
 import { io, Socket } from "socket.io-client";
 
@@ -12,6 +12,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
 import selectedMicrophoneState from "./stateMicrophone";
+import micVolmeState from "./stateMicVolme";
 
 const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
@@ -29,12 +30,20 @@ const HeaderInstructorControls = () => {
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
 
+  const inputMicVolume = useRecoilValue(micVolmeState);
+  const inputMicVolumeRef = useRef<number>(0);
+  useEffect(() => {
+    inputMicVolumeRef.current = inputMicVolume;
+  }, [inputMicVolume]);
+  const updatedStreamRef = useRef<MediaStream | null>(null);
+
   const startLecture = async () => {
     if (!selectedMicrophone) return alert("음성 입력장치(마이크)를 먼저 선택해주세요");
 
     await initConnection();
     await createPresenterOffer();
     listenForServerAnswer();
+    setIsLectureStart(true);
   };
 
   const stopLecture = () => {
@@ -63,24 +72,26 @@ const HeaderInstructorControls = () => {
         audio: { deviceId: selectedMicrophone }
       });
       mediaStreamRef.current = stream;
-      console.log("1. 로컬 stream 생성 완료");
 
-      setIsLectureStart(true);
-      setupAudioAnalysis(stream);
+      await setupAudioAnalysis(stream);
       startRecordingTimer();
+
+      if (updatedStreamRef.current) console.log("1. 로컬 stream 생성 완료");
 
       // 2. 로컬 RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection();
       console.log("2. 로컬 RTCPeerConnection 생성 완료");
 
       // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
-      if (stream) {
-        console.log(stream);
+      if (updatedStreamRef.current) {
+        console.log(updatedStreamRef.current);
         console.log("3.track 추가");
-        stream.getTracks().forEach((track) => {
+
+        updatedStreamRef.current.getTracks().forEach((track) => {
+          if (!updatedStreamRef.current) return;
           console.log("track:", track);
           if (!pcRef.current) return;
-          pcRef.current.addTrack(track, stream);
+          pcRef.current.addTrack(track, updatedStreamRef.current);
         });
       } else {
         console.error("no stream");
@@ -139,13 +150,23 @@ const HeaderInstructorControls = () => {
 
   // 마이크 볼륨 측정을 위한 부분입니다
   const setupAudioAnalysis = (stream: MediaStream) => {
-    const context = new AudioContext();
-    const analyser = context.createAnalyser();
-    const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
-    mediaStreamAudioSourceNode.connect(analyser, 0);
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
+
+    const gainNode = audioContext.createGain();
+    mediaStreamAudioSourceNode.connect(gainNode);
+    gainNode.connect(analyser);
+
+    const mediaStreamDestination = audioContext.createMediaStreamDestination();
+    gainNode.connect(mediaStreamDestination);
+    updatedStreamRef.current = mediaStreamDestination.stream;
+
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
+      gainNode.gain.value = inputMicVolumeRef.current;
+
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
       for (const amplitude of pcmData) {

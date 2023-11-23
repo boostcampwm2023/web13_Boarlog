@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSetRecoilState } from "recoil";
 import selectedMicrophoneState from "./stateMicrophone";
+import micVolmeState from "./stateMicVolme";
 
 interface HeaderSettingModalProps {
   isSettingClicked: boolean;
@@ -10,6 +11,7 @@ interface HeaderSettingModalProps {
 const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSettingModalProps) => {
   const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
   const setSelectedMicrophone = useSetRecoilState(selectedMicrophoneState);
+  const setMicVolume = useSetRecoilState(micVolmeState);
 
   useEffect(() => {
     // 마이크 장치 목록 가져오기
@@ -24,6 +26,11 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
       });
   }, []);
 
+  const handleGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newGainValue = parseFloat(event.target.value);
+    setMicVolume(newGainValue);
+  };
+
   return (
     <>
       <div
@@ -33,19 +40,17 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         onClick={() => setIsSettingClicked(!isSettingClicked)}
       />
       <div
-        className={`flex flex-col absolute top-24 right-4 items-center gap-4 px-6 py-4 w-96 h-fit bg-grayscale-white rounded-xl border-default duration-500 ${
+        className={`flex flex-col absolute top-24 right-4 items-center gap-4 px-6 py-4 w-96 h-fit semibold-18 bg-grayscale-white rounded-xl border-default duration-500 ${
           isSettingClicked ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
-        <div className="flex flex-row gap-3 w-full h-14 justify-start">
-          <p className="semibold-18" id="input-device-label">
-            입력 장치 설정
-          </p>
+        <div className="flex flex-row gap-3 w-full h-10 justify-start">
+          <p id="input-device-label">입력 장치 설정</p>
         </div>
 
         <select
           aria-labelledby="input-device-label"
-          className="border semibold-18 w-[100%]"
+          className="border w-full"
           onChange={(e) => setSelectedMicrophone(e.target.value)}
         >
           {microphoneDevices.map((device) => (
@@ -54,6 +59,19 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
             </option>
           ))}
         </select>
+
+        <div className="flex flex-row gap-3 w-full h-10 justify-start">
+          <label htmlFor="volumeSlider">입력 볼륨:</label>
+        </div>
+        <input
+          className="w-full"
+          type="range"
+          id="volumeSlider"
+          min="0"
+          max="1"
+          step="0.01"
+          onChange={handleGainChange}
+        />
 
         <div className="flex flex-row gap-4 w-full"></div>
       </div>

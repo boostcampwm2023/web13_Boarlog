@@ -11,11 +11,15 @@ const AudioRecord = () => {
   const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
 
+  const gainValueRef = useRef<number>(1);
+  const updatedStreamRef = useRef<MediaStream | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingTimerRef = useRef<number | null>(null);
   const onFrameIdRef = useRef<number | null>(null);
   const volumeMeterRef = useRef<HTMLDivElement>(null);
   const volumeMeterRef2 = useRef<HTMLDivElement>(null);
+  const volumeMeterRef3 = useRef<HTMLDivElement>(null);
 
   const socketRef = useRef<Socket>();
   const myVideoRef = useRef<HTMLVideoElement>(null);
@@ -82,27 +86,34 @@ const AudioRecord = () => {
         video: true
       });
 
-      handleRecordingStart(stream);
-      setupAudioAnalysis(stream);
+      await setupAudioAnalysis(stream);
       startRecordingTimer();
 
-      if (myVideoRef.current) {
-        myVideoRef.current.srcObject = stream;
-      }
-      console.log("1. 로컬 stream 생성 완료");
+      if (updatedStreamRef.current) console.log("1. 로컬 stream 생성 완료");
 
       // 2. 로컬 RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection();
       console.log("2. 로컬 RTCPeerConnection 생성 완료");
 
       // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
-      if (stream) {
-        console.log(stream);
+      if (updatedStreamRef.current) {
+        if (myVideoRef.current) {
+          myVideoRef.current.srcObject = updatedStreamRef.current;
+        }
+        console.log("stream", stream);
+        console.log("updatedStreamRef.current", updatedStreamRef.current);
+        handleRecordingStart(updatedStreamRef.current);
         console.log("3.track 추가");
-        stream.getTracks().forEach((track) => {
+
+        updatedStreamRef.current.getTracks().forEach((track) => {
+          if (!updatedStreamRef.current) return;
           console.log("track:", track);
           if (!pcRef.current) return;
-          pcRef.current.addTrack(track, stream);
+          pcRef.current.addTrack(track, updatedStreamRef.current);
+        });
+
+        stream.getTracks().forEach((track) => {
+          console.log("track origin:", track);
         });
       } else {
         console.error("no stream");
@@ -185,24 +196,39 @@ const AudioRecord = () => {
     setIsRecording(true);
   };
 
-  // 마이크 볼륨 측정을 위한 부분입니다
-  const setupAudioAnalysis = (stream: MediaStream) => {
-    const context = new AudioContext();
-    const analyser = context.createAnalyser();
-    const mediaStreamAudioSourceNode = context.createMediaStreamSource(stream);
-    mediaStreamAudioSourceNode.connect(analyser, 0);
+  // 마이크 볼륨 변경과 측정을 위해 오디오를 수정/분석하는 함수입니다.
+  const setupAudioAnalysis = async (stream: MediaStream) => {
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
+
+    const gainNode = audioContext.createGain();
+    mediaStreamAudioSourceNode.connect(gainNode);
+    gainNode.connect(analyser);
+
+    const mediaStreamDestination = audioContext.createMediaStreamDestination();
+    gainNode.connect(mediaStreamDestination);
+    mediaStreamDestination.stream.addTrack(stream.getVideoTracks()[0]); // 프로토타입에 사용할 비디오 트랙 그대로 추가
+    updatedStreamRef.current = mediaStreamDestination.stream;
+
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
+      //console.log("Gain value:", gainValueRef.current);
+      gainNode.gain.value = gainValueRef.current;
+
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
       for (const amplitude of pcmData) {
         sum += amplitude * amplitude;
       }
       const rms = Math.sqrt(sum / pcmData.length);
+      //console.log("rms:", rms);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      colorVolumeMeter(normalizedVolume * 2);
-      colorVolumeMeter2(normalizedVolume * 2);
+      colorVolumeMeter(normalizedVolume);
+      colorVolumeMeter2(normalizedVolume);
+
+      colorVolumeMeter3(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
@@ -241,7 +267,7 @@ const AudioRecord = () => {
     if (!volumeMeterRef2.current) return;
     const VOL_METER_MAX = 10; // 표시할 볼륨 미터 개수
     const childrens = volumeMeterRef2.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
-    const numberOfChildToColor = normalizeToInteger(vol, 1, VOL_METER_MAX);
+    const numberOfChildToColor = normalizeToInteger(vol, 0, VOL_METER_MAX);
     const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
     childrens.forEach((pid) => {
       pid.style.backgroundColor = "#e6e6e6";
@@ -249,6 +275,25 @@ const AudioRecord = () => {
     coloredChild.forEach((pid) => {
       pid.style.backgroundColor = "#69ce2b";
     });
+  };
+  const colorVolumeMeter3 = (vol: number) => {
+    if (!volumeMeterRef3.current) return;
+    const VOL_METER_MAX = 10; // 표시할 볼륨 미터 개수
+    const childrens = volumeMeterRef3.current.querySelectorAll("div") as NodeListOf<HTMLDivElement>;
+    const numberOfChildToColor = normalizeToInteger(vol, 0, VOL_METER_MAX);
+    const coloredChild = Array.from(childrens).slice(0, numberOfChildToColor);
+    childrens.forEach((pid) => {
+      pid.style.backgroundColor = "#e6e6e6";
+    });
+    coloredChild.forEach((pid) => {
+      pid.style.backgroundColor = "#69ce2b";
+    });
+  };
+
+  const handleGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //console.log("set", event.target.value);
+    const newGainValue = parseFloat(event.target.value);
+    gainValueRef.current = newGainValue;
   };
 
   return (
@@ -289,6 +334,11 @@ const AudioRecord = () => {
           <div key={index} className="w-[8%] rounded"></div>
         ))}
       </div>
+      <div className="volume-meter2 w-[150px] h-[20px] flex gap-1" ref={volumeMeterRef3}>
+        {Array.from({ length: 10 }, (_, index) => (
+          <div key={index} className="w-[8%] rounded"></div>
+        ))}
+      </div>
 
       <br></br>
 
@@ -307,6 +357,11 @@ const AudioRecord = () => {
             .padStart(2, "0")}
           :{(recordingTime % 60).toString().padStart(2, "0")}
         </p>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <label htmlFor="volumeSlider">볼륨 조절:</label>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" onChange={handleGainChange} />
       </div>
 
       {audioURL && (

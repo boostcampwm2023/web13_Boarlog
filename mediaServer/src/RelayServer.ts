@@ -39,7 +39,6 @@ export class RelayServer {
           });
           const stream = event.streams[0];
           console.log(stream);
-          console.log(`stream id: ${stream.id}`);
         };
 
         this.getServerCandidate(socket, data.socketId);
