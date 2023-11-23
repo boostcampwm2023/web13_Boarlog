@@ -48,14 +48,16 @@ const ToastContainer = () => {
   const toastList = useRecoilValue(toastListState);
   const portalRoot = usePortal("toast-portal");
 
-  return ReactDOM.createPortal(
-    <div className="fixed w-11/12 max-w-xs bottom-3 left-1/2 -translate-x-1/2 space-y-3">
-      {toastList.map((toast) => (
-        <Toast key={toast.id} toastKey={toast.id} message={toast.message} type={toast.type} />
-      ))}
-    </div>,
-    portalRoot
-  );
+  return portalRoot
+    ? ReactDOM.createPortal(
+        <div className="fixed w-11/12 max-w-xs bottom-3 left-1/2 -translate-x-1/2 space-y-3">
+          {toastList.map((toast) => (
+            <Toast key={toast.id} toastKey={toast.id} message={toast.message} type={toast.type} />
+          ))}
+        </div>,
+        portalRoot
+      )
+    : null;
 };
 
 export default ToastContainer;
