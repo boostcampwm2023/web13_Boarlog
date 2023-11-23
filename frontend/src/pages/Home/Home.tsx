@@ -1,11 +1,11 @@
 import Header from "@/components/Header/Header";
-import MainSection from "./components/MainSection";
+import HomeSection from "./components/HomeSection";
 
 const Home = () => {
   return (
     <>
       <Header type="main" />
-      <MainSection />
+      <HomeSection />
     </>
   );
 };
