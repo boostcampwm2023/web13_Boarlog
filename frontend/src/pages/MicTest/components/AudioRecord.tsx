@@ -363,7 +363,6 @@ const AudioRecord = () => {
       <div className="flex items-center gap-2">
         <label htmlFor="volumeSlider">볼륨 조절:</label>
         <input type="range" id="volumeSlider" min="0" max="1" step="0.01" onChange={handleGainChange} />
-        <span>으악</span>
       </div>
 
       {audioURL && (
