@@ -172,7 +172,7 @@ const HeaderInstructorControls = () => {
 
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex gap-2 fixed left-1/2 -translate-x-1/2">
         <VolumeMeter micVolume={micVolume} />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(recordingTime / 60)
