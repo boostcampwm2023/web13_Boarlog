@@ -11,10 +11,9 @@ const AudioRecord = () => {
   const [selectedMicrophone, setSelectedMicrophone] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState<number>(0);
 
-  const [gainValue, setGainValue] = useState(1);
-
   const gainNodeRef = useRef<GainNode | null>(null);
   const gainValueRef = useRef<number>(1);
+  const updatedStreamRef = useRef<MediaStream | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingTimerRef = useRef<number | null>(null);
@@ -88,32 +87,34 @@ const AudioRecord = () => {
         video: true
       });
 
-      const audioContext = new AudioContext();
-      const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
-      gainNodeRef.current = audioContext.createGain();
-      mediaStreamAudioSourceNode.connect(gainNodeRef.current);
-
-      //handleRecordingStart(stream);
-      setupAudioAnalysis(stream);
+      await setupAudioAnalysis(stream);
       startRecordingTimer();
 
-      if (myVideoRef.current) {
-        myVideoRef.current.srcObject = stream;
-      }
-      console.log("1. 로컬 stream 생성 완료");
+      if (updatedStreamRef.current) console.log("1. 로컬 stream 생성 완료");
 
       // 2. 로컬 RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection();
       console.log("2. 로컬 RTCPeerConnection 생성 완료");
 
       // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
-      if (stream) {
-        console.log(stream);
+      if (updatedStreamRef.current) {
+        if (myVideoRef.current) {
+          myVideoRef.current.srcObject = updatedStreamRef.current;
+        }
+        console.log("stream", stream);
+        console.log("updatedStreamRef.current", updatedStreamRef.current);
+        handleRecordingStart(updatedStreamRef.current);
         console.log("3.track 추가");
-        stream.getTracks().forEach((track) => {
+
+        updatedStreamRef.current.getTracks().forEach((track) => {
+          if (!updatedStreamRef.current) return;
           console.log("track:", track);
           if (!pcRef.current) return;
-          pcRef.current.addTrack(track, stream);
+          pcRef.current.addTrack(track, updatedStreamRef.current);
+        });
+
+        stream.getTracks().forEach((track) => {
+          console.log("track origin:", track);
         });
       } else {
         console.error("no stream");
@@ -196,28 +197,25 @@ const AudioRecord = () => {
     setIsRecording(true);
   };
 
-  // 마이크 볼륨 측정을 위한 부분입니다
-  const setupAudioAnalysis = (stream: MediaStream) => {
+  // 마이크 볼륨 변경과 측정을 위해 오디오를 수정/분석하는 함수입니다.
+  const setupAudioAnalysis = async (stream: MediaStream) => {
     const audioContext = new AudioContext();
     const analyser = audioContext.createAnalyser();
-
     const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
 
     const gainNode = audioContext.createGain();
     mediaStreamAudioSourceNode.connect(gainNode);
     gainNode.connect(analyser);
-    //gainNode.connect(audioContext.destination);
 
     const mediaStreamDestination = audioContext.createMediaStreamDestination();
     gainNode.connect(mediaStreamDestination);
-    const updatedStream = mediaStreamDestination.stream;
-
-    handleRecordingStart(updatedStream);
+    mediaStreamDestination.stream.addTrack(stream.getVideoTracks()[0]); // 프로토타입에 사용할 비디오 트랙 그대로 추가
+    updatedStreamRef.current = mediaStreamDestination.stream;
 
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
-      console.log("Gain value:", gainValueRef.current);
+      //console.log("Gain value:", gainValueRef.current);
       gainNode.gain.value = gainValueRef.current;
 
       analyser.getFloatTimeDomainData(pcmData);
@@ -226,7 +224,7 @@ const AudioRecord = () => {
         sum += amplitude * amplitude;
       }
       const rms = Math.sqrt(sum / pcmData.length);
-      console.log("rms:", rms);
+      //console.log("rms:", rms);
       const normalizedVolume = Math.min(1, rms / 0.5);
       colorVolumeMeter(normalizedVolume);
       colorVolumeMeter2(normalizedVolume);
@@ -294,7 +292,7 @@ const AudioRecord = () => {
   };
 
   const handleGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("set", event.target.value);
+    //console.log("set", event.target.value);
     const newGainValue = parseFloat(event.target.value);
     gainValueRef.current = newGainValue;
   };
