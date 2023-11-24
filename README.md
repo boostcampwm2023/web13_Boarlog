@@ -89,4 +89,5 @@ const teamName = camperIdArray.reduce((team, camperId) => {
 - [위키](https://github.com/boostcampwm2023/web13_TEAM_528/wiki)
 - [노션](https://weak-sugar-603.notion.site/TEAM_528-7780e03d7e9847b89fdf9f926036987b?pvs=4)
 - [백로그](https://www.notion.so/d1fb2080ff934e859d50c5cd3620e223)
+- [데모 링크](https://boarlog.netlify.app/test)
 
