@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 import { RoomModule } from './room/room.module';
+import { UserModule } from './user/user.module';
 
 dotenv.config();
 
@@ -16,7 +17,8 @@ dotenv.config();
       isGlobal: true
     }),
     AuthModule,
-    RoomModule
+    RoomModule,
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService]
