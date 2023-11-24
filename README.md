@@ -18,6 +18,15 @@
 
 <br/>
 
+## 임시 배포 링크
+
+- 화이트보드
+    - https://boarlog.netlify.app/test
+- 마이크
+    - https://boarlog.netlify.app/mictest
+- UI
+    - https://boarlog.netlify.app/example
+
 ## 팀 소개: TEAM_528
 
 ```jsx
