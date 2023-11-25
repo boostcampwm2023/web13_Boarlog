@@ -21,21 +21,79 @@ const HeaderInstructorControls = () => {
   const [recordingTime, setRecordingTime] = useState<number>(0);
   const [micVolume, setMicVolume] = useState<number>(0);
 
+  const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
+  const inputMicVolume = useRecoilValue(micVolmeState);
+
   const recordingTimerRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
+  const updatedStreamRef = useRef<MediaStream>();
 
-  const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
+  const inputMicVolumeRef = useRef<number>(0);
+
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
 
-  const inputMicVolume = useRecoilValue(micVolmeState);
-  const inputMicVolumeRef = useRef<number>(0);
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
   }, [inputMicVolume]);
-  const updatedStreamRef = useRef<MediaStream | null>(null);
+  useEffect(() => {
+    if (isLectureStart) {
+      console.log("마이크 변경:", selectedMicrophone);
+      replaceAudioStream();
+    }
+  }, [selectedMicrophone]);
+
+  const replaceAudioStream = async () => {
+    try {
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: selectedMicrophone }
+      });
+      if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 기존 미디어 트랙 중지
+      mediaStreamRef.current = stream;
+
+      await setupAudioAnalysis(stream);
+      //startRecordingTimer();
+
+      if (updatedStreamRef.current) console.log("새 로컬 stream 생성 완료");
+
+      // 2. 로컬 RTCPeerConnection 생성
+      //pcRef.current = new RTCPeerConnection();
+      //console.log("2. 로컬 RTCPeerConnection 생성 완료");
+
+      if (!updatedStreamRef.current || !pcRef.current) return;
+      console.log("기존트랙:", pcRef.current.getSenders()[0].track);
+      console.log("새트랙:", updatedStreamRef.current.getAudioTracks()[0]);
+      pcRef.current.getSenders()[0].replaceTrack(updatedStreamRef.current.getAudioTracks()[0]);
+
+      /*
+      const senders = pcRef.current.getSenders();
+      senders.forEach((sender, index) => {
+        console.log(`Track ${index + 1}:`, sender.track);
+      });
+
+      console.log("과연:", pcRef.current.getSenders()[0].track);
+      
+      const audioStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: userAudioInputDevice?.deviceId
+        }
+      });
+      myStream.localStream.removeTrack(myStream.localStream.getAudioTracks()[0]);
+      myStream.localStream.addTrack(audioStream.getAudioTracks()[0]);
+      Object.keys(pcs).forEach((pc) => {
+        const sender = pcs[pc].getSenders().find((s) => s.track.kind === "audio");
+        sender.replaceTrack(audioStream.getAudioTracks()[0]);
+      });
+      */
+    } catch (error) {
+      //console.log("failed to change audio stream", error);
+      //const stream = new MediaStream();
+      //setUserMediaStream(stream);
+    }
+  };
 
   const startLecture = async () => {
     if (!selectedMicrophone) return alert("음성 입력장치(마이크)를 먼저 선택해주세요");
@@ -89,7 +147,7 @@ const HeaderInstructorControls = () => {
 
         updatedStreamRef.current.getTracks().forEach((track) => {
           if (!updatedStreamRef.current) return;
-          console.log("track:", track);
+          console.log("처음 연결하는 track:", track);
           if (!pcRef.current) return;
           pcRef.current.addTrack(track, updatedStreamRef.current);
         });
