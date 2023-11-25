@@ -5,19 +5,21 @@ import { Room } from './room.schema';
 import { Model } from 'mongoose';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { EnterCode } from './room-code.schema';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class RoomService {
   constructor(
     @InjectModel(Room.name)
     private roomModel: Model<Room>,
-
     @InjectModel(EnterCode.name)
-    private enterCodeModel: Model<EnterCode>
+    private enterCodeModel: Model<EnterCode>,
+    private readonly userService: UserService
   ) {}
 
   async createRoom(createRoomDto: CreateRoomDto) {
-    const createdRoom = new this.roomModel(createRoomDto);
+    const user = await this.userService.findOneByEmail(createRoomDto.email);
+    const createdRoom = new this.roomModel({ ...createRoomDto, presenter_id: user.id });
     const createdEnterCode = new this.enterCodeModel({
       code: await this.generateRoomCode(),
       lecture_id: createdRoom.id

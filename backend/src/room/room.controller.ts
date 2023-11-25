@@ -25,7 +25,7 @@ export class RoomController {
       res.status(HttpStatus.NOT_FOUND).send();
       return;
     }
-    await this.userService.updateLecture(enterRoomDto.email, enterCodeDocument.lecture_id);
-    res.status(HttpStatus.OK).send();
+    const result = await this.userService.updateLecture(enterRoomDto.email, enterCodeDocument.lecture_id);
+    res.status(HttpStatus.OK).send(result);
   }
 }
