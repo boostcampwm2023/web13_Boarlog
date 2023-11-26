@@ -43,7 +43,13 @@ export class RelayServer {
         });
         RTCPC.setLocalDescription(SDP);
       });
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
+  enterRoom = (socket: Socket) => {
+    try {
       socket.on('studentOffer', async (data) => {
         const socketId = data.socketId;
         const RTCPC = new RTCPeerConnection();
