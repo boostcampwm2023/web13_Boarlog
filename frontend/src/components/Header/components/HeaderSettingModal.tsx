@@ -10,6 +10,7 @@ interface HeaderSettingModalProps {
 
 const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSettingModalProps) => {
   const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
+
   const setSelectedMicrophone = useSetRecoilState(selectedMicrophoneState);
   const setMicVolume = useSetRecoilState(micVolmeState);
 
@@ -25,11 +26,6 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         console.error("입력 장치 목록 불러오기 실패", error);
       });
   }, []);
-
-  const handleGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newGainValue = parseFloat(event.target.value);
-    setMicVolume(newGainValue);
-  };
 
   return (
     <>
@@ -70,7 +66,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
           min="0"
           max="1"
           step="0.01"
-          onChange={handleGainChange}
+          onChange={(e) => setMicVolume(parseFloat(e.target.value))}
         />
 
         <div className="flex flex-row gap-4 w-full"></div>

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
 
 import VolumeMeter from "./VolumeMeter";
@@ -23,6 +23,7 @@ const HeaderInstructorControls = () => {
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeState);
+  const setInputMicVolumeState = useSetRecoilState(micVolmeState);
 
   const recordingTimerRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -31,6 +32,7 @@ const HeaderInstructorControls = () => {
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
+  const prevInputMicVolumeRef = useRef<number>(0);
 
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
 
@@ -219,6 +221,19 @@ const HeaderInstructorControls = () => {
     }
   };
 
+  const mute = () => {
+    if (isMicOn) {
+      prevInputMicVolumeRef.current = inputMicVolumeRef.current;
+      console.log("prevInputMicVolume: ", prevInputMicVolumeRef.current);
+      setInputMicVolumeState(0);
+      setIsMicOn(false);
+    } else {
+      console.log("prevInputMicVolume: ", prevInputMicVolumeRef.current);
+      setInputMicVolumeState(prevInputMicVolumeRef.current);
+      setIsMicOn(true);
+    }
+  };
+
   return (
     <>
       <div className="flex gap-2 fixed left-1/2 -translate-x-1/2">
@@ -247,10 +262,7 @@ const HeaderInstructorControls = () => {
           </>
         )}
       </SmallButton>
-      <SmallButton
-        className={`text-grayscale-white ${isMicOn ? "bg-boarlog-100" : "bg-alert-100"}`}
-        onClick={() => setIsMicOn(!isMicOn)}
-      >
+      <SmallButton className={`text-grayscale-white ${isMicOn ? "bg-boarlog-100" : "bg-alert-100"}`} onClick={mute}>
         {isMicOn ? (
           <MicOnIcon className="w-5 h-5 fill-grayscale-white" />
         ) : (
