@@ -30,7 +30,6 @@ const HeaderInstructorControls = () => {
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
-
   const inputMicVolumeRef = useRef<number>(0);
 
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
@@ -40,60 +39,9 @@ const HeaderInstructorControls = () => {
   }, [inputMicVolume]);
   useEffect(() => {
     if (isLectureStart) {
-      console.log("마이크 변경:", selectedMicrophone);
-      replaceAudioStream();
+      replaceAudioTrack();
     }
   }, [selectedMicrophone]);
-
-  const replaceAudioStream = async () => {
-    try {
-      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { deviceId: selectedMicrophone }
-      });
-      if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 기존 미디어 트랙 중지
-      mediaStreamRef.current = stream;
-
-      await setupAudioAnalysis(stream);
-      //startRecordingTimer();
-
-      if (updatedStreamRef.current) console.log("새 로컬 stream 생성 완료");
-
-      // 2. 로컬 RTCPeerConnection 생성
-      //pcRef.current = new RTCPeerConnection();
-      //console.log("2. 로컬 RTCPeerConnection 생성 완료");
-
-      if (!updatedStreamRef.current || !pcRef.current) return;
-      console.log("기존트랙:", pcRef.current.getSenders()[0].track);
-      console.log("새트랙:", updatedStreamRef.current.getAudioTracks()[0]);
-      pcRef.current.getSenders()[0].replaceTrack(updatedStreamRef.current.getAudioTracks()[0]);
-
-      /*
-      const senders = pcRef.current.getSenders();
-      senders.forEach((sender, index) => {
-        console.log(`Track ${index + 1}:`, sender.track);
-      });
-
-      console.log("과연:", pcRef.current.getSenders()[0].track);
-      
-      const audioStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          deviceId: userAudioInputDevice?.deviceId
-        }
-      });
-      myStream.localStream.removeTrack(myStream.localStream.getAudioTracks()[0]);
-      myStream.localStream.addTrack(audioStream.getAudioTracks()[0]);
-      Object.keys(pcs).forEach((pc) => {
-        const sender = pcs[pc].getSenders().find((s) => s.track.kind === "audio");
-        sender.replaceTrack(audioStream.getAudioTracks()[0]);
-      });
-      */
-    } catch (error) {
-      //console.log("failed to change audio stream", error);
-      //const stream = new MediaStream();
-      //setUserMediaStream(stream);
-    }
-  };
 
   const startLecture = async () => {
     if (!selectedMicrophone) return alert("음성 입력장치(마이크)를 먼저 선택해주세요");
@@ -134,28 +82,20 @@ const HeaderInstructorControls = () => {
       await setupAudioAnalysis(stream);
       startRecordingTimer();
 
-      if (updatedStreamRef.current) console.log("1. 로컬 stream 생성 완료");
-
       // 2. 로컬 RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection();
-      console.log("2. 로컬 RTCPeerConnection 생성 완료");
-
       // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
       if (updatedStreamRef.current) {
-        console.log(updatedStreamRef.current);
-        console.log("3.track 추가");
-
         updatedStreamRef.current.getTracks().forEach((track) => {
           if (!updatedStreamRef.current) return;
-          console.log("처음 연결하는 track:", track);
           if (!pcRef.current) return;
           pcRef.current.addTrack(track, updatedStreamRef.current);
         });
       } else {
         console.error("no stream");
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -163,16 +103,17 @@ const HeaderInstructorControls = () => {
     // 4. 발표자의 offer 생성
     try {
       if (!pcRef.current || !socketRef.current) return;
-      const SDP = await pcRef.current.createOffer();
+      const SDP = await pcRef.current.createOffer({
+        offerToReceiveAudio: true
+      });
       socketRef.current.emit("presenterOffer", {
         socketId: socketRef.current.id,
         SDP: SDP
       });
-      console.log("4. 발표자 localDescription 설정 완료");
       pcRef.current.setLocalDescription(SDP);
       getPresenterCandidate();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -182,7 +123,6 @@ const HeaderInstructorControls = () => {
     pcRef.current.onicecandidate = (e) => {
       if (e.candidate) {
         if (!socketRef.current) return;
-        console.log("5. 발표자 candidate 수집");
         socketRef.current.emit("presenterCandidate", {
           candidate: e.candidate,
           presenterSocketId: socketRef.current.id
@@ -206,18 +146,27 @@ const HeaderInstructorControls = () => {
     });
   }
 
-  // 마이크 볼륨 측정을 위한 부분입니다
+  // 사용자에게 입력받은 MediaStream을 분석/변환하여 updatedStream으로 바꿔주는 함수
   const setupAudioAnalysis = (stream: MediaStream) => {
+    // Web Audio API에서 오디오를 다루기 위한 기본 객체 AudioContext 생성
     const audioContext = new AudioContext();
+    // 오디오 신호를 분석하기 위한 AnalyserNode 객체 생성
     const analyser = audioContext.createAnalyser();
+    // 미디어 스트림을 audioContext 내에서 사용할 수 있는 형식으로 변환
     const mediaStreamAudioSourceNode = audioContext.createMediaStreamSource(stream);
 
+    // 입력 오디오 신호의 볼륨을 조절하기 위한 GainNode 객체 생성
     const gainNode = audioContext.createGain();
+    // 변환된 미디어 스트림을 GainNode 객체에 연결
     mediaStreamAudioSourceNode.connect(gainNode);
+    // GainNode 객체를 AnalyserNode 객체에 연결
     gainNode.connect(analyser);
 
+    // audioContext에서 처리된 오디오로 새로운 미디어 스트림 생성
     const mediaStreamDestination = audioContext.createMediaStreamDestination();
+    // gainNode와 새 미디어 스트림 연결
     gainNode.connect(mediaStreamDestination);
+    // 업데이트된 미디어 스트림을 앞으로 참조하도록 설정
     updatedStreamRef.current = mediaStreamDestination.stream;
 
     const pcmData = new Float32Array(analyser.fftSize);
@@ -247,6 +196,27 @@ const HeaderInstructorControls = () => {
     };
     const recordingTimer = setInterval(updateRecordingTime, 1000);
     recordingTimerRef.current = recordingTimer;
+  };
+
+  // 기존에 미디어 서버에 보내는 오디오 트랙을 새 마이크의 오디오 트랙으로 교체
+  const replaceAudioTrack = async () => {
+    try {
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: selectedMicrophone }
+      });
+      if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 기존 미디어 트랙 중지
+      mediaStreamRef.current = stream;
+
+      await setupAudioAnalysis(stream);
+
+      if (!updatedStreamRef.current || !pcRef.current) return;
+      // 기존트랙: pcRef.current.getSenders()[0].track
+      // 새트랙: updatedStreamRef.current.getAudioTracks()[0]
+      pcRef.current.getSenders()[0].replaceTrack(updatedStreamRef.current.getAudioTracks()[0]);
+    } catch (error) {
+      console.error("오디오 replace 작업 실패", error);
+    }
   };
 
   return (
