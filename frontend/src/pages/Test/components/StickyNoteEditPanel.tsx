@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 
 import StickyNoteColorPanel from "./StickyNoteColorPanel";
-
 import stickyNoteInstance from "./stateStickyNoteInstance";
 import cavasInstanceState from "./stateCanvasInstance";
 
@@ -49,11 +48,24 @@ const getFontSizePixelByCode = (code: FontSize): FontSizePixel => {
 };
 
 const StickyNoteEditPanel = () => {
-  const [isPalletteActive, setIsPalletteActive] = useState(false);
-  const [fontSize, setFontSize] = useState<FontSize>("m");
-  const [formatAlign, setFormatAlign] = useState<FormatAlign>("left");
   const noteInstance = useRecoilValue(stickyNoteInstance);
   const canvas = useRecoilValue(cavasInstanceState);
+
+  const getClickedMemoData = (noteInstance: fabric.Object): { align: FormatAlign; fontSize: FontSize } => {
+    // @ts-ignore
+    const textBox = noteInstance.item(1);
+
+    const align = textBox.get("textAlign");
+    const fontSize = getFontSizeByPixel(textBox.get("fontSize"));
+
+    if (!align || !fontSize) return { align: "left", fontSize: "m" };
+
+    return { align: align, fontSize: fontSize };
+  };
+
+  const [isPalletteActive, setIsPalletteActive] = useState(false);
+  const [fontSize, setFontSize] = useState<FontSize>(getClickedMemoData(noteInstance).fontSize);
+  const [formatAlign, setFormatAlign] = useState<FormatAlign>(getClickedMemoData(noteInstance).align);
 
   const handlePalletteButtonClick = () => {
     setIsPalletteActive(!isPalletteActive);
@@ -64,24 +76,18 @@ const StickyNoteEditPanel = () => {
   };
 
   const handleFormatAlignButtonClick = (align: FormatAlign) => {
-    if (!noteInstance || !canvas) return;
-
-    // @ts-ignore
-    const textBox = noteInstance.item(1);
     setFormatAlign(align);
   };
 
   const handleDeleteNote = () => {
     if (!noteInstance || !canvas) return;
 
-    // @ts-ignore
     canvas.remove(noteInstance);
     canvas.renderAll();
   };
 
   useEffect(() => {
     if (!noteInstance || !canvas) return;
-
     // @ts-ignore
     const textBox = noteInstance.item(1);
 
@@ -102,19 +108,14 @@ const StickyNoteEditPanel = () => {
   }, [formatAlign]);
 
   useEffect(() => {
-    if (!noteInstance) return;
+    const { align: textAlign, fontSize: textFontSize } = getClickedMemoData(noteInstance);
 
-    // @ts-ignore
-    const textBox = noteInstance.item(1);
-    const textAlign: FormatAlign = textBox.get("textAlign");
-    const textFontSize = textBox.get("fontSize");
-
-    setFontSize(getFontSizeByPixel(textFontSize));
+    setFontSize(textFontSize);
     setFormatAlign(textAlign);
   }, [noteInstance]);
 
   return (
-    <div className="absolute top-2.5 left-1/2 translate-x-[-50%] ">
+    <div className="absolute top-2.5 left-1/2 -translate-x-1/2 ">
       <div className="w-[22.25rem] h-[2.875rem] px-4 bg-grayscale-lightgray rounded-xl flex items-center relative shadow-md">
         {isPalletteActive && <StickyNoteColorPanel />}
         <div className="flex items-center gap-3 after:content-[''] after:block after:w-px after:h-[20px] after:bg-grayscale-gray">
