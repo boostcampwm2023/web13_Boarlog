@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="container">
-  <h1>발표자</h1>
+  <h1>참여자</h1>
   <video id="localVideo" playsinline autoplay muted></video>
   <canvas></canvas>
   <div>
@@ -19,7 +19,7 @@
 </div>
 <script type="module">
   import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
-  const socket = io('http://localhost:3000/create-room');
+  const socket = io('http://localhost:3000/enter-room');
 
   const startButton = document.getElementById('startButton');
   const callButton = document.getElementById('callButton');
@@ -45,64 +45,49 @@
 
   const start = async () => {
     try {
-      startButton.disabled = true;
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: true, 
-        video: true 
-      });
-      localStream = stream;
-      localVideo.srcObject = stream;
-      callButton.disabled = false;
       presenterRTCPC = new RTCPeerConnection();
-    
-      if (localStream) {
-        localStream.getTracks().forEach((track) => { 
-          presenterRTCPC.addTrack(track, localStream);
-        });
-      } else {
-        console.log('no stream')
-      }
+      const stream = new MediaStream();
+      localStream = stream;
     } catch (e) {
       console.log(e)
     }
   }
 
-  start().then(setStream)
+  start().then(getStream)
 
-  async function setStream() {
+  async function getStream() {
     try {
-      await createPresenterOffer();
+      await createStudentOffer();
       await setServerAnswer();
     } catch (e) {
       console.log(e);
     }
   }
 
-  function getPresenterCandidate() {
+  function getStudentCandidate() {
     presenterRTCPC.onicecandidate = (e) => {
       if (e.candidate) {
-        socket.emit('presenterCandidate', {
+        socket.emit('studentCandidate', {
           candidate: e.candidate,
-          presenterSocketId: socket.id
+          studentSocketId: socket.id
         });
       }
     }
   }
 
-  async function createPresenterOffer() {
+  async function createStudentOffer() {
     try {
       const SDP = await presenterRTCPC.createOffer({
         offerToReceiveAudio:true,
-        offerToReceiveVedio:true
+        offerToReceiveVideo:true
       });
-    
-      socket.emit('presenterOffer', {
+      socket.emit('studentOffer', { 
         socketId: socket.id,
         SDP: SDP
       });
-      
+  
       presenterRTCPC.setLocalDescription(SDP);
-      getPresenterCandidate()
+      getStudentCandidate()
     } catch (e) {
       console.log(e);
     }
@@ -115,6 +100,11 @@
     socket.on(`${socket.id}-serverCandidate`, (data) => {
       presenterRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate))
     });
+  }
+
+  presenterRTCPC.ontrack = (event) => {
+    localStream.addTrack(event.track)
+    localVideo.srcObject = localStream;
   }
 
   startButton.onclick = start;
