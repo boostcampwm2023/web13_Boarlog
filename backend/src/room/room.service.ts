@@ -4,28 +4,40 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Room } from './room.schema';
 import { Model } from 'mongoose';
 import { CreateRoomDto } from './dto/create-room.dto';
+import { EnterCode } from './room-code.schema';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class RoomService {
-  private readonly currentRoomCode;
+  constructor(
+    @InjectModel(Room.name)
+    private roomModel: Model<Room>,
+    @InjectModel(EnterCode.name)
+    private enterCodeModel: Model<EnterCode>,
+    private readonly userService: UserService
+  ) {}
 
-  constructor(@InjectModel(Room.name) private roomModel: Model<Room>) {
-    // TODO: 현재 사용 중인 방 코드를 Redis 같은 곳에서 관리 필요
-    this.currentRoomCode = new Set();
+  async createRoom(createRoomDto: CreateRoomDto) {
+    const user = await this.userService.findOneByEmail(createRoomDto.email);
+    const createdRoom = new this.roomModel({ ...createRoomDto, presenter_id: user.id });
+    const createdEnterCode = new this.enterCodeModel({
+      code: await this.generateRoomCode(),
+      lecture_id: createdRoom.id
+    });
+    await Promise.all([createdRoom.save(), createdEnterCode.save()]);
+    return createdEnterCode.code;
   }
 
-  async createRoom(createRoomDto: CreateRoomDto): Promise<void> {
-    const createdRoom = new this.roomModel(createRoomDto);
-    await createdRoom.save();
-  }
-
-  generateRoomCode(): string {
+  async generateRoomCode() {
     const generateUtils = new GenerateUtils();
     let roomCode = generateUtils.generateRandomNumber();
-    while (this.currentRoomCode.has(roomCode)) {
+    while (await this.findRoomByCode(roomCode)) {
       roomCode = generateUtils.generateRandomNumber();
     }
-    this.currentRoomCode.add(roomCode);
     return roomCode;
+  }
+
+  async findRoomByCode(code: string) {
+    return await this.enterCodeModel.findOne({ code: code });
   }
 }

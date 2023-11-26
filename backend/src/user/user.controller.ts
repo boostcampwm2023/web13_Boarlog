@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpStatus, Post, Query, Res } from '@nestjs/com
 import { Response } from 'express';
 import { UserService } from './user.service';
 import { UserInfoDto } from '../auth/dto/userInfo.dto';
-import { UsernameUpdateDto } from './dto/username.update.dto';
+import { UserUpdateDto } from './dto/user.update.dto';
 
 @Controller('/profile')
 export class UserController {
@@ -19,8 +19,8 @@ export class UserController {
   }
 
   @Post()
-  async changeUsername(@Body() usernameUpdateDto: UsernameUpdateDto, @Res() res: Response) {
-    const result = await this.userService.updateUsername(usernameUpdateDto);
+  async changeUsername(@Body() userUpdateDto: UserUpdateDto, @Res() res: Response) {
+    const result = await this.userService.updateUsername(userUpdateDto);
     if (!result) {
       res.status(HttpStatus.NOT_FOUND).send();
       return;

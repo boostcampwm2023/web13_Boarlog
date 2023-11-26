@@ -14,4 +14,8 @@ export class UserService {
   async updateUsername({ email, username }) {
     return await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
   }
+
+  async updateLecture(email, lecture) {
+    return await this.userModel.findOneAndUpdate({ email: email }, { $push: { lecture_id: lecture } }, { new: true });
+  }
 }
