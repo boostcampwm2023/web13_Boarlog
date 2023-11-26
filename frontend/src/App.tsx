@@ -3,7 +3,8 @@ import "./global.css";
 import Home from "@/pages/Home/Home";
 import Login from "./pages/Login/Login";
 import Test from "./pages/Test/Test";
-import MicTest from "./pages/MicTest/MicTest";
+import Instructor from "./pages/Instructor/Instructor";
+import Participant from "./pages/Participant/Participant";
 
 import { RecoilRoot } from "recoil";
 import Example from "./pages/Example/Example";
@@ -19,7 +20,8 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/test" element={<Test />} />
-          <Route path="/mictest" element={<MicTest />} />
+          <Route path="/instructor" element={<Instructor />} />
+          <Route path="/participant" element={<Participant />} />
           <Route path="/example" element={<Example />} />
         </Routes>
       </BrowserRouter>

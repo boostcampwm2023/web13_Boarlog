@@ -224,11 +224,9 @@ const HeaderInstructorControls = () => {
   const mute = () => {
     if (isMicOn) {
       prevInputMicVolumeRef.current = inputMicVolumeRef.current;
-      console.log("prevInputMicVolume: ", prevInputMicVolumeRef.current);
       setInputMicVolumeState(0);
       setIsMicOn(false);
     } else {
-      console.log("prevInputMicVolume: ", prevInputMicVolumeRef.current);
       setInputMicVolumeState(prevInputMicVolumeRef.current);
       setIsMicOn(true);
     }
