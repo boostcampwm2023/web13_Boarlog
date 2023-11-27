@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { RTCIceCandidate, RTCPeerConnection } from 'wrtc';
-import dotenv from 'dotenv';
+import { pc_config } from './pc.config';
 
 export class RelayServer {
   private readonly io;
@@ -26,19 +26,6 @@ export class RelayServer {
   createRoom = (socket: Socket) => {
     try {
       socket.on('presenterOffer', async (data) => {
-        dotenv.config();
-        const pc_config = {
-          iceServers: [
-            {
-              urls: ['stun:stun.l.google.com:19302']
-            },
-            {
-              urls: process.env.TURN_URL as string,
-              username: process.env.TURN_USERNAME as string,
-              credential: process.env.TURN_PASSWORD as string
-            }
-          ]
-        };
         const RTCPC = new RTCPeerConnection(pc_config);
         this.relayServerRTCPC = RTCPC;
 
