@@ -17,9 +17,9 @@
     <button id="hangupButton">방 나가기</button>
   </div>
 </div>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script type="module">
-  import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
-  const socket = io('http://localhost:3000/create-room');
+  const socket = io('http://110.165.16.37:3000/create-room');
 
   const startButton = document.getElementById('startButton');
   const callButton = document.getElementById('callButton');
@@ -40,6 +40,12 @@
           "stun:stun.l.google.com:19302",
         ]
       },
+      {
+        urls: "",
+	      username: "",
+	      credential: "",
+
+      }
     ],
   };
 
@@ -53,7 +59,7 @@
       localStream = stream;
       localVideo.srcObject = stream;
       callButton.disabled = false;
-      presenterRTCPC = new RTCPeerConnection();
+      presenterRTCPC = new RTCPeerConnection(pc_config);
     
       if (localStream) {
         localStream.getTracks().forEach((track) => { 
