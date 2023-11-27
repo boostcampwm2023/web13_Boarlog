@@ -3,6 +3,7 @@ import HeaderLogo from "./components/HeaderLogo";
 import HeaderLoginButton from "./components/HeaderLoginButton";
 import HeaderMainButtons from "./components/HeaderMainButtons";
 import HeaderInstructorControls from "./components/HeaderInstructorControls";
+import HeaderParticipantControls from "./components/HeaderParticipantControls";
 import HeaderProfileButton from "./components/HeaderProfileButton";
 import HeaderSettingButton from "./components/HeaderSettingButton";
 
@@ -32,6 +33,13 @@ const Header = ({ type }: HeaderProps) => {
         {type === "instructor" && (
           <>
             <HeaderInstructorControls />
+            <HeaderSettingButton isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
+            <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
+          </>
+        )}
+        {type === "participant" && (
+          <>
+            <HeaderParticipantControls />
             <HeaderSettingButton isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>

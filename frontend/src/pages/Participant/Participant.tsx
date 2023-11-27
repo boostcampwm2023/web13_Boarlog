@@ -1,6 +1,6 @@
 import Header from "@/components/Header/Header";
 
-const Instructor = () => {
+const Participant = () => {
   return (
     <>
       <Header type="participant" />
@@ -9,4 +9,4 @@ const Instructor = () => {
   );
 };
 
-export default Instructor;
+export default Participant;
