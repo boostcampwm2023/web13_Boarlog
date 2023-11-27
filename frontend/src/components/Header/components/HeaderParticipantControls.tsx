@@ -16,7 +16,7 @@ import micVolmeState from "./stateMicVolme";
 
 const HeaderParticipantControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
-  const [isSpeakerOn, setisSpeakerOn] = useState(true);
+  const [isSpeakerOn, setisSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [micVolume, setMicVolume] = useState<number>(0);
@@ -84,7 +84,7 @@ const HeaderParticipantControls = () => {
         if (!localStreamRef.current || !localAudioRef.current) return;
         if (event.track.kind === "audio") {
           localStreamRef.current.addTrack(event.track);
-          startAnalyse();
+          //startAnalyse();
           console.log("audio", event.track);
           localAudioRef.current.srcObject = localStreamRef.current;
         } else if (event.track.kind === "video") {
@@ -175,6 +175,7 @@ const HeaderParticipantControls = () => {
 
   function setupAudioContext(stream: MediaStream) {
     const audioContext = new AudioContext();
+    audioContext.resume();
     const source = audioContext.createMediaStreamSource(stream);
     const destination = audioContext.destination;
 
@@ -182,7 +183,10 @@ const HeaderParticipantControls = () => {
   }
 
   const mute = () => {
-    if (isSpeakerOn) {
+    if (!onFrameIdRef.current) {
+      startAnalyse();
+      setisSpeakerOn(false);
+    } else if (isSpeakerOn) {
       // 추후 구현
       setisSpeakerOn(false);
     } else {
@@ -225,7 +229,6 @@ const HeaderParticipantControls = () => {
         setIsModalOpen={setIsModalOpen}
       />
       <audio id="localAudio" playsInline autoPlay muted ref={localAudioRef}></audio>
-      <button onClick={enterLecture}>.</button>
     </>
   );
 };
