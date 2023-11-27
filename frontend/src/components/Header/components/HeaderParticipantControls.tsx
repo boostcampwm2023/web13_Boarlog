@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-// @ts-ignore
 import { useRecoilValue, useSetRecoilState } from "recoil";
-//import { io, Socket } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
@@ -16,14 +15,13 @@ import selectedMicrophoneState from "./stateMicrophone";
 import micVolmeState from "./stateMicVolme";
 
 const HeaderParticipantControls = () => {
-  // @ts-ignore
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isSpeakerOn, setisSpeakerOn] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // @ts-ignore
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  // @ts-ignore
   const [micVolume, setMicVolume] = useState<number>(0);
+
+  const [didMount, setDidMount] = useState(false);
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const SpeakerVolume = useRecoilValue(micVolmeState);
@@ -31,19 +29,29 @@ const HeaderParticipantControls = () => {
 
   // 아래는 추후에 사용할 예정입니다.
   //const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
-  //const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
-  //const socketRef = useRef<Socket>();
-  //const pcRef = useRef<RTCPeerConnection>();
-  //const mediaStreamRef = useRef<MediaStream>();
-  //const updatedStreamRef = useRef<MediaStream>();
-  const SpeakerVolumeRef = useRef<number>(0);
+  const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+  const socketRef = useRef<Socket>();
+  const pcRef = useRef<RTCPeerConnection>();
+  const localStreamRef = useRef<MediaStream>();
+  const localAudioRef = useRef<HTMLAudioElement>(null);
+  //const SpeakerVolumeRef = useRef<number>(0);
   //const prevSpeakerVolumeRef = useRef<number>(0);
 
   const navigate = useNavigate();
-  //const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
+  const MEDIA_SERVER_URL = "http://localhost:3000/enter-room";
 
   useEffect(() => {
-    SpeakerVolumeRef.current = SpeakerVolume;
+    setDidMount(true);
+  }, []);
+  useEffect(() => {
+    console.log(didMount);
+    if (didMount) {
+      enterLecture();
+    }
+  }, [didMount]);
+
+  useEffect(() => {
+    //SpeakerVolumeRef.current = SpeakerVolume;
   }, [SpeakerVolume]);
   useEffect(() => {
     if (isLectureStart) {
@@ -51,10 +59,127 @@ const HeaderParticipantControls = () => {
     }
   }, [selectedMicrophone]);
 
+  const enterLecture = async () => {
+    console.log("1. enterLecture");
+    await initConnection();
+
+    await createStudentOffer();
+    await setServerAnswer();
+  };
+
   const leaveLecture = () => {
     setIsModalOpen(false);
     navigate("/");
   };
+
+  const initConnection = async () => {
+    try {
+      socketRef.current = io(MEDIA_SERVER_URL);
+      pcRef.current = new RTCPeerConnection();
+      const stream = new MediaStream();
+      localStreamRef.current = stream;
+
+      if (!pcRef.current) return;
+      pcRef.current.ontrack = (event) => {
+        if (!localStreamRef.current || !localAudioRef.current) return;
+        if (event.track.kind === "audio") {
+          localStreamRef.current.addTrack(event.track);
+          startAnalyse();
+          console.log("audio", event.track);
+          localAudioRef.current.srcObject = localStreamRef.current;
+        } else if (event.track.kind === "video") {
+          //localStream.addTrack(event.track);
+          //localVideo.srcObject = localStream;
+        }
+      };
+    } catch (e) {
+      console.log("에러1", e);
+    }
+  };
+
+  function getStudentCandidate() {
+    if (!pcRef.current) return;
+    pcRef.current.onicecandidate = (e) => {
+      if (e.candidate) {
+        if (!socketRef.current) return;
+        socketRef.current.emit("studentCandidate", {
+          candidate: e.candidate,
+          studentSocketId: socketRef.current.id
+        });
+      }
+    };
+  }
+
+  async function createStudentOffer() {
+    try {
+      if (!pcRef.current || !socketRef.current) return;
+      const SDP = await pcRef.current.createOffer({
+        offerToReceiveAudio: true
+      });
+      socketRef.current.emit("studentOffer", {
+        socketId: socketRef.current.id,
+        SDP: SDP
+      });
+
+      pcRef.current.setLocalDescription(SDP);
+      console.log("2. studentOffer");
+      getStudentCandidate();
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function setServerAnswer() {
+    if (!socketRef.current) return;
+    socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
+      if (!pcRef.current) return;
+      pcRef.current.setRemoteDescription(data.SDP);
+    });
+    socketRef.current.on(`${socketRef.current.id}-serverCandidate`, (data) => {
+      if (!pcRef.current) return;
+      pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+    });
+  }
+
+  const startAnalyse = () => {
+    if (!localStreamRef.current) return;
+    const context = new AudioContext();
+    const analyser = context.createAnalyser();
+    const mediaStreamAudioSourceNode = context.createMediaStreamSource(localStreamRef.current);
+    mediaStreamAudioSourceNode.connect(analyser, 0);
+    const pcmData = new Float32Array(analyser.fftSize);
+
+    const onFrame = () => {
+      analyser.getFloatTimeDomainData(pcmData);
+      let sum = 0.0;
+      for (const amplitude of pcmData) {
+        sum += amplitude * amplitude;
+      }
+      const rms = Math.sqrt(sum / pcmData.length);
+      const normalizedVolume = Math.min(1, rms / 0.5);
+      setMicVolume(normalizedVolume);
+      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    };
+    onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+
+    const audioStream = getAudioStream() as MediaStream;
+    setupAudioContext(audioStream);
+  };
+
+  function getAudioStream() {
+    if (!localStreamRef.current) return;
+    const audioTracks = localStreamRef.current.getAudioTracks();
+    const audioStream = new MediaStream(audioTracks);
+    return audioStream;
+  }
+
+  function setupAudioContext(stream: MediaStream) {
+    const audioContext = new AudioContext();
+    const source = audioContext.createMediaStreamSource(stream);
+    const destination = audioContext.destination;
+
+    source.connect(destination);
+  }
 
   const mute = () => {
     if (isSpeakerOn) {
@@ -99,6 +224,8 @@ const HeaderParticipantControls = () => {
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       />
+      <audio id="localAudio" playsInline autoPlay muted ref={localAudioRef}></audio>
+      <button onClick={enterLecture}>.</button>
     </>
   );
 };
