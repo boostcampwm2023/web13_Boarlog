@@ -4,22 +4,27 @@ import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
 import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
-import addStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
+import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
 
 import { useState, useEffect } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { fabric } from "fabric";
+import { getStickyNoteInstance } from "./getStickyNoteInstance";
 
 import ToolButton from "./ToolButton";
 import ColorPanel from "./ColorPanel";
 
 import canvasInstanceState from "./stateCanvasInstance";
+import stickyNoteInstance from "./stateStickyNoteInstance";
+import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
-type ToolType = "select" | "pen" | "stickynote" | "image" | "eraser" | "hand";
+type ToolType = "select" | "pen" | "stickyNote" | "image" | "eraser" | "hand";
 
 const Toolbar = () => {
   const [activeTool, setActiveTool] = useState<ToolType>("pen");
   const canvas = useRecoilValue(canvasInstanceState);
+  const setVisibilityEditPanel = useSetRecoilState(stickyNoteEditPanelVisibilityState);
+  const setStickyNoteInstance = useSetRecoilState(stickyNoteInstance);
 
   /**
    * @description 화이트 보드에 그려져 있는 요소들을 클릭을 통해 선택 가능한지 여부를 제어하기 위한 함수입니다.
@@ -41,46 +46,106 @@ const Toolbar = () => {
     canvas.defaultCursor = "default";
   };
 
+  const handleSelect = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    setIsObjectSelectable(true);
+    canvas.selection = true;
+    canvas.defaultCursor = "default";
+  };
+
+  const handlePen = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    canvas.freeDrawingBrush.width = 10;
+    canvas.isDrawingMode = true;
+  };
+
+  const handleStickyNoteTool = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    canvas.defaultCursor = `url("${AddStickyNoteCursorSVG}"), auto`;
+
+    canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
+      if (!absolutePointer) return;
+      const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
+
+      const stickyMemo = getStickyNoteInstance(mousePositionX, mousePositionY);
+
+      canvas.add(stickyMemo);
+
+      const handleClear = () => {
+        canvas.fire("visiOff");
+      };
+
+      const handleUpdate = ({ selected }: fabric.IEvent<Event>) => {
+        if (!selected) return;
+        const selectedObjectName = selected[0].name;
+        if (selectedObjectName !== "stickyMemo") {
+          canvas.fire("visiOff");
+        }
+      };
+
+      stickyMemo.on("selected", ({ target }) => {
+        if (!target) return;
+        setVisibilityEditPanel(true);
+        setStickyNoteInstance(target);
+        canvas.on("selection:cleared", handleClear);
+        canvas.on("selection:updated", handleUpdate);
+      });
+
+      canvas.on("visiOff", () => {
+        setVisibilityEditPanel(false);
+        canvas.off("selection:updated", handleUpdate);
+        canvas.off("selection:cleared", handleClear);
+      });
+
+      setActiveTool("select");
+    });
+  };
+
+  const handleHand = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    canvas.defaultCursor = "move";
+
+    let panning = false;
+    const handleMouseDown = () => {
+      panning = true;
+    };
+    const handleMouseMove = (event: fabric.IEvent<MouseEvent>) => {
+      if (panning) {
+        const delta = new fabric.Point(event.e.movementX, event.e.movementY);
+        canvas.relativePan(delta);
+      }
+    };
+    const handleMouseUp = () => {
+      panning = false;
+    };
+    canvas.on("mouse:down", handleMouseDown);
+    canvas.on("mouse:move", handleMouseMove);
+    canvas.on("mouse:up", handleMouseUp);
+  };
+
   useEffect(() => {
     if (!(canvas instanceof fabric.Canvas)) return;
     canvas.off("mouse:down");
     canvas.off("mouse:move");
     canvas.off("mouse:up");
+
     resetCanvasOption();
 
     switch (activeTool) {
       case "select":
-        setIsObjectSelectable(true);
-        canvas.selection = true;
-        canvas.defaultCursor = "default";
+        handleSelect();
         break;
 
       case "pen":
-        canvas.freeDrawingBrush.width = 10;
-        canvas.isDrawingMode = true;
+        handlePen();
         break;
 
-      case "stickynote":
-        canvas.defaultCursor = `url("${addStickyNoteCursorSVG}"), auto`;
-
-        canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
-          if (!absolutePointer) return;
-          const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
-
-          const rect = new fabric.Rect({
-            left: mousePositionX,
-            top: mousePositionY,
-            width: 187,
-            height: 133,
-            fill: "#FFE196",
-            stroke: "black",
-            strokeWidth: 1
-          });
-          canvas.add(rect);
-
-          setActiveTool("select");
-        });
-
+      case "stickyNote":
+        handleStickyNoteTool();
         break;
 
       case "image":
@@ -90,24 +155,7 @@ const Toolbar = () => {
         break;
 
       case "hand":
-        canvas.defaultCursor = "move";
-
-        let panning = false;
-        const handleMouseDown = () => {
-          panning = true;
-        };
-        const handleMouseMove = (event: fabric.IEvent<MouseEvent>) => {
-          if (panning) {
-            const delta = new fabric.Point(event.e.movementX, event.e.movementY);
-            canvas.relativePan(delta);
-          }
-        };
-        const handleMouseUp = () => {
-          panning = false;
-        };
-        canvas.on("mouse:down", handleMouseDown);
-        canvas.on("mouse:move", handleMouseMove);
-        canvas.on("mouse:up", handleMouseUp);
+        handleHand();
         break;
     }
   }, [activeTool]);
@@ -120,37 +168,31 @@ const Toolbar = () => {
         disabled={activeTool === "select"}
         title="Select Tool"
       />
-
       <ToolButton
         icon={PenIcon}
         onClick={() => setActiveTool("pen")}
         disabled={activeTool === "pen"}
         title="Pen Tool"
       />
-
       <ToolButton
         icon={StickyNoteIcon}
-        onClick={() => setActiveTool("stickynote")}
-        disabled={activeTool === "stickynote"}
+        onClick={() => setActiveTool("stickyNote")}
+        disabled={activeTool === "stickyNote"}
         title="Add Stikynote (포스트잇 추가)"
       />
-
       <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
-
       <ToolButton
         icon={ImageIcon}
         onClick={() => setActiveTool("image")}
         disabled={activeTool === "image"}
         title="Image Tool"
       />
-
       <ToolButton
         icon={EraserIcon}
         onClick={() => setActiveTool("eraser")}
         disabled={activeTool === "eraser"}
         title="Eraser Tool"
       />
-
       <ToolButton
         icon={HandIcon}
         onClick={() => setActiveTool("hand")}

@@ -1,6 +1,4 @@
 [build]
-  command = "cd frontend && npm run build"
-  publish = "frontend/build"
   ignore = "git diff --quiet HEAD^ HEAD frontend/"
  
 [[redirects]]
