@@ -41,7 +41,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         }`}
       >
         <div className="flex flex-row gap-3 w-full h-10 justify-start">
-          <p id="input-device-label">입력 장치 설정</p>
+          <p id="input-device-label">스피커 선택</p>
         </div>
 
         <select
@@ -57,7 +57,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         </select>
 
         <div className="flex flex-row gap-3 w-full h-10 justify-start">
-          <label htmlFor="volumeSlider">입력 볼륨:</label>
+          <label htmlFor="volumeSlider">스피커 볼륨</label>
         </div>
         <input
           className="w-full"

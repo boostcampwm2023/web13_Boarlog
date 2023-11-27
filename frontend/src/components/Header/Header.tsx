@@ -33,14 +33,22 @@ const Header = ({ type }: HeaderProps) => {
         {type === "instructor" && (
           <>
             <HeaderInstructorControls />
-            <HeaderSettingButton isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
+            <HeaderSettingButton
+              isSettingClicked={isSettingClicked}
+              setIsSettingClicked={setIsSettingClicked}
+              type={type}
+            />
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>
         )}
         {type === "participant" && (
           <>
             <HeaderParticipantControls />
-            <HeaderSettingButton isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
+            <HeaderSettingButton
+              isSettingClicked={isSettingClicked}
+              setIsSettingClicked={setIsSettingClicked}
+              type={type}
+            />
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>
         )}

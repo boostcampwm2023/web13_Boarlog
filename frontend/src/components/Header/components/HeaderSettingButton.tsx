@@ -1,13 +1,15 @@
 import SettingIcon from "@/assets/svgs/setting.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
-import HeaderSettingModal from "./HeaderSettingModal";
+import HeaderInstructorSettingModal from "./HeaderInstructorSettingModal";
+import HeaderParticipantSettingModal from "./HeaderParticipantSettingModal";
 
 interface HeaderSettingButtonProps {
   isSettingClicked: boolean;
   setIsSettingClicked: React.Dispatch<React.SetStateAction<boolean>>;
+  type: "login" | "main" | "instructor" | "participant";
 }
 
-const HeaderSettingButton = ({ isSettingClicked, setIsSettingClicked }: HeaderSettingButtonProps) => {
+const HeaderSettingButton = ({ isSettingClicked, setIsSettingClicked, type }: HeaderSettingButtonProps) => {
   return (
     <>
       <SmallButton
@@ -16,7 +18,13 @@ const HeaderSettingButton = ({ isSettingClicked, setIsSettingClicked }: HeaderSe
       >
         <SettingIcon className="w-5 h-5 fill-grayscale-black" />
       </SmallButton>
-      <HeaderSettingModal isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
+
+      {type === "instructor" && (
+        <HeaderInstructorSettingModal isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
+      )}
+      {type === "participant" && (
+        <HeaderParticipantSettingModal isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
+      )}
     </>
   );
 };

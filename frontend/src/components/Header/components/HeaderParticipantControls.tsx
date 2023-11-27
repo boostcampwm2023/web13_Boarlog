@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
 
-import PlayIcon from "@/assets/svgs/play.svg?react";
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
