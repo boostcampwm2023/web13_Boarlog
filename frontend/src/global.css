@@ -52,6 +52,14 @@
   @apply border border-solid border-grayscale-lightgray;
 }
 
+.border-black {
+  @apply border border-solid border-grayscale-black;
+}
+
+.border-boarlog {
+  @apply border border-solid border-boarlog-100;
+}
+
 .shadow-default {
   box-shadow: 0px 0px 50px 10px rgba(233, 233, 233, 0.25);
 }
@@ -98,21 +106,18 @@
   animation: fadeOut 0.5s ease-in-out;
 }
 
-.flipcard {
+.preserve-3d {
   transform-style: preserve-3d;
-  transition: all 0.8s;
 }
 
-.flipcard-wrapper:hover > div {
-  transform: rotateY(180deg);
-}
-
-.flipcard-front {
+.backface-hidden {
   backface-visibility: hidden;
-  z-index: 2;
 }
 
-.flipcard-back {
+.rotate-180 {
   transform: rotateY(180deg);
-  z-index: 1;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
 }

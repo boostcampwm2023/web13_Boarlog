@@ -1,19 +1,46 @@
-import NewLectureImg from "@/assets/imgs/newLecture.png";
 import Button from "@/components/Button/Button";
+import SmallButton from "@/components/SmallButton/SmallButton";
+import CloseIcon from "@/assets/svgs/close.svg?react";
+import NewLectureIcon from "@/assets/svgs/newLecture.svg?react";
 
-const NewLectureBack = () => {
+interface NewLectureBackProps {
+  handleNewLectureFalse: () => void;
+}
+
+const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
   return (
-    <div className="w-full h-full flex flex-col absolute bg-grayscale-white overflow-hidden border-default rounded-xl flipcard-back">
-      <img src={NewLectureImg} alt="강의 시작 배너 이미지" className="w-full h-60 object-cover object-center" />
-      <div className="w-full flex grow flex-col p-6 justify-between">
-        <div>
-          <h3 className="semibold-32 break-keep mb-1">뒷면 카드</h3>
-          <p className="medium-18 text-grayscale-darkgray break-keep">
-            강의 세션을 직접 생성하여 직접 진행해보세요. 다양한 사람들과 함께 실시간으로 소통하며 원하는 주제에 대해
-            이야기를 나눌 수 있어요.
-          </p>
+    <div className="w-full h-full flex flex-col absolute bg-grayscale-white overflow-hidden border-default rounded-xl rotate-180 z-[1] shadow-xl">
+      <div className="w-full h-full flex flex-col p-6 gap-6">
+        <div className="flex flex-row justify-between">
+          <h3 className="semibold-32 break-keep">새로운 강의 생성하기</h3>
+          <SmallButton onClick={handleNewLectureFalse}>
+            <CloseIcon className="w-6 h-6" />
+          </SmallButton>
         </div>
-        <Button type="full" buttonStyle="black">
+
+        <div className="flex flex-col gap-2">
+          <h4 className="semibold-18 break-keep">강의 제목</h4>
+          <p className="medium-12 text-grayscale-darkgray break-keep">강의의 제목을 작성해주세요.</p>
+          <input
+            type="text"
+            className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
+            placeholder="강의 제목을 입력해주세요"
+            maxLength={50}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 flex-grow">
+          <h4 className="semibold-18 break-keep">강의 설명</h4>
+          <p className="medium-12 text-grayscale-darkgray break-keep">강의에 대한 설명을 간략하게 작성해주세요.</p>
+          <textarea
+            className="rounded-xl border-black w-full flex-grow medium-12 p-3 resize-none focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
+            placeholder="강의 설명을 입력해주세요"
+            maxLength={200}
+          />
+        </div>
+
+        <Button type="full" buttonStyle="blue">
+          <NewLectureIcon className="fill-grayscale-white" />
           강의 생성하기
         </Button>
       </div>
