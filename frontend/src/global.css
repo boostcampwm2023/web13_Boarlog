@@ -97,3 +97,22 @@
 .toast-fade-out {
   animation: fadeOut 0.5s ease-in-out;
 }
+
+.flipcard {
+  transform-style: preserve-3d;
+  transition: all 0.8s;
+}
+
+.flipcard-wrapper:hover > div {
+  transform: rotateY(180deg);
+}
+
+.flipcard-front {
+  backface-visibility: hidden;
+  z-index: 2;
+}
+
+.flipcard-back {
+  transform: rotateY(180deg);
+  z-index: 1;
+}
