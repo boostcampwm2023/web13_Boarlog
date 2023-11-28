@@ -1,6 +1,10 @@
 import { atom } from "recoil";
 
-const stickyNoteInstance = atom<fabric.Object>({
+export interface fabricObjectWithItem extends fabric.Object {
+  item: Function;
+}
+
+const stickyNoteInstance = atom<fabricObjectWithItem>({
   key: "stickyNoteInstance",
   default: undefined,
   dangerouslyAllowMutability: true

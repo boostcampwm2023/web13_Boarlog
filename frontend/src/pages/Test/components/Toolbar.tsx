@@ -6,6 +6,8 @@ import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
 
+import { fabricObjectWithItem } from "./stateStickyNoteInstance";
+
 import { useState, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { fabric } from "fabric";
@@ -89,7 +91,7 @@ const Toolbar = () => {
       stickyMemo.on("selected", ({ target }) => {
         if (!target) return;
         setVisibilityEditPanel(true);
-        setStickyNoteInstance(target);
+        setStickyNoteInstance(target as fabricObjectWithItem);
         canvas.on("selection:cleared", handleClear);
         canvas.on("selection:updated", handleUpdate);
       });
