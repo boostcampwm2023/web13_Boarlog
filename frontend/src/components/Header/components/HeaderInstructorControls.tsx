@@ -35,6 +35,18 @@ const HeaderInstructorControls = () => {
   const prevInputMicVolumeRef = useRef<number>(0);
 
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
+  const pc_config = {
+    iceServers: [
+      {
+        urls: ["stun:stun.l.google.com:19302"]
+      },
+      {
+        urls: import.meta.env.VITE_TURN_URL as string,
+        username: import.meta.env.VITE_TURN_USERNAME as string,
+        credential: import.meta.env.VITE_TURN_PASSWORD as string
+      }
+    ]
+  };
 
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
@@ -85,7 +97,7 @@ const HeaderInstructorControls = () => {
       startTimer();
 
       // 2. 로컬 RTCPeerConnection 생성
-      pcRef.current = new RTCPeerConnection();
+      pcRef.current = new RTCPeerConnection(pc_config);
       // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
       if (updatedStreamRef.current) {
         updatedStreamRef.current.getTracks().forEach((track) => {
