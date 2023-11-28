@@ -6,7 +6,7 @@ import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
 
-import { fabricObjectWithItem } from "./stateStickyNoteInstance";
+import { fabricObjectWithAddWithUpdate, fabricObjectWithItem } from "./stateStickyNoteInstance";
 
 import { useState, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -88,6 +88,68 @@ const Toolbar = () => {
         }
       };
 
+      const handleEditEnd = (
+        dummyTextBox: fabric.Textbox,
+        prevTextBox: fabric.Textbox,
+        memoGroup: fabricObjectWithAddWithUpdate
+      ) => {
+        let newTextContents = dummyTextBox.text;
+
+        // 만약 텍스트 박스를 비운채로 편집을 마쳤다면 메모의 내용을 다시 디폴트 상태로 돌려줍니다.
+        if (newTextContents?.length === 0) newTextContents = "더블 클릭해 메모 내용을 편집하세요...";
+
+        // 더미 텍스트를 보여주기 전 숨겼던 텍스트 박스를 보여주고 새로운 내용으로 텍스트를 갱신합니다.
+        prevTextBox.set({
+          text: newTextContents,
+          visible: true
+        });
+
+        memoGroup.addWithUpdate();
+
+        dummyTextBox.visible = false;
+        canvas.remove(dummyTextBox);
+        canvas.setActiveObject(memoGroup);
+      };
+
+      const handleEditText = ({ target }: fabric.IEvent<MouseEvent>) => {
+        if (!target) return;
+        const textBox = (target as fabricObjectWithItem).item(1);
+
+        // @ts-ignore
+        const { left: memoLeft, top: memoTop, ...rest } = target;
+        if (!memoLeft || !memoTop) return;
+
+        // 더미 텍스트박스를 생성합니다.
+        const dummyTextBox = new fabric.Textbox(textBox.text, {
+          textAlign: textBox.textAlign,
+          fontSize: textBox.fontSize,
+          width: textBox.width,
+          fill: textBox.fill,
+          left: memoLeft + 10,
+          top: memoTop + 10,
+          splitByGrapheme: true
+        });
+
+        // 그룹에 존재하는 텍스트 박스를 숨긴 후 재 랜더링한다.
+        textBox.visible = false;
+        // @ts-ignore
+        target.addWithUpdate();
+        dummyTextBox.hasControls = false;
+
+        // 더미 텍스트 박스를 캔버스에 추가한다.
+        canvas.add(dummyTextBox);
+
+        // 더미 텍스트 박스를 선택하고 텍스트 수정 모드로 바꾸고 텍스트 박스 내 모든 텍스트를 선택한다.
+        canvas.setActiveObject(dummyTextBox);
+        dummyTextBox.enterEditing();
+        dummyTextBox.selectAll();
+
+        // 텍스트의 수정을 마치는 이벤트 처리
+        dummyTextBox.on("editing:exited", () => {
+          handleEditEnd(dummyTextBox, textBox, target as fabricObjectWithAddWithUpdate);
+        });
+      };
+
       stickyMemo.on("selected", ({ target }) => {
         if (!target) return;
         setVisibilityEditPanel(true);
@@ -95,6 +157,8 @@ const Toolbar = () => {
         canvas.on("selection:cleared", handleClear);
         canvas.on("selection:updated", handleUpdate);
       });
+
+      stickyMemo.on("mousedblclick", handleEditText);
 
       canvas.on("visiOff", () => {
         setVisibilityEditPanel(false);
