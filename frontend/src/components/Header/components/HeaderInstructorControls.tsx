@@ -231,27 +231,6 @@ const HeaderInstructorControls = () => {
     }
   };
 
-  // 기존에 미디어 서버에 보내는 오디오 트랙을 새 마이크의 오디오 트랙으로 교체
-  const replaceAudioTrack = async () => {
-    try {
-      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { deviceId: selectedMicrophone }
-      });
-      if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 기존 미디어 트랙 중지
-      mediaStreamRef.current = stream;
-
-      await setupAudioAnalysis(stream);
-
-      if (!updatedStreamRef.current || !pcRef.current) return;
-      // 기존트랙: pcRef.current.getSenders()[0].track
-      // 새트랙: updatedStreamRef.current.getAudioTracks()[0]
-      pcRef.current.getSenders()[0].replaceTrack(updatedStreamRef.current.getAudioTracks()[0]);
-    } catch (error) {
-      console.error("오디오 replace 작업 실패", error);
-    }
-  };
-
   return (
     <>
       <div className="flex gap-2 fixed left-1/2 -translate-x-1/2">
