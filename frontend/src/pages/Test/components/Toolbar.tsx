@@ -123,6 +123,7 @@ const Toolbar = () => {
       if (activeTool === "eraser") {
         selected?.forEach((object) => canvas.remove(object));
       }
+      canvas.discardActiveObject().renderAll();
     });
   };
 
