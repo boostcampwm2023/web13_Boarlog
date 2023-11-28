@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "@/components/Button/Button";
-import ProfileLarge from "@/assets/imgs/profileLarge.png";
+import ProfileBig from "@/assets/imgs/profileBig.png";
 import EnterIcon from "@/assets/svgs/enter.svg?react";
 import { useToast } from "@/components/Toast/useToast";
 
@@ -39,7 +39,7 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
   return (
     <section className="flex relative w-11/12 max-w-xl p-8 flex-col items-center gap-8 rounded-xl border-default shadow-xl">
       <img
-        src={profileImage ? profileImage : ProfileLarge}
+        src={profileImage ? profileImage : ProfileBig}
         alt="프로필 이미지"
         className="absolute -top-20 w-40 h-40 st:w-56 st:h-56 st:-top-28"
       />
