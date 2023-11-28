@@ -26,7 +26,6 @@ const HeaderParticipantControls = () => {
   const SpeakerVolume = useRecoilValue(speakerVolmeState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
 
-  // 아래는 추후에 사용할 예정입니다.
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
