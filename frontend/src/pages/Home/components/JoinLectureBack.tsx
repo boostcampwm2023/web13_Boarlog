@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import Button from "@/components/Button/Button";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import CloseIcon from "@/assets/svgs/close.svg?react";
@@ -22,6 +23,8 @@ const JoinLectureBack = ({
   setCodeInputs
 }: JoinLectureBackProps) => {
   const showToast = useToast();
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
   const handleSearchButtonClicked = () => {
     if (codeInputs.join("").length !== 6) showToast({ message: "강의 코드를 올바르게 입력해주세요.", type: "alert" });
     else handleLectureSearchClickedTrue();
@@ -60,7 +63,7 @@ const JoinLectureBack = ({
             <p className="medium-12 text-grayscale-darkgray break-keep">
               강의 진행자에게 전달받은 강의 코드 6자리를 입력해주세요.
             </p>
-            <LectureCodeInput inputs={codeInputs} setInputs={setCodeInputs} />
+            <LectureCodeInput inputs={codeInputs} setInputs={setCodeInputs} keyPress={handleSearchButtonClicked} />
           </div>
         )}
 
