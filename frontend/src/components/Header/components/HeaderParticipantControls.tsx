@@ -28,11 +28,11 @@ const HeaderParticipantControls = () => {
   //const setSpeakerVolumeState = useSetRecoilState(micVolmeState);
 
   // 아래는 추후에 사용할 예정입니다.
-  //const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
+  const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
-  const localStreamRef = useRef<MediaStream>();
+  const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
   //const SpeakerVolumeRef = useRef<number>(0);
   //const prevSpeakerVolumeRef = useRef<number>(0);
@@ -80,6 +80,14 @@ const HeaderParticipantControls = () => {
   };
 
   const leaveLecture = () => {
+    setElapsedTime(0);
+
+    if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
+    if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
+    if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
+    if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
+    if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
+
     setIsModalOpen(false);
     navigate("/");
   };
@@ -89,16 +97,16 @@ const HeaderParticipantControls = () => {
       socketRef.current = io(MEDIA_SERVER_URL);
       pcRef.current = new RTCPeerConnection(pc_config);
       const stream = new MediaStream();
-      localStreamRef.current = stream;
+      mediaStreamRef.current = stream;
 
       if (!pcRef.current) return;
       pcRef.current.ontrack = (event) => {
-        if (!localStreamRef.current || !localAudioRef.current) return;
+        if (!mediaStreamRef.current || !localAudioRef.current) return;
         if (event.track.kind === "audio") {
-          localStreamRef.current.addTrack(event.track);
+          mediaStreamRef.current.addTrack(event.track);
           //startAnalyse();
           console.log("audio", event.track);
-          localAudioRef.current.srcObject = localStreamRef.current;
+          localAudioRef.current.srcObject = mediaStreamRef.current;
         } else if (event.track.kind === "video") {
           //localStream.addTrack(event.track);
           //localVideo.srcObject = localStream;
@@ -154,10 +162,10 @@ const HeaderParticipantControls = () => {
   }
 
   const startAnalyse = () => {
-    if (!localStreamRef.current) return;
+    if (!mediaStreamRef.current) return;
     const context = new AudioContext();
     const analyser = context.createAnalyser();
-    const mediaStreamAudioSourceNode = context.createMediaStreamSource(localStreamRef.current);
+    const mediaStreamAudioSourceNode = context.createMediaStreamSource(mediaStreamRef.current);
     mediaStreamAudioSourceNode.connect(analyser, 0);
     const pcmData = new Float32Array(analyser.fftSize);
 
@@ -179,8 +187,8 @@ const HeaderParticipantControls = () => {
   };
 
   function getAudioStream() {
-    if (!localStreamRef.current) return;
-    const audioTracks = localStreamRef.current.getAudioTracks();
+    if (!mediaStreamRef.current) return;
+    const audioTracks = mediaStreamRef.current.getAudioTracks();
     const audioStream = new MediaStream(audioTracks);
     return audioStream;
   }
