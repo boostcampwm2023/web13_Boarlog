@@ -21,7 +21,8 @@ export class AuthService {
     return await this.userModel.findOne({ email: email });
   }
 
-  async generateJWT(userInfo: UserInfoDto): Promise<string> {
-    return await this.jwtService.signAsync(userInfo);
+  async generateCookie(userInfo: UserInfoDto) {
+    const token = await this.jwtService.signAsync(userInfo);
+    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=3600`;
   }
 }
