@@ -1,8 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import logoBig from "@/assets/imgs/logoBig.png";
 import GoogleIcon from "@/assets/svgs/google.svg?react";
 import Button from "@/components/Button/Button";
 
 const LoginSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="flex relative w-11/12 max-w-xl p-8 flex-col items-center gap-4 rounded-xl border-default shadow-xl">
       <img src={logoBig} alt="Boarlog 로고" className="absolute -top-20 w-40 h-40 lg:w-56 st:h-56 lg:-top-28"></img>
@@ -14,7 +17,7 @@ const LoginSection = () => {
       </div>
 
       <div className="w-full max-w-sm">
-        <Button type="full" buttonStyle="black">
+        <Button type="full" buttonStyle="black" onClick={() => navigate("/start")}>
           <GoogleIcon />
           구글 계정으로 로그인
         </Button>
