@@ -203,7 +203,7 @@ const HeaderInstructorControls = () => {
 
   // 경과 시간을 표시하기 위한 부분입니다
   const startTimer = () => {
-    let startTime = Date.now();
+    const startTime = Date.now();
     const updateElapsedTime = () => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsedTime);

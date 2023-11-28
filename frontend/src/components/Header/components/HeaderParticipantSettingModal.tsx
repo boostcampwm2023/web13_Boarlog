@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSetRecoilState } from "recoil";
-import selectedMicrophoneState from "./stateSelectedMicrophone";
-import micVolmeState from "./stateMicVolme";
+
+import selectedSpeakerState from "./stateSelectedSpeaker";
+import speakerVolmeState from "./stateSpeakerVolme";
 
 interface HeaderSettingModalProps {
   isSettingClicked: boolean;
@@ -9,18 +10,18 @@ interface HeaderSettingModalProps {
 }
 
 const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSettingModalProps) => {
-  const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
+  const [speakerDevices, setSpeakerDevices] = useState<MediaDeviceInfo[]>([]);
 
-  const setSelectedMicrophone = useSetRecoilState(selectedMicrophoneState);
-  const setMicVolume = useSetRecoilState(micVolmeState);
+  const setSelectedSpeaker = useSetRecoilState(selectedSpeakerState);
+  const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
 
   useEffect(() => {
     // 마이크 장치 목록 가져오기
     navigator.mediaDevices
       .enumerateDevices()
       .then((devices) => {
-        const microphones = devices.filter((device) => device.kind === "audioinput");
-        setMicrophoneDevices(microphones);
+        const microphones = devices.filter((device) => device.kind === "audiooutput");
+        setSpeakerDevices(microphones);
       })
       .catch((error) => {
         console.error("입력 장치 목록 불러오기 실패", error);
@@ -47,11 +48,11 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         <select
           aria-labelledby="input-device-label"
           className="border w-full rounded-xl px-3 py-4"
-          onChange={(e) => setSelectedMicrophone(e.target.value)}
+          onChange={(e) => setSelectedSpeaker(e.target.value)}
         >
-          {microphoneDevices.map((device) => (
+          {speakerDevices.map((device) => (
             <option key={device.deviceId} value={device.deviceId}>
-              {device.label || `마이크 ${microphoneDevices.indexOf(device) + 1}`}
+              {device.label || `스피커 ${speakerDevices.indexOf(device) + 1}`}
             </option>
           ))}
         </select>
@@ -66,7 +67,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
           min="0"
           max="1"
           step="0.01"
-          onChange={(e) => setMicVolume(parseFloat(e.target.value))}
+          onChange={(e) => setSpeakerVolume(parseFloat(e.target.value))}
         />
 
         <div className="flex flex-row gap-4 w-full"></div>

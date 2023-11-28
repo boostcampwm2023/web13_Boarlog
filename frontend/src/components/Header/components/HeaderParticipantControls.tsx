@@ -3,20 +3,18 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
-import { useToast } from "@/components/Toast/useToast";
 import VolumeMeter from "./VolumeMeter";
-
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
+import { useToast } from "@/components/Toast/useToast";
 
-import selectedMicrophoneState from "./stateSelectedMicrophone";
-import micVolmeState from "./stateMicVolme";
+import selectedSpeakerState from "./stateSelectedSpeaker";
+import speakerVolmeState from "./stateSpeakerVolme";
 
 const HeaderParticipantControls = () => {
-  const [isLectureStart, setIsLectureStart] = useState(false);
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
@@ -24,9 +22,9 @@ const HeaderParticipantControls = () => {
 
   const [didMount, setDidMount] = useState(false);
 
-  const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
-  const SpeakerVolume = useRecoilValue(micVolmeState);
-  //const setSpeakerVolumeState = useSetRecoilState(micVolmeState);
+  const selectedSpeaker = useRecoilValue(selectedSpeakerState);
+  const SpeakerVolume = useRecoilValue(speakerVolmeState);
+  const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
 
   // 아래는 추후에 사용할 예정입니다.
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
@@ -37,6 +35,8 @@ const HeaderParticipantControls = () => {
   const localAudioRef = useRef<HTMLAudioElement>(null);
   //const SpeakerVolumeRef = useRef<number>(0);
   //const prevSpeakerVolumeRef = useRef<number>(0);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaStreamSourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
   const navigate = useNavigate();
   const showToast = useToast();
@@ -65,13 +65,13 @@ const HeaderParticipantControls = () => {
   }, [didMount]);
 
   useEffect(() => {
+    console.log("SpeakerVolume", SpeakerVolume);
     //SpeakerVolumeRef.current = SpeakerVolume;
   }, [SpeakerVolume]);
   useEffect(() => {
-    if (isLectureStart) {
-      // 추후 구현
-    }
-  }, [selectedMicrophone]);
+    if (!audioContextRef.current) return;
+    (audioContextRef.current as any).setSinkId(selectedSpeaker);
+  }, [selectedSpeaker]);
 
   const enterLecture = async () => {
     console.log("1. enterLecture");
@@ -161,10 +161,14 @@ const HeaderParticipantControls = () => {
 
   const startAnalyse = () => {
     if (!mediaStreamRef.current) return;
-    const context = new AudioContext();
-    const analyser = context.createAnalyser();
-    const mediaStreamAudioSourceNode = context.createMediaStreamSource(mediaStreamRef.current);
-    mediaStreamAudioSourceNode.connect(analyser, 0);
+    audioContextRef.current = new AudioContext();
+    const analyser = audioContextRef.current.createAnalyser();
+    mediaStreamSourceNodeRef.current = audioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
+
+    const destination = audioContextRef.current.destination;
+    mediaStreamSourceNodeRef.current.connect(destination);
+
+    mediaStreamSourceNodeRef.current.connect(analyser, 0);
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
@@ -179,29 +183,20 @@ const HeaderParticipantControls = () => {
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-
-    setupAudioContext(mediaStreamRef.current);
   };
-
-  function setupAudioContext(stream: MediaStream) {
-    const audioContext = new AudioContext();
-    audioContext.resume();
-    const source = audioContext.createMediaStreamSource(stream);
-    const destination = audioContext.destination;
-
-    source.connect(destination);
-  }
 
   const mute = () => {
     if (!onFrameIdRef.current) {
       startAnalyse();
-      setisSpeakerOn(false);
-    } else if (isSpeakerOn) {
-      // 추후 구현
-      setisSpeakerOn(false);
-    } else {
-      // 추후 구현
       setisSpeakerOn(true);
+      showToast({ message: "음소거가 해제되었습니다", type: "success" });
+    } else if (isSpeakerOn) {
+      setSpeakerVolume(0);
+      setisSpeakerOn(false);
+      showToast({ message: "음소거 되었습니다", type: "alert" });
+    } else {
+      setisSpeakerOn(true);
+      showToast({ message: "음소거가 해제되었습니다", type: "success" });
     }
   };
 
@@ -222,11 +217,7 @@ const HeaderParticipantControls = () => {
         강의 나가기
       </SmallButton>
       <SmallButton className={`text-grayscale-white ${isSpeakerOn ? "bg-boarlog-100" : "bg-alert-100"}`} onClick={mute}>
-        {isSpeakerOn ? (
-          <MicOnIcon className="w-5 h-5 fill-grayscale-white" />
-        ) : (
-          <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
-        )}
+        <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
       </SmallButton>
       <Modal
         modalText="강의를 나가시겠습니까?"
