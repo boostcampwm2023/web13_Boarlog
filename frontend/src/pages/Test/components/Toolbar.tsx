@@ -5,6 +5,7 @@ import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
+import EraserCursorSVG from "@/assets/svgs/eraserMouseCursor.svg";
 
 import { useState, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -104,6 +105,27 @@ const Toolbar = () => {
     });
   };
 
+  const handleEraser = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    setIsObjectSelectable(true);
+    canvas.selection = true;
+
+    canvas.defaultCursor = `url("${EraserCursorSVG}"), auto`;
+
+    canvas.on("mouse:up", ({ target }) => {
+      if (!target) return;
+      canvas.remove(target);
+    });
+
+    canvas.on("selection:created", ({ selected }) => {
+      console.log(selected);
+      if (activeTool === "eraser") {
+        selected?.forEach((object) => canvas.remove(object));
+      }
+    });
+  };
+
   const handleHand = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
 
@@ -152,6 +174,7 @@ const Toolbar = () => {
         break;
 
       case "eraser":
+        handleEraser();
         break;
 
       case "hand":
