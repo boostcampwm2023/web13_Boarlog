@@ -13,8 +13,6 @@ export class RelayServer {
   constructor(port: number) {
     this.roomsInfo = new Map();
     this.clientsInfo = new Map();
-    // this.presentersInfo = new Map();
-    // this.studentsInfo = new Map();
     this.io = new Server(port, {
       cors: {
         origin: '*',
@@ -32,7 +30,7 @@ export class RelayServer {
       socket.on('presenterOffer', async (data) => {
         const RTCPC = new RTCPeerConnection(pc_config);
         this.clientsInfo.set(socket.id, new ClientInfo(ClientType.PRESENTER, RTCPC));
-        this.roomsInfo.set(data.roomId, new RoomInfo(socket.id, RTCPC));
+        this.roomsInfo.set(data.roomId, new RoomInfo(data.roomId, socket, RTCPC));
         RTCPC.ontrack = (event) => {
           const roomInfo = this.roomsInfo.get(data.roomId);
           if (roomInfo) {
@@ -90,7 +88,7 @@ export class RelayServer {
         if (!clientInfo || !roomInfo) {
           throw new Error('발표자가 존재하지 않습니다.');
         }
-        roomInfo.studentSocketList.push(socket.id);
+        roomInfo.studentSocketList.push(socket);
         clientInfo.roomId = data.roomId;
         socket.join(data.roomId);
       });
@@ -114,11 +112,20 @@ export class RelayServer {
       if (!clientInfo.roomId || clientInfo.type !== ClientType.STUDENT) {
         throw new Error('해당 참여자가 존재하지 않습니다.');
       }
-      const presenterSocketId = this.roomsInfo.get(clientInfo.roomId)?.presenterSocketId;
-      if (!presenterSocketId) {
+      const presenterSocket = this.roomsInfo.get(clientInfo.roomId)?.presenterSocket;
+      if (!presenterSocket) {
         throw new Error('해당 방이 존재하지 않습니다');
       }
-      this.io.of('/lecture').to(presenterSocketId).emit('question', new Message('question', data.content));
+      this.io.of('/lecture').to(presenterSocket.id).emit('question', new Message('question', data.content));
+    });
+    socket.on('endOfLecture', (data) => {
+      if (!clientInfo.roomId || clientInfo.type !== ClientType.PRESENTER) {
+        throw new Error('해당 발표자가 존재하지 않습니다');
+      }
+      this.io.of('/lecture').to(clientInfo.roomId).emit('end', new Message('lecture', data.content));
+      this.roomsInfo.get(clientInfo.roomId)?.exitRoom();
+      this.roomsInfo.delete(clientInfo.roomId);
+      clientInfo.roomId = '';
     });
   };
 
