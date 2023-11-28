@@ -9,7 +9,7 @@ interface StartSectionProps {
   profileImage: string;
 }
 
-const NICKNAME_REGEXP = /^(?=.*[가-힣A-Za-z])(?=.*[A-Za-z0-9])[가-힣A-Za-z0-9-_.]{1,10}$/;
+const NICKNAME_REGEXP = /^(?![0-9-_.]+$)[가-힣A-Za-z0-9-_.]{1,10}$/;
 
 const StartSection = ({ profileImage }: StartSectionProps) => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
       </div>
 
       <div className="w-full max-w-sm">
-        <Button type="full" buttonStyle="black" onClick={handleStartButtonClicked}>
+        <Button type="full" buttonStyle={isValid ? "blue" : "black"} onClick={handleStartButtonClicked}>
           <EnterIcon className="fill-grayscale-white" />
           볼록 시작하기
         </Button>
