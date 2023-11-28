@@ -20,7 +20,7 @@ const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
 
         <div className="flex flex-col gap-2">
           <h4 className="semibold-18 break-keep">강의 제목</h4>
-          <p className="medium-12 text-grayscale-darkgray break-keep">강의의 제목을 작성해주세요.</p>
+          <p className="medium-12 text-grayscale-darkgray break-keep">강의를 잘 드러낼 수 있는 제목을 작성해 주세요.</p>
           <input
             type="text"
             className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
