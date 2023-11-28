@@ -9,6 +9,7 @@ import { RecoilRoot } from "recoil";
 import Example from "./pages/Example/Example";
 
 import ToastContainer from "./components/Toast/ToastContainer";
+import Start from "./pages/Start/Start";
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/start" element={<Start />} />
           <Route path="/test" element={<Test />} />
           <Route path="/mictest" element={<MicTest />} />
           <Route path="/example" element={<Example />} />
