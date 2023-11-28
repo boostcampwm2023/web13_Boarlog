@@ -35,7 +35,6 @@ const HeaderInstructorControls = () => {
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
-
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
   const pc_config = {
     iceServers: [

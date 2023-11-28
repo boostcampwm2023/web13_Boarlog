@@ -34,7 +34,7 @@ const Toast = ({ toastKey, message, type }: ToastProps) => {
   return (
     <div
       key={toastKey}
-      className={`rounded-xl medium-16 w-full text-grayscale-black px-4 py-4 flex flex-row items-center justify-start gap-3 cursor-pointer shadow-ml ${
+      className={`rounded-xl medium-16 w-full text-grayscale-black px-4 py-4 flex flex-row items-center justify-start gap-3 cursor-pointer shadow-xl ${
         animation ? "toast-fade-in" : "toast-fade-out"
       } ${type === "alert" && "bg-alert-10"} ${type === "success" && "bg-boarlog-10"} ${
         type === "default" && "bg-grayscale-lightgray"

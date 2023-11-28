@@ -5,6 +5,9 @@ export default {
 
   theme: {
     extend: {
+      screens: {
+        hm: "52rem"
+      },
       fontFamily: {
         pretendard: ["Pretendard Variable", "sans"]
       },
