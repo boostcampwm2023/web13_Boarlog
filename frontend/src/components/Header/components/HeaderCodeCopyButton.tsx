@@ -11,7 +11,7 @@ const HeaderCodeCopyButton = ({ lectureCode }: HeaderCodeCopyButtonProps) => {
   const handleShareButtonClicked = async () => {
     try {
       await navigator.clipboard.writeText(
-        `[함께 듣는 실시간 강의 Boarlog]\n\n지금 진행되는 강의에 참여해보세요.\n\n강의 코드: ${lectureCode}\n강의 제목: 강의 제목\n강의 링크: 강의 링크`
+        `[함께 듣는 실시간 강의 Boarlog]\n\n지금 진행되는 강의에 참여해 보세요.\n\n강의 코드: ${lectureCode}\n강의 제목: 강의 제목\n강의 링크: 강의 링크`
       );
       showToast({ message: "클립보드에 강의 코드를 복사했어요.", type: "success" });
     } catch (error) {
