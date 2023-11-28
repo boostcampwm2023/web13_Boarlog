@@ -31,9 +31,9 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
         className="mt-20 st:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200"
       />
 
-      <div className="flex flex-col gap-3 justify-center items-center">
-        <p className="semibold-20 text-grayscale-darkgray">사용할 닉네임을 입력해 주세요.</p>
-        <p className="semibold-16 text-alert-100">한글, 영문, 숫자, -, _, ., 총 10자 이내</p>
+      <div className="flex flex-col gap-1 justify-center items-center">
+        <p className="semibold-18 text-grayscale-darkgray">사용할 닉네임을 입력해 주세요.</p>
+        <p className="medium-12 text-alert-100">한글, 영문, 숫자, -, _, ., 총 10자 이내</p>
       </div>
 
       <div className="w-full max-w-sm">
