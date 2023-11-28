@@ -1,16 +1,16 @@
 import { Server, Socket } from 'socket.io';
 import { RTCIceCandidate, RTCPeerConnection } from 'wrtc';
 import { pc_config } from './pc.config';
+import { RoomInfo } from './RoomInfo';
 
 export class RelayServer {
   private readonly io;
-  private relayServerRTCPC: RTCPeerConnection;
-  private readonly studentRTCPCs: Map<string, RTCPeerConnection>;
-  private presenterStream: any;
+  private readonly roomsInfo: Map<string, RoomInfo>;
+  private readonly clientRTCPCs: Map<string, RTCPeerConnection>;
 
   constructor(port: number) {
-    this.relayServerRTCPC = new RTCPeerConnection();
-    this.studentRTCPCs = new Map();
+    this.roomsInfo = new Map();
+    this.clientRTCPCs = new Map();
     this.io = new Server(port, {
       cors: {
         origin: '*',
@@ -27,22 +27,26 @@ export class RelayServer {
     try {
       socket.on('presenterOffer', async (data) => {
         const RTCPC = new RTCPeerConnection(pc_config);
-        this.relayServerRTCPC = RTCPC;
-
+        this.clientRTCPCs.set(socket.id, RTCPC);
+        this.roomsInfo.set(data.roomId, new RoomInfo(socket.id, RTCPC));
         RTCPC.ontrack = (event) => {
-          const stream = event.streams[0];
-          this.presenterStream = stream;
+          const roomInfo = this.roomsInfo.get(data.roomId);
+          if (roomInfo) {
+            roomInfo.stream = event.streams[0];
+          }
         };
 
-        this.getServerCandidate(socket, data.socketId);
+        socket.join(socket.id);
+        this.exchangeCandidate('/create-room', socket);
 
         await RTCPC.setRemoteDescription(data.SDP);
         const SDP = await RTCPC.createAnswer();
-        socket.emit(`${data.socketId}-serverAnswer`, {
-          isStudent: false,
+        this.io.of('/create-room').to(socket.id).emit('serverAnswer', {
           SDP: SDP
         });
         RTCPC.setLocalDescription(SDP);
+
+        socket.join(data.roomId);
       });
     } catch (e) {
       console.log(e);
@@ -52,60 +56,46 @@ export class RelayServer {
   enterRoom = (socket: Socket) => {
     try {
       socket.on('studentOffer', async (data) => {
-        const socketId = data.socketId;
-        const RTCPC = new RTCPeerConnection();
-
-        this.presenterStream.getTracks().forEach((track: any) => {
+        const RTCPC = new RTCPeerConnection(pc_config);
+        this.clientRTCPCs.set(socket.id, RTCPC);
+        const presenterStream = this.roomsInfo.get(data.roomId)?.stream;
+        if (!presenterStream) {
+          return;
+        }
+        presenterStream.getTracks().forEach((track: any) => {
           RTCPC.addTrack(track);
         });
 
-        this.studentRTCPCs.set(socketId, RTCPC);
-
-        this.exchangeCandidate(socket, socketId);
+        socket.join(socket.id);
+        this.exchangeCandidate('/enter-room', socket);
 
         await RTCPC.setRemoteDescription(data.SDP);
         const SDP = await RTCPC.createAnswer();
-        socket.emit(`${data.socketId}-serverAnswer`, {
-          isStudent: true,
+        this.io.of('/enter-room').to(socket.id).emit(`serverAnswer`, {
           SDP: SDP
         });
         RTCPC.setLocalDescription(SDP);
+
+        socket.join(data.roomId);
       });
     } catch (e) {
       console.log(e);
     }
   };
 
-  getServerCandidate = (socket: Socket, presenterSocketId: string) => {
+  exchangeCandidate = (namespace: string, socket: Socket) => {
     try {
-      this.relayServerRTCPC.onicecandidate = (e) => {
-        if (e.candidate) {
-          socket.emit(`${presenterSocketId}-serverCandidate`, {
-            candidate: e.candidate
-          });
-        }
-      };
-      socket.on('presenterCandidate', (data) => {
-        this.relayServerRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate));
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  exchangeCandidate = (socket: Socket, socketId: any) => {
-    try {
-      const RTCPC = this.studentRTCPCs.get(socketId);
+      const RTCPC = this.clientRTCPCs.get(socket.id);
       if (RTCPC) {
         RTCPC.onicecandidate = (e) => {
           if (e.candidate) {
-            socket.emit(`${socketId}-serverCandidate`, {
+            this.io.of(namespace).to(socket.id).emit(`serverCandidate`, {
               candidate: e.candidate
             });
           }
         };
       }
-      socket.on('studentCandidate', (data) => {
+      socket.on('clientCandidate', (data) => {
         RTCPC?.addIceCandidate(new RTCIceCandidate(data.candidate));
       });
     } catch (e) {

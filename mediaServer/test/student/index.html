@@ -18,7 +18,7 @@
 </div>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script type="module">
-  const socket = io('http://110.165.16.37:3000/enter-room');
+  const socket = io('http://localhost:3000/enter-room');
 
   const startButton = document.getElementById('startButton');
   const callButton = document.getElementById('callButton');
@@ -39,12 +39,12 @@
           "stun:stun.l.google.com:19302",
         ]
       },
-      {
-        urls: "",
-        username: "",
-        credential: "",
-
-      }
+      // {
+      //   urls: "",
+      //   username: "",
+      //   credential: "",
+      //
+      // }
     ],
   };
 
@@ -78,7 +78,7 @@
   function getStudentCandidate() {
     presenterRTCPC.onicecandidate = (e) => {
       if (e.candidate) {
-        socket.emit('studentCandidate', {
+        socket.emit('clientCandidate', {
           candidate: e.candidate,
           studentSocketId: socket.id
         });
@@ -92,11 +92,12 @@
         offerToReceiveAudio:true,
         offerToReceiveVideo:true
       });
-      socket.emit('studentOffer', { 
+      socket.emit('studentOffer', {
         socketId: socket.id,
+        roomId: 1,    // FIXME: 테스트를 위한 roomId 고정
         SDP: SDP
       });
-  
+
       presenterRTCPC.setLocalDescription(SDP);
       getStudentCandidate()
     } catch (e) {
@@ -105,10 +106,10 @@
   }
 
   async function setServerAnswer() {
-    socket.on(`${socket.id}-serverAnswer`, (data) => {
+    socket.on(`serverAnswer`, (data) => {
       presenterRTCPC.setRemoteDescription(data.SDP)
     })
-    socket.on(`${socket.id}-serverCandidate`, (data) => {
+    socket.on(`serverCandidate`, (data) => {
       presenterRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate))
     });
   }
