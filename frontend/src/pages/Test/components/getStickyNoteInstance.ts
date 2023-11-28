@@ -16,7 +16,7 @@ export const getStickyNoteInstance = (mousePositionX: number, mousePositionY: nu
     strokeWidth: 1
   });
 
-  const text = new fabric.Textbox("텍스트 내용\n텍스트 내용텍스트", {
+  const text = new fabric.Textbox("더블 클릭해 메모 내용을 편집하세요...", {
     left: mousePositionX + 10,
     top: mousePositionY + 10,
     width: 180,

@@ -8,6 +8,8 @@ import AlignRightSVG from "@/assets/svgs/formatAlignRight.svg?react";
 import PalletteSVG from "@/assets/svgs/palette.svg?react";
 import DeleteMemoSVG from "@/assets/svgs/deleteMemo.svg?react";
 
+import { fabricObjectWithItem } from "./stateStickyNoteInstance";
+
 import { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 
@@ -51,8 +53,7 @@ const StickyNoteEditPanel = () => {
   const noteInstance = useRecoilValue(stickyNoteInstance);
   const canvas = useRecoilValue(cavasInstanceState);
 
-  const getClickedMemoData = (noteInstance: fabric.Object): { align: FormatAlign; fontSize: FontSize } => {
-    // @ts-ignore
+  const getClickedMemoData = (noteInstance: fabricObjectWithItem): { align: FormatAlign; fontSize: FontSize } => {
     const textBox = noteInstance.item(1);
 
     const align = textBox.get("textAlign");
@@ -88,7 +89,7 @@ const StickyNoteEditPanel = () => {
 
   useEffect(() => {
     if (!noteInstance || !canvas) return;
-    // @ts-ignore
+
     const textBox = noteInstance.item(1);
 
     const fontPixel = getFontSizePixelByCode(fontSize);
@@ -100,7 +101,6 @@ const StickyNoteEditPanel = () => {
   useEffect(() => {
     if (!noteInstance || !canvas) return;
 
-    // @ts-ignore
     const textBox = noteInstance.item(1);
     textBox.set({ textAlign: formatAlign });
 
