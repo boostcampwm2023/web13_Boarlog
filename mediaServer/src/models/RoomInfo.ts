@@ -5,13 +5,13 @@ export class RoomInfo {
   private readonly _roomId: string;
   private readonly _RTCPC: RTCPeerConnection;
   private readonly _presenterSocket: Socket;
-  private readonly _studentSocketList: Array<Socket>;
+  private readonly _studentSocketList: Set<Socket>;
   private _stream: MediaStream | null;
 
   constructor(roomId: string, socket: Socket, RTCPC: RTCPeerConnection) {
     this._roomId = roomId;
     this._presenterSocket = socket;
-    this._studentSocketList = [];
+    this._studentSocketList = new Set();
     this._RTCPC = RTCPC;
     this._stream = null;
   }
@@ -20,7 +20,7 @@ export class RoomInfo {
     return this._presenterSocket;
   }
 
-  get studentSocketList(): Array<Socket> {
+  get studentSocketList(): Set<Socket> {
     return this._studentSocketList;
   }
 
@@ -32,10 +32,15 @@ export class RoomInfo {
     return this._stream;
   }
 
-  exitRoom = () => {
+  endLecture = () => {
     this._studentSocketList.forEach((student: Socket) => {
       student.leave(this._roomId);
     });
     this._presenterSocket.leave(this._roomId);
+  };
+
+  exitRoom = (studentSocket: Socket) => {
+    studentSocket.leave(this._roomId);
+    this._studentSocketList.delete(studentSocket);
   };
 }
