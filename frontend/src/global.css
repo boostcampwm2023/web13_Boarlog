@@ -119,5 +119,6 @@
 }
 
 .perspective-1000 {
+  perspective-origin: center;
   perspective: 1000px;
 }

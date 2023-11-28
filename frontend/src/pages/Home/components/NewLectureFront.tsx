@@ -8,7 +8,10 @@ interface NewLectureFrontProps {
 
 const NewLectureFront = ({ handleNewLectureTrue }: NewLectureFrontProps) => {
   return (
-    <div className="w-full h-full flex flex-col absolute bg-grayscale-white overflow-hidden border-default rounded-xl backface-hidden z-[2] shadow-xl">
+    <div
+      className="w-full h-full flex flex-col absolute bg-grayscale-white overflow-hidden border-default rounded-xl backface-hidden z-[2] shadow-xl cursor-pointer"
+      onClick={handleNewLectureTrue}
+    >
       <img src={NewLectureImg} alt="강의 시작 배너 이미지" className="w-full h-60 object-cover object-center" />
       <div className="w-full flex grow flex-col p-6 justify-between">
         <div>
