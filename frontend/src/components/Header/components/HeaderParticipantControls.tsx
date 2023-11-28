@@ -33,10 +33,9 @@ const HeaderParticipantControls = () => {
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
-  //const SpeakerVolumeRef = useRef<number>(0);
+  const SpeakerVolumeRef = useRef<number>(0);
   //const prevSpeakerVolumeRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const mediaStreamSourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
   const navigate = useNavigate();
   const showToast = useToast();
@@ -58,15 +57,13 @@ const HeaderParticipantControls = () => {
     setDidMount(true);
   }, []);
   useEffect(() => {
-    console.log(didMount);
     if (didMount) {
       enterLecture();
     }
   }, [didMount]);
 
   useEffect(() => {
-    console.log("SpeakerVolume", SpeakerVolume);
-    //SpeakerVolumeRef.current = SpeakerVolume;
+    SpeakerVolumeRef.current = SpeakerVolume;
   }, [SpeakerVolume]);
   useEffect(() => {
     if (!audioContextRef.current) return;
@@ -74,11 +71,11 @@ const HeaderParticipantControls = () => {
   }, [selectedSpeaker]);
 
   const enterLecture = async () => {
-    console.log("1. enterLecture");
     await initConnection();
 
     await createStudentOffer();
     await setServerAnswer();
+    showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다", type: "alert" });
   };
 
   const leaveLecture = () => {
@@ -107,11 +104,10 @@ const HeaderParticipantControls = () => {
         if (event.track.kind === "audio") {
           mediaStreamRef.current.addTrack(event.track);
           localAudioRef.current.srcObject = mediaStreamRef.current;
-          showToast({ message: "음소거 버튼을 눌러 소리를 들을 수 있습니다.", type: "alert" });
         }
       };
     } catch (e) {
-      console.log("에러1", e);
+      console.error("연결 에러", e);
     }
   };
 
@@ -140,7 +136,6 @@ const HeaderParticipantControls = () => {
       });
 
       pcRef.current.setLocalDescription(SDP);
-      console.log("2. studentOffer");
       getStudentCandidate();
     } catch (e) {
       console.log(e);
@@ -163,15 +158,18 @@ const HeaderParticipantControls = () => {
     if (!mediaStreamRef.current) return;
     audioContextRef.current = new AudioContext();
     const analyser = audioContextRef.current.createAnalyser();
-    mediaStreamSourceNodeRef.current = audioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
-
     const destination = audioContextRef.current.destination;
-    mediaStreamSourceNodeRef.current.connect(destination);
+    const mediaStreamAudioSourceNode = audioContextRef.current.createMediaStreamSource(mediaStreamRef.current);
 
-    mediaStreamSourceNodeRef.current.connect(analyser, 0);
+    const gainNode = audioContextRef.current.createGain();
+    mediaStreamAudioSourceNode.connect(gainNode);
+    gainNode.connect(analyser);
+    gainNode.connect(destination);
+
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
+      gainNode.gain.value = SpeakerVolumeRef.current;
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
       for (const amplitude of pcmData) {
@@ -217,7 +215,11 @@ const HeaderParticipantControls = () => {
         강의 나가기
       </SmallButton>
       <SmallButton className={`text-grayscale-white ${isSpeakerOn ? "bg-boarlog-100" : "bg-alert-100"}`} onClick={mute}>
-        <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
+        {isSpeakerOn ? (
+          <MicOnIcon className="w-5 h-5 fill-grayscale-white" />
+        ) : (
+          <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
+        )}
       </SmallButton>
       <Modal
         modalText="강의를 나가시겠습니까?"
