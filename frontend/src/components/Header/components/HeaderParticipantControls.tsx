@@ -3,6 +3,7 @@ import { useRecoilValue, useSetRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
+import { useToast } from "@/components/Toast/useToast";
 import VolumeMeter from "./VolumeMeter";
 
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -11,7 +12,7 @@ import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
-import selectedMicrophoneState from "./stateMicrophone";
+import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 
 const HeaderParticipantControls = () => {
@@ -38,6 +39,7 @@ const HeaderParticipantControls = () => {
   //const prevSpeakerVolumeRef = useRef<number>(0);
 
   const navigate = useNavigate();
+  const showToast = useToast();
   const MEDIA_SERVER_URL = "http://localhost:3000/enter-room";
   const pc_config = {
     iceServers: [
@@ -104,12 +106,8 @@ const HeaderParticipantControls = () => {
         if (!mediaStreamRef.current || !localAudioRef.current) return;
         if (event.track.kind === "audio") {
           mediaStreamRef.current.addTrack(event.track);
-          //startAnalyse();
-          console.log("audio", event.track);
           localAudioRef.current.srcObject = mediaStreamRef.current;
-        } else if (event.track.kind === "video") {
-          //localStream.addTrack(event.track);
-          //localVideo.srcObject = localStream;
+          showToast({ message: "음소거 버튼을 눌러 소리를 들을 수 있습니다.", type: "alert" });
         }
       };
     } catch (e) {
@@ -182,16 +180,8 @@ const HeaderParticipantControls = () => {
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
 
-    const audioStream = getAudioStream() as MediaStream;
-    setupAudioContext(audioStream);
+    setupAudioContext(mediaStreamRef.current);
   };
-
-  function getAudioStream() {
-    if (!mediaStreamRef.current) return;
-    const audioTracks = mediaStreamRef.current.getAudioTracks();
-    const audioStream = new MediaStream(audioTracks);
-    return audioStream;
-  }
 
   function setupAudioContext(stream: MediaStream) {
     const audioContext = new AudioContext();

@@ -11,7 +11,7 @@ import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
-import selectedMicrophoneState from "./stateMicrophone";
+import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 
 const HeaderInstructorControls = () => {
