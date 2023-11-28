@@ -52,6 +52,14 @@
   @apply border border-solid border-grayscale-lightgray;
 }
 
+.border-black {
+  @apply border border-solid border-grayscale-black;
+}
+
+.border-boarlog {
+  @apply border border-solid border-boarlog-100;
+}
+
 .shadow-default {
   box-shadow: 0px 0px 50px 10px rgba(233, 233, 233, 0.25);
 }
@@ -96,4 +104,21 @@
 
 .toast-fade-out {
   animation: fadeOut 0.5s ease-in-out;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-180 {
+  transform: rotateY(180deg);
+}
+
+.perspective-1000 {
+  perspective-origin: center;
+  perspective: 1000px;
 }
