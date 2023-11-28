@@ -8,7 +8,6 @@ import { useToast } from "@/components/Toast/useToast";
 interface StartSectionProps {
   profileImage: string;
 }
-
 const NICKNAME_REGEXP = /^(?![0-9-_.]+$)[가-힣A-Za-z0-9-_.]{1,10}$/;
 
 const StartSection = ({ profileImage }: StartSectionProps) => {
@@ -35,7 +34,6 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
       showToast({ message: "올바르지 않은 닉네임입니다.", type: "alert" });
     }
   };
-
   return (
     <section className="flex relative w-11/12 max-w-xl p-8 flex-col items-center gap-8 rounded-xl border-default shadow-xl">
       <img
