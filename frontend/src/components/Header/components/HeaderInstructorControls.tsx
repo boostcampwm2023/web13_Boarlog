@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
 
 import VolumeMeter from "./VolumeMeter";
@@ -18,20 +18,21 @@ const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [recordingTime, setRecordingTime] = useState<number>(0);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [micVolume, setMicVolume] = useState<number>(0);
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeState);
+  const setInputMicVolumeState = useSetRecoilState(micVolmeState);
 
-  const recordingTimerRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
+  const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
-
+  const prevInputMicVolumeRef = useRef<number>(0);
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
 
   useEffect(() => {
@@ -56,9 +57,9 @@ const HeaderInstructorControls = () => {
     if (!isLectureStart) return alert("강의가 시작되지 않았습니다.");
 
     setIsLectureStart(false);
-    setRecordingTime(0);
+    setElapsedTime(0);
 
-    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current); // 경과 시간 표시 타이머 중지
+    if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
@@ -80,7 +81,7 @@ const HeaderInstructorControls = () => {
       mediaStreamRef.current = stream;
 
       await setupAudioAnalysis(stream);
-      startRecordingTimer();
+      startTimer();
 
       // 2. 로컬 RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection();
@@ -188,14 +189,46 @@ const HeaderInstructorControls = () => {
   };
 
   // 경과 시간을 표시하기 위한 부분입니다
-  const startRecordingTimer = () => {
+  const startTimer = () => {
     let startTime = Date.now();
-    const updateRecordingTime = () => {
+    const updateElapsedTime = () => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-      setRecordingTime(elapsedTime);
+      setElapsedTime(elapsedTime);
     };
-    const recordingTimer = setInterval(updateRecordingTime, 1000);
-    recordingTimerRef.current = recordingTimer;
+    const timer = setInterval(updateElapsedTime, 1000);
+    timerIdRef.current = timer;
+  };
+
+  // 기존에 미디어 서버에 보내는 오디오 트랙을 새 마이크의 오디오 트랙으로 교체
+  const replaceAudioTrack = async () => {
+    try {
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: selectedMicrophone }
+      });
+      if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 기존 미디어 트랙 중지
+      mediaStreamRef.current = stream;
+
+      await setupAudioAnalysis(stream);
+
+      if (!updatedStreamRef.current || !pcRef.current) return;
+      // 기존트랙: pcRef.current.getSenders()[0].track
+      // 새트랙: updatedStreamRef.current.getAudioTracks()[0]
+      pcRef.current.getSenders()[0].replaceTrack(updatedStreamRef.current.getAudioTracks()[0]);
+    } catch (error) {
+      console.error("오디오 replace 작업 실패", error);
+    }
+  };
+
+  const mute = () => {
+    if (isMicOn) {
+      prevInputMicVolumeRef.current = inputMicVolumeRef.current;
+      setInputMicVolumeState(0);
+      setIsMicOn(false);
+    } else {
+      setInputMicVolumeState(prevInputMicVolumeRef.current);
+      setIsMicOn(true);
+    }
   };
 
   // 기존에 미디어 서버에 보내는 오디오 트랙을 새 마이크의 오디오 트랙으로 교체
@@ -224,10 +257,10 @@ const HeaderInstructorControls = () => {
       <div className="flex gap-2 fixed left-1/2 -translate-x-1/2">
         <VolumeMeter micVolume={micVolume} />
         <p className="semibold-20 text-boarlog-100">
-          {Math.floor(recordingTime / 60)
+          {Math.floor(elapsedTime / 60)
             .toString()
             .padStart(2, "0")}
-          :{(recordingTime % 60).toString().padStart(2, "0")}
+          :{(elapsedTime % 60).toString().padStart(2, "0")}
         </p>
       </div>
 
@@ -247,10 +280,7 @@ const HeaderInstructorControls = () => {
           </>
         )}
       </SmallButton>
-      <SmallButton
-        className={`text-grayscale-white ${isMicOn ? "bg-boarlog-100" : "bg-alert-100"}`}
-        onClick={() => setIsMicOn(!isMicOn)}
-      >
+      <SmallButton className={`text-grayscale-white ${isMicOn ? "bg-boarlog-100" : "bg-alert-100"}`} onClick={mute}>
         {isMicOn ? (
           <MicOnIcon className="w-5 h-5 fill-grayscale-white" />
         ) : (

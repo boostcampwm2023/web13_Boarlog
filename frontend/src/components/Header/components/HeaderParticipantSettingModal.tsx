@@ -10,6 +10,7 @@ interface HeaderSettingModalProps {
 
 const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSettingModalProps) => {
   const [microphoneDevices, setMicrophoneDevices] = useState<MediaDeviceInfo[]>([]);
+
   const setSelectedMicrophone = useSetRecoilState(selectedMicrophoneState);
   const setMicVolume = useSetRecoilState(micVolmeState);
 
@@ -26,11 +27,6 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
       });
   }, []);
 
-  const handleGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newGainValue = parseFloat(event.target.value);
-    setMicVolume(newGainValue);
-  };
-
   return (
     <>
       <div
@@ -45,7 +41,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         }`}
       >
         <div className="flex flex-row gap-3 w-full h-10 justify-start">
-          <p id="input-device-label">입력 장치 설정</p>
+          <p id="input-device-label">스피커 선택</p>
         </div>
 
         <select
@@ -61,7 +57,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         </select>
 
         <div className="flex flex-row gap-3 w-full h-10 justify-start">
-          <label htmlFor="volumeSlider">입력 볼륨:</label>
+          <label htmlFor="volumeSlider">스피커 볼륨</label>
         </div>
         <input
           className="w-full"
@@ -70,7 +66,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
           min="0"
           max="1"
           step="0.01"
-          onChange={handleGainChange}
+          onChange={(e) => setMicVolume(parseFloat(e.target.value))}
         />
 
         <div className="flex flex-row gap-4 w-full"></div>
