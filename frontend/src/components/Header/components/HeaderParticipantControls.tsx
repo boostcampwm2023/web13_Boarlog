@@ -33,8 +33,8 @@ const HeaderParticipantControls = () => {
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
-  const SpeakerVolumeRef = useRef<number>(0);
-  //const prevSpeakerVolumeRef = useRef<number>(0);
+  const speakerVolumeRef = useRef<number>(0);
+  const prevSpeakerVolumeRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const navigate = useNavigate();
@@ -63,7 +63,7 @@ const HeaderParticipantControls = () => {
   }, [didMount]);
 
   useEffect(() => {
-    SpeakerVolumeRef.current = SpeakerVolume;
+    speakerVolumeRef.current = SpeakerVolume;
   }, [SpeakerVolume]);
   useEffect(() => {
     if (!audioContextRef.current) return;
@@ -169,7 +169,7 @@ const HeaderParticipantControls = () => {
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
-      gainNode.gain.value = SpeakerVolumeRef.current;
+      gainNode.gain.value = speakerVolumeRef.current;
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
       for (const amplitude of pcmData) {
@@ -185,14 +185,17 @@ const HeaderParticipantControls = () => {
 
   const mute = () => {
     if (!onFrameIdRef.current) {
+      // 최초 연결 후 음소거 해제
       startAnalyse();
       setisSpeakerOn(true);
       showToast({ message: "음소거가 해제되었습니다", type: "success" });
     } else if (isSpeakerOn) {
+      prevSpeakerVolumeRef.current = speakerVolumeRef.current;
       setSpeakerVolume(0);
       setisSpeakerOn(false);
       showToast({ message: "음소거 되었습니다", type: "alert" });
     } else {
+      setSpeakerVolume(prevSpeakerVolumeRef.current);
       setisSpeakerOn(true);
       showToast({ message: "음소거가 해제되었습니다", type: "success" });
     }

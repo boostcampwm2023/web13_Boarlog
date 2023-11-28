@@ -10,6 +10,7 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
+import { useToast } from "@/components/Toast/useToast";
 
 import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
@@ -24,6 +25,7 @@ const HeaderInstructorControls = () => {
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeState);
   const setInputMicVolumeState = useSetRecoilState(micVolmeState);
+  const showToast = useToast();
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -238,9 +240,11 @@ const HeaderInstructorControls = () => {
       prevInputMicVolumeRef.current = inputMicVolumeRef.current;
       setInputMicVolumeState(0);
       setIsMicOn(false);
+      showToast({ message: "마이크 음소거 되었습니다", type: "alert" });
     } else {
       setInputMicVolumeState(prevInputMicVolumeRef.current);
       setIsMicOn(true);
+      showToast({ message: "마이크 음소거가 해제되었습니다", type: "success" });
     }
   };
 
