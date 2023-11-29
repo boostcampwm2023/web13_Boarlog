@@ -15,13 +15,14 @@ export class LectureController {
 
   @Post()
   async create(@Body() createLecture: CreateLectureDto, @Res() res: Response) {
-    const code = await this.lectureService.createLecture(createLecture);
+    const user = await this.userService.findOneByEmail(createLecture.email);
+    const code = await this.lectureService.createLecture(createLecture, user.id);
     res.status(HttpStatus.CREATED).send({ code: code });
   }
 
-  @Patch('audio')
-  async saveAudioFile(@Body() updateLectureDto: UpdateLectureDto, @Res() res: Response) {
-    await this.lectureService.saveAudioData(updateLectureDto);
+  @Patch('end')
+  async end(@Body() updateLectureDto: UpdateLectureDto, @Res() res: Response) {
+    await this.lectureService.endLecture(updateLectureDto);
     res.status(HttpStatus.OK).send();
   }
 

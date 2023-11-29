@@ -16,17 +16,23 @@ export class LectureService {
     private enterCodeModel: Model<EnterCode>
   ) {}
 
-  async createLecture(createLectureDto: CreateLectureDto) {
-    const lecture = await new this.lectureModel(createLectureDto).save();
-    const lectureCode = await new this.enterCodeModel({
+  async createLecture(createLectureDto: CreateLectureDto, userId: string) {
+    const lecture = new this.lectureModel({
+      title: createLectureDto.title,
+      description: createLectureDto.description,
+      presenter_id: userId
+    });
+    const lectureCode = new this.enterCodeModel({
       code: await this.generateRoomCode(),
       lecture_id: lecture.id
-    }).save();
+    });
+
+    await Promise.all([lecture.save(), lectureCode.save()]);
 
     return lectureCode.code;
   }
 
-  async saveAudioData(updateLectureDto: UpdateLectureDto) {
+  async endLecture(updateLectureDto: UpdateLectureDto) {
     const lecture = await this.findLectureByCode(updateLectureDto.code);
     return await this.lectureModel
       .findByIdAndUpdate(lecture.lecture_id, { $set: { is_end: true, audio_file: updateLectureDto.audio } })
