@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSetRecoilState } from "recoil";
 
 import selectedSpeakerState from "./stateSelectedSpeaker";
-import speakerVolmeState from "./stateSpeakerVolme";
+import speakerVolmeState from "./stateSpeakerVolume";
 
 interface HeaderSettingModalProps {
   isSettingClicked: boolean;

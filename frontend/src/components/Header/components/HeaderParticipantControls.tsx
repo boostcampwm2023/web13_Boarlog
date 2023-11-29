@@ -12,7 +12,8 @@ import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
 import selectedSpeakerState from "./stateSelectedSpeaker";
-import speakerVolmeState from "./stateSpeakerVolme";
+import speakerVolmeState from "./stateSpeakerVolume";
+import videoRefState from "@/pages/Test/components/stateVideoRef";
 
 const HeaderParticipantControls = () => {
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
@@ -23,8 +24,9 @@ const HeaderParticipantControls = () => {
   const [didMount, setDidMount] = useState(false);
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
-  const SpeakerVolume = useRecoilValue(speakerVolmeState);
+  const speakerVolume = useRecoilValue(speakerVolmeState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
+  const videoRef = useRecoilValue(videoRefState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -32,6 +34,7 @@ const HeaderParticipantControls = () => {
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
   const speakerVolumeRef = useRef<number>(0);
   const prevSpeakerVolumeRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -62,8 +65,8 @@ const HeaderParticipantControls = () => {
   }, [didMount]);
 
   useEffect(() => {
-    speakerVolumeRef.current = SpeakerVolume;
-  }, [SpeakerVolume]);
+    speakerVolumeRef.current = speakerVolume;
+  }, [speakerVolume]);
   useEffect(() => {
     if (!audioContextRef.current) return;
     (audioContextRef.current as any).setSinkId(selectedSpeaker);
@@ -74,6 +77,24 @@ const HeaderParticipantControls = () => {
 
     await createStudentOffer();
     await setServerAnswer();
+
+    if (!pcRef.current) return;
+    pcRef.current.ontrack = (event) => {
+      console.log(event.track);
+
+      if (!mediaStreamRef.current || !localAudioRef.current || !localVideoRef.current || !videoRef.current) return;
+      if (event.track.kind === "audio") {
+        mediaStreamRef.current.addTrack(event.track);
+        localAudioRef.current.srcObject = mediaStreamRef.current;
+      } else if (event.track.kind === "video") {
+        mediaStreamRef.current.addTrack(event.track);
+        videoRef.current.srcObject = mediaStreamRef.current;
+        videoRef.current.addEventListener("loadedmetadata", () => {
+          console.log("loadedmetadata");
+        });
+        videoRef.current.play();
+      }
+    };
     showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다", type: "alert" });
   };
 
@@ -97,22 +118,30 @@ const HeaderParticipantControls = () => {
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
 
-      console.log("initConnection", pcRef.current);
-      if (!pcRef.current) return;
-
-      pcRef.current.ontrack = (event) => {
-        console.log(event.track);
-
-        if (!mediaStreamRef.current || !localAudioRef.current) return;
-        if (event.track.kind === "audio") {
-          mediaStreamRef.current.addTrack(event.track);
-          localAudioRef.current.srcObject = mediaStreamRef.current;
-        }
-      };
+      console.log("initConnection");
     } catch (e) {
       console.error("연결 에러", e);
     }
   };
+
+  async function createStudentOffer() {
+    try {
+      if (!pcRef.current || !socketRef.current) return;
+      const SDP = await pcRef.current.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
+      });
+      socketRef.current.emit("studentOffer", {
+        socketId: socketRef.current.id,
+        SDP: SDP
+      });
+
+      pcRef.current.setLocalDescription(SDP);
+      getStudentCandidate();
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   function getStudentCandidate() {
     if (!pcRef.current) return;
@@ -125,24 +154,6 @@ const HeaderParticipantControls = () => {
         });
       }
     };
-  }
-
-  async function createStudentOffer() {
-    try {
-      if (!pcRef.current || !socketRef.current) return;
-      const SDP = await pcRef.current.createOffer({
-        offerToReceiveAudio: true
-      });
-      socketRef.current.emit("studentOffer", {
-        socketId: socketRef.current.id,
-        SDP: SDP
-      });
-
-      pcRef.current.setLocalDescription(SDP);
-      getStudentCandidate();
-    } catch (e) {
-      console.log(e);
-    }
   }
 
   async function setServerAnswer() {
@@ -238,7 +249,7 @@ const HeaderParticipantControls = () => {
         setIsModalOpen={setIsModalOpen}
       />
       <audio id="localAudio" playsInline autoPlay muted ref={localAudioRef}></audio>
-      <canvas>123</canvas>
+      <video id="localVideo" controls height="500px" width="500px" ref={localVideoRef}></video>
     </>
   );
 };

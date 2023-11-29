@@ -18,11 +18,6 @@ const CanvasSection = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    //console.log("보낸다이", canvasRef.current);
-    //setCanvasRef({ current: canvasRef.current });
-  }, [setCanvasRef, canvasRef]);
-
-  useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
 
     const canvasContainer = canvasContainerRef.current;
@@ -78,7 +73,7 @@ const CanvasSection = () => {
     newCanvas.freeDrawingBrush.width = 10;
     newCanvas.isDrawingMode = true;
 
-    console.log("보낸다이", canvasRef.current);
+    // fabric.js 캔버스가 연결된 canvas를 헤더에서 사용 가능하게 ref로 전달
     setCanvasRef({ current: canvasRef.current });
 
     // 언마운트 시 캔버스 정리, 이벤트 제거
