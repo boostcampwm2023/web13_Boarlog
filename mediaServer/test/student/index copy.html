@@ -9,7 +9,8 @@
 <body>
 <div id="container">
   <h1>참여자</h1>
-  <video id="localVideo" playsinline autoplay muted height="500px" width="500px"></video>
+  <video id="localVideo"controls muted height="500px" width="500px"></video>
+  <canvas id="localCanvas"></canvas>
   <div>
     <button id="startButton">시작</button>
     <button id="callButton">방 생성</button>
@@ -28,6 +29,7 @@
 
   const canvas = document.querySelector('canvas');
   const localVideo = document.getElementById('localVideo');
+  const localCanvas = document.getElementById('localCanvas');
 
   let localStream = undefined;
   let presenterRTCPC;
@@ -39,12 +41,12 @@
           "stun:stun.l.google.com:19302",
         ]
       },
-      // {
-      //   urls: "",
-      //   username: "",
-      //   credential: "",
-      //
-      // }
+      {
+        urls: "turn:110.165.16.37:3478",
+	      username: "boarlog",
+	      credential: "pass1234",
+
+      }
     ],
   };
 
@@ -54,6 +56,8 @@
       localVideo.addEventListener('loadedmetadata', () => {
         localVideo.play();
       })
+      localCanvas.srcObject = localStream;
+      console.log("ok")
     } catch (e) {
       console.log(e)
     }
@@ -78,7 +82,7 @@
   function getStudentCandidate() {
     presenterRTCPC.onicecandidate = (e) => {
       if (e.candidate) {
-        socket.emit('clientCandidate', {
+        socket.emit('studentCandidate', {
           candidate: e.candidate,
           studentSocketId: socket.id
         });
@@ -92,12 +96,11 @@
         offerToReceiveAudio:true,
         offerToReceiveVideo:true
       });
-      socket.emit('studentOffer', {
+      socket.emit('studentOffer', { 
         socketId: socket.id,
-        roomId: 1,    // FIXME: 테스트를 위한 roomId 고정
         SDP: SDP
       });
-
+  
       presenterRTCPC.setLocalDescription(SDP);
       getStudentCandidate()
     } catch (e) {
@@ -106,16 +109,17 @@
   }
 
   async function setServerAnswer() {
-    socket.on(`serverAnswer`, (data) => {
+    socket.on(`${socket.id}-serverAnswer`, (data) => {
       presenterRTCPC.setRemoteDescription(data.SDP)
     })
-    socket.on(`serverCandidate`, (data) => {
+    socket.on(`${socket.id}-serverCandidate`, (data) => {
       presenterRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate))
     });
   }
 
   presenterRTCPC.ontrack = (event) => {
     localStream.addTrack(event.track);
+    console.log(event.track);
   }
 
   startButton.onclick = start;

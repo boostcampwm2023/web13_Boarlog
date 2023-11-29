@@ -97,8 +97,12 @@ const HeaderParticipantControls = () => {
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
 
+      console.log("initConnection", pcRef.current);
       if (!pcRef.current) return;
+
       pcRef.current.ontrack = (event) => {
+        console.log(event.track);
+
         if (!mediaStreamRef.current || !localAudioRef.current) return;
         if (event.track.kind === "audio") {
           mediaStreamRef.current.addTrack(event.track);
@@ -234,6 +238,7 @@ const HeaderParticipantControls = () => {
         setIsModalOpen={setIsModalOpen}
       />
       <audio id="localAudio" playsInline autoPlay muted ref={localAudioRef}></audio>
+      <canvas>123</canvas>
     </>
   );
 };

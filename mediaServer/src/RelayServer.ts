@@ -45,6 +45,7 @@ export class RelayServer {
         RTCPC.ontrack = (event) => {
           const stream = event.streams[0];
           this.presenterStream = stream;
+          console.log('stream', stream, stream.getTracks()[0].id);
         };
 
         this.getServerCandidate(socket, data.socketId);
@@ -70,6 +71,7 @@ export class RelayServer {
 
         this.presenterStream.getTracks().forEach((track: any) => {
           RTCPC.addTrack(track);
+          console.log(track, track.kind, track.id);
         });
 
         this.studentRTCPCs.set(socketId, RTCPC);

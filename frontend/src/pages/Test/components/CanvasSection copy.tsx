@@ -18,8 +18,32 @@ const CanvasSection = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    //console.log("보낸다이", canvasRef.current);
-    //setCanvasRef({ current: canvasRef.current });
+    if (!canvasRef.current) return;
+    /*
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#009ac8";
+
+    // create / rectangle / at a 100, 100 point, with 20x20 dimensions.
+    ctx.fillRect(1, 1, 202, 205);
+
+    var canvas = new fabric.Canvas(canvasRef.current);
+
+    // create a rectangle object
+    var rect = new fabric.Rect({
+      left: 100,
+      top: 100,
+      fill: "red",
+      width: 20,
+      height: 20
+    });
+
+    // "add" rectangle onto canvas
+    canvas.add(rect);
+
+    console.log("보낸다이", canvasRef.current);
+    setCanvasRef({ current: canvasRef.current });
+    */
   }, [setCanvasRef, canvasRef]);
 
   useEffect(() => {
@@ -27,14 +51,14 @@ const CanvasSection = () => {
 
     const canvasContainer = canvasContainerRef.current;
     // 캔버스 생성
+
     const newCanvas = new fabric.Canvas(canvasRef.current, {
       width: canvasContainer.offsetWidth,
       height: canvasContainer.offsetHeight
     });
 
-    setCanvas(newCanvas);
-
-    newCanvas.backgroundColor = "white";
+    newCanvas.backgroundColor = "lightgray";
+    newCanvas.renderAll();
 
     // 휠을 이용해서 줌인/줌아웃
     newCanvas.on("mouse:wheel", (opt) => {

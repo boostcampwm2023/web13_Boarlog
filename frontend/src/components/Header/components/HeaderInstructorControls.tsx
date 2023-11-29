@@ -14,6 +14,7 @@ import { useToast } from "@/components/Toast/useToast";
 
 import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
+import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 
 const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
@@ -26,6 +27,8 @@ const HeaderInstructorControls = () => {
   const inputMicVolume = useRecoilValue(micVolmeState);
   const setInputMicVolumeState = useSetRecoilState(micVolmeState);
   const showToast = useToast();
+
+  const canvasRef = useRecoilValue(canvasRefState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -97,9 +100,21 @@ const HeaderInstructorControls = () => {
       await setupAudioAnalysis(stream);
       startTimer();
 
-      // 2. 로컬 RTCPeerConnection 생성
+      // canvas의 내용을 캡쳐하여 스트림으로 생성
+      if (!canvasRef.current) return;
+      const canvasStream = canvasRef.current.captureStream();
+
+      // canvas 스트림의 track을 updatedStream에 추가
+      canvasStream.getTracks().forEach((track) => {
+        if (!updatedStreamRef.current) return;
+        console.log("이게 canvasstream track", track);
+        updatedStreamRef.current.addTrack(track);
+      });
+
+      // RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection(pc_config);
-      // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
+
+      // 발표자의 오디오, 미디어(canvas) 트랙을 RTCPeerConnection에 추가
       if (updatedStreamRef.current) {
         updatedStreamRef.current.getTracks().forEach((track) => {
           if (!updatedStreamRef.current) return;
@@ -109,6 +124,12 @@ const HeaderInstructorControls = () => {
       } else {
         console.error("no stream");
       }
+
+      // RTCPeerConnection에 추가된 트랙 확인 (디버깅용)
+      const senders = pcRef.current.getSenders();
+      senders.forEach((sender) => {
+        console.log("Sender Track:", sender.track);
+      });
     } catch (error) {
       console.error(error);
     }
@@ -119,7 +140,8 @@ const HeaderInstructorControls = () => {
     try {
       if (!pcRef.current || !socketRef.current) return;
       const SDP = await pcRef.current.createOffer({
-        offerToReceiveAudio: true
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
       });
       socketRef.current.emit("presenterOffer", {
         socketId: socketRef.current.id,
