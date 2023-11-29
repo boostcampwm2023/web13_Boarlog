@@ -71,7 +71,6 @@ export class RelayServer {
         }
         presenterStream.getTracks().forEach((track: any) => {
           RTCPC.addTrack(track);
-          console.log(track, track.kind, track.id);
         });
 
         socket.join(socket.id);

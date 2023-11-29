@@ -107,7 +107,6 @@ const HeaderInstructorControls = () => {
       // canvas 스트림의 track을 updatedStream에 추가
       canvasStream.getTracks().forEach((track) => {
         if (!updatedStreamRef.current) return;
-        console.log("이게 canvasstream track", track);
         updatedStreamRef.current.addTrack(track);
       });
 
