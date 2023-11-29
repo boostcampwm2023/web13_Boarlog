@@ -4,7 +4,8 @@ import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
 import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
-import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
+import AddStickyNoteCursor from "@/assets/svgs/addStickyMemoCursor.svg";
+import EraserCursor from "@/assets/svgs/eraserMouseCursor.svg";
 
 import { fabricObjectWithAddWithUpdate, fabricObjectWithItem } from "./stateStickyNoteInstance";
 
@@ -66,7 +67,7 @@ const Toolbar = () => {
   const handleStickyNoteTool = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
 
-    canvas.defaultCursor = `url("${AddStickyNoteCursorSVG}"), auto`;
+    canvas.defaultCursor = `url("${AddStickyNoteCursor}"), auto`;
 
     canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
       if (!absolutePointer) return;
@@ -170,6 +171,28 @@ const Toolbar = () => {
     });
   };
 
+  const handleEraser = () => {
+    if (!(canvas instanceof fabric.Canvas)) return;
+
+    setIsObjectSelectable(true);
+    canvas.selection = true;
+
+    canvas.defaultCursor = `url("${EraserCursor}"), auto`;
+
+    canvas.on("mouse:up", ({ target }) => {
+      if (!target) return;
+      canvas.remove(target);
+    });
+
+    canvas.on("selection:created", ({ selected }) => {
+      console.log(selected);
+      if (activeTool === "eraser") {
+        selected?.forEach((object) => canvas.remove(object));
+      }
+      canvas.discardActiveObject().renderAll();
+    });
+  };
+
   const handleHand = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
 
@@ -218,6 +241,7 @@ const Toolbar = () => {
         break;
 
       case "eraser":
+        handleEraser();
         break;
 
       case "hand":
