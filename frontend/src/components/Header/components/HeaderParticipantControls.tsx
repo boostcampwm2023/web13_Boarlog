@@ -45,11 +45,6 @@ const HeaderParticipantControls = () => {
     iceServers: [
       {
         urls: ["stun:stun.l.google.com:19302"]
-      },
-      {
-        urls: import.meta.env.VITE_TURN_URL as string,
-        username: import.meta.env.VITE_TURN_USERNAME as string,
-        credential: import.meta.env.VITE_TURN_PASSWORD as string
       }
     ]
   };
@@ -88,6 +83,12 @@ const HeaderParticipantControls = () => {
       } else if (event.track.kind === "video") {
         mediaStreamRef.current.addTrack(event.track);
         videoRef.current.srcObject = mediaStreamRef.current;
+        videoRef.current.addEventListener("loadstart", () => {
+          console.log("loadstart");
+        });
+        videoRef.current.addEventListener("progress", () => {
+          console.log("progress");
+        });
         videoRef.current.addEventListener("loadedmetadata", () => {
           console.log("loadedmetadata");
         });
@@ -132,6 +133,7 @@ const HeaderParticipantControls = () => {
       });
       socketRef.current.emit("studentOffer", {
         socketId: socketRef.current.id,
+        roomId: 1,
         SDP: SDP
       });
 
@@ -147,7 +149,7 @@ const HeaderParticipantControls = () => {
     pcRef.current.onicecandidate = (e) => {
       if (e.candidate) {
         if (!socketRef.current) return;
-        socketRef.current.emit("studentCandidate", {
+        socketRef.current.emit("clientCandidate", {
           candidate: e.candidate,
           studentSocketId: socketRef.current.id
         });
@@ -157,11 +159,11 @@ const HeaderParticipantControls = () => {
 
   async function setServerAnswer() {
     if (!socketRef.current) return;
-    socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
+    socketRef.current.on(`serverAnswer`, (data) => {
       if (!pcRef.current) return;
       pcRef.current.setRemoteDescription(data.SDP);
     });
-    socketRef.current.on(`${socketRef.current.id}-serverCandidate`, (data) => {
+    socketRef.current.on(`serverCandidate`, (data) => {
       if (!pcRef.current) return;
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
     });

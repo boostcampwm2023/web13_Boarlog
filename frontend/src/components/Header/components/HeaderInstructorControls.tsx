@@ -145,6 +145,7 @@ const HeaderInstructorControls = () => {
       });
       socketRef.current.emit("presenterOffer", {
         socketId: socketRef.current.id,
+        roomId: 1,
         SDP: SDP
       });
       pcRef.current.setLocalDescription(SDP);
@@ -160,7 +161,7 @@ const HeaderInstructorControls = () => {
     pcRef.current.onicecandidate = (e) => {
       if (e.candidate) {
         if (!socketRef.current) return;
-        socketRef.current.emit("presenterCandidate", {
+        socketRef.current.emit("clientCandidate", {
           candidate: e.candidate,
           presenterSocketId: socketRef.current.id
         });
@@ -171,12 +172,12 @@ const HeaderInstructorControls = () => {
   async function listenForServerAnswer() {
     // 6. 서버로부터 answer 받음
     if (!socketRef.current) return;
-    socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
+    socketRef.current.on(`serverAnswer`, (data) => {
       if (!pcRef.current) return;
       console.log("6. remoteDescription 설정완료");
       pcRef.current.setRemoteDescription(data.SDP);
     });
-    socketRef.current.on(`${socketRef.current.id}-serverCandidate`, (data) => {
+    socketRef.current.on(`serverCandidate`, (data) => {
       if (!pcRef.current) return;
       console.log("7. 서버로부터 candidate 받음");
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
