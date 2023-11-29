@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { Lecture } from '../lecture/lecture.schema';
+import { Lecture } from './lecture.schema';
 
 @Schema()
 export class EnterCode {
