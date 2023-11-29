@@ -1,4 +1,4 @@
 export class UpdateLectureDto {
-  id: string;
+  code: string;
   audio: string;
 }

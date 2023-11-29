@@ -27,8 +27,9 @@ export class LectureService {
   }
 
   async saveAudioData(updateLectureDto: UpdateLectureDto) {
+    const lecture = await this.findLectureByCode(updateLectureDto.code);
     return await this.lectureModel
-      .findByIdAndUpdate(updateLectureDto.id, { $set: { audio_file: updateLectureDto.audio } })
+      .findByIdAndUpdate(lecture.lecture_id, { $set: { audio_file: updateLectureDto.audio } })
       .exec();
   }
 
