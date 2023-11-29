@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { EnterCode, EnterCodeSchema } from 'src/room/room-code.schema';
+import { EnterCode, EnterCodeSchema } from './lecture-code.schema';
 import { LectureController } from './lecture.controller';
 import { Lecture, LectureSchema } from './lecture.schema';
 import { LectureService } from './lecture.service';

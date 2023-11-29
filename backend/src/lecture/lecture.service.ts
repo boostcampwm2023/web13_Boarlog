@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { EnterCode } from 'src/room/room-code.schema';
 import { GenerateUtils } from 'src/utils/GenerateUtils';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
+import { EnterCode } from './lecture-code.schema';
 import { Lecture } from './lecture.schema';
 
 @Injectable()
