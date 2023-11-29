@@ -11,6 +11,7 @@ import Example from "./pages/Example/Example";
 
 import ToastContainer from "./components/Toast/ToastContainer";
 import Start from "./pages/Start/Start";
+import MyPage from "./pages/MyPage/MyPage";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/start" element={<Start />} />
+          <Route path="/mypage" element={<MyPage />} />
           <Route path="/test" element={<Test />} />
           <Route path="/instructor" element={<Instructor />} />
           <Route path="/participant" element={<Participant />} />
