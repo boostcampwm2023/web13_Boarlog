@@ -21,8 +21,8 @@ export class LectureController {
 
   @Patch('audio')
   async saveAudioFile(@Body() updateLectureDto: UpdateLectureDto, @Res() res: Response) {
-    const result = await this.lectureService.saveAudioData(updateLectureDto);
-    res.status(HttpStatus.OK).send(result);
+    await this.lectureService.saveAudioData(updateLectureDto);
+    res.status(HttpStatus.OK).send();
   }
 
   @Patch('/:code')
