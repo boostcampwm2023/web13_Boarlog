@@ -34,7 +34,6 @@ const HeaderParticipantControls = () => {
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
-  const localVideoRef = useRef<HTMLVideoElement>(null);
   const speakerVolumeRef = useRef<number>(0);
   const prevSpeakerVolumeRef = useRef<number>(0);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -82,7 +81,7 @@ const HeaderParticipantControls = () => {
     pcRef.current.ontrack = (event) => {
       console.log(event.track);
 
-      if (!mediaStreamRef.current || !localAudioRef.current || !localVideoRef.current || !videoRef.current) return;
+      if (!mediaStreamRef.current || !localAudioRef.current || !videoRef.current) return;
       if (event.track.kind === "audio") {
         mediaStreamRef.current.addTrack(event.track);
         localAudioRef.current.srcObject = mediaStreamRef.current;
@@ -249,7 +248,6 @@ const HeaderParticipantControls = () => {
         setIsModalOpen={setIsModalOpen}
       />
       <audio id="localAudio" playsInline autoPlay muted ref={localAudioRef}></audio>
-      <video id="localVideo" controls height="500px" width="500px" ref={localVideoRef}></video>
     </>
   );
 };

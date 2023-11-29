@@ -15,9 +15,7 @@ const Participant = () => {
   return (
     <>
       <Header type="participant" />
-      <div className="relative w-[100vw] h-[calc(100vh-6rem)]">
-        <video controls autoPlay muted height="500px" width="500px" ref={videoRef}></video>
-      </div>
+      <video className="relative w-[100vw] h-[calc(100vh-6rem)]" autoPlay muted ref={videoRef}></video>
     </>
   );
 };
