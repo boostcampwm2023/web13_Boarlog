@@ -17,7 +17,7 @@ const Header = ({ type }: HeaderProps) => {
   const [isSettingClicked, setIsSettingClicked] = useState(false);
 
   return (
-    <header className="flex w-100 relative items-center justify-between px-6 py-4 bg-grayscale-white border-header box-border z-10">
+    <header className="flex w-100 relative h-20 items-center justify-between px-6 py-4 bg-grayscale-white border-header box-border z-10">
       <div className="flex items-center gap-4 semibold-20">
         {(type === "login" || type === "main") && <HeaderLogo type="normal" />}
         {(type === "instructor" || type === "participant") && (
