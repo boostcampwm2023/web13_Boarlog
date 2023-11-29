@@ -15,6 +15,12 @@ export class Lecture {
 
   @Prop({ default: false })
   is_end: boolean;
+
+  @Prop()
+  audio_file: string;
+
+  @Prop()
+  start_time: Date;
 }
 
 export const LectureSchema = SchemaFactory.createForClass(Lecture);
