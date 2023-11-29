@@ -1,4 +1,4 @@
-import CheckSVG from "@/assets/svgs/check.svg?react";
+import CheckIcon from "@/assets/svgs/check.svg?react";
 import { useRecoilValue } from "recoil";
 import { useEffect, useState } from "react";
 import { fabric } from "fabric";
@@ -36,7 +36,7 @@ const ColorPanel = ({ className }: { className: string }) => {
           setPenColor("red");
         }}
       >
-        <CheckSVG className={`${penColor === "red" ? "" : "hidden"}`} />
+        <CheckIcon className={`${penColor === "red" ? "" : "hidden"}`} />
       </button>
       <button
         className="w-6 h-6  rounded-[0.625rem] bg-pen-yellow border border-pen-border-yellow flex justify-center items-center"
@@ -46,7 +46,7 @@ const ColorPanel = ({ className }: { className: string }) => {
           setPenColor("yellow");
         }}
       >
-        <CheckSVG className={`${penColor === "yellow" ? "" : "hidden"}`} />
+        <CheckIcon className={`${penColor === "yellow" ? "" : "hidden"}`} />
       </button>
       <button
         className="w-6 h-6  rounded-[0.625rem] bg-pen-forsythia border border-pen-border-forsythia flex justify-center items-center"
@@ -56,7 +56,7 @@ const ColorPanel = ({ className }: { className: string }) => {
           setPenColor("forsythia");
         }}
       >
-        <CheckSVG className={`${penColor === "forsythia" ? "" : "hidden"}`} />
+        <CheckIcon className={`${penColor === "forsythia" ? "" : "hidden"}`} />
       </button>
       <button
         className="w-6 h-6  rounded-[0.625rem] bg-pen-lightgreen border border-pen-border-lightgreen flex justify-center items-center"
@@ -66,7 +66,7 @@ const ColorPanel = ({ className }: { className: string }) => {
           setPenColor("lightGreen");
         }}
       >
-        <CheckSVG className={`${penColor === "lightGreen" ? "" : "hidden"}`} />
+        <CheckIcon className={`${penColor === "lightGreen" ? "" : "hidden"}`} />
       </button>
       <button
         className="w-6 h-6  rounded-[0.625rem] bg-pen-blue border border-pen-border-blue flex justify-center items-center"
@@ -76,7 +76,7 @@ const ColorPanel = ({ className }: { className: string }) => {
           setPenColor("blue");
         }}
       >
-        <CheckSVG className={`${penColor === "blue" ? "" : "hidden"}`} />
+        <CheckIcon className={`${penColor === "blue" ? "" : "hidden"}`} />
       </button>
       <button
         className="w-6 h-6  rounded-[0.625rem] bg-grayscale-black border border-grayscale-black  flex justify-center items-center"
@@ -86,7 +86,7 @@ const ColorPanel = ({ className }: { className: string }) => {
           setPenColor("black");
         }}
       >
-        <CheckSVG className={`${penColor === "black" ? "" : "hidden"}`} />
+        <CheckIcon className={`${penColor === "black" ? "" : "hidden"}`} />
       </button>
     </div>
   );

@@ -1,4 +1,4 @@
-import CheckSVG from "@/assets/svgs/check.svg?react";
+import CheckIcon from "@/assets/svgs/check.svg?react";
 import { useRecoilValue } from "recoil";
 import { useState, useEffect } from "react";
 
@@ -74,7 +74,7 @@ const StickyNoteColorPanel = () => {
           handleColorButtonClick("red");
         }}
       >
-        {stickyNoteColor === "red" && <CheckSVG />}
+        {stickyNoteColor === "red" && <CheckIcon />}
       </button>
       <button
         type="button"
@@ -84,7 +84,7 @@ const StickyNoteColorPanel = () => {
           handleColorButtonClick("yellow");
         }}
       >
-        {stickyNoteColor === "yellow" && <CheckSVG />}
+        {stickyNoteColor === "yellow" && <CheckIcon />}
       </button>
       <button
         type="button"
@@ -94,7 +94,7 @@ const StickyNoteColorPanel = () => {
           handleColorButtonClick("forsythia");
         }}
       >
-        {stickyNoteColor === "forsythia" && <CheckSVG />}
+        {stickyNoteColor === "forsythia" && <CheckIcon />}
       </button>
       <button
         type="button"
@@ -104,7 +104,7 @@ const StickyNoteColorPanel = () => {
           handleColorButtonClick("lightgreen");
         }}
       >
-        {stickyNoteColor === "lightgreen" && <CheckSVG />}
+        {stickyNoteColor === "lightgreen" && <CheckIcon />}
       </button>
       <button
         type="button"
@@ -114,7 +114,7 @@ const StickyNoteColorPanel = () => {
           handleColorButtonClick("blue");
         }}
       >
-        {stickyNoteColor === "blue" && <CheckSVG />}
+        {stickyNoteColor === "blue" && <CheckIcon />}
       </button>
     </div>
   );

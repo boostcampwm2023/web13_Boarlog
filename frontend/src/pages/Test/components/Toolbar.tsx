@@ -4,8 +4,8 @@ import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
 import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
-import AddStickyNoteCursorSVG from "@/assets/svgs/addStickyMemoCursor.svg";
-import EraserCursorSVG from "@/assets/svgs/eraserMouseCursor.svg";
+import AddStickyNoteCursor from "@/assets/svgs/addStickyMemoCursor.svg";
+import EraserCursor from "@/assets/svgs/eraserMouseCursor.svg";
 
 import { useState, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
@@ -65,7 +65,7 @@ const Toolbar = () => {
   const handleStickyNoteTool = () => {
     if (!(canvas instanceof fabric.Canvas)) return;
 
-    canvas.defaultCursor = `url("${AddStickyNoteCursorSVG}"), auto`;
+    canvas.defaultCursor = `url("${AddStickyNoteCursor}"), auto`;
 
     canvas.on("mouse:down", ({ absolutePointer }: fabric.IEvent<MouseEvent>) => {
       if (!absolutePointer) return;
@@ -111,7 +111,7 @@ const Toolbar = () => {
     setIsObjectSelectable(true);
     canvas.selection = true;
 
-    canvas.defaultCursor = `url("${EraserCursorSVG}"), auto`;
+    canvas.defaultCursor = `url("${EraserCursor}"), auto`;
 
     canvas.on("mouse:up", ({ target }) => {
       if (!target) return;
