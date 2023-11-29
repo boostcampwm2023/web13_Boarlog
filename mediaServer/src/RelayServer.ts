@@ -1,16 +1,18 @@
 import { Server, Socket } from 'socket.io';
 import { RTCIceCandidate, RTCPeerConnection } from 'wrtc';
-import dotenv from 'dotenv';
+import { pc_config } from './pc.config';
+import { RoomInfo } from './models/RoomInfo';
+import { ClientInfo, ClientType } from './models/ClientInfo';
+import { Message } from './models/Message';
 
 export class RelayServer {
   private readonly io;
-  private relayServerRTCPC: RTCPeerConnection;
-  private readonly studentRTCPCs: Map<string, RTCPeerConnection>;
-  private presenterStream: any;
+  private readonly roomsInfo: Map<string, RoomInfo>;
+  private readonly clientsInfo: Map<string, ClientInfo>;
 
   constructor(port: number) {
-    this.relayServerRTCPC = new RTCPeerConnection();
-    this.studentRTCPCs = new Map();
+    this.roomsInfo = new Map();
+    this.clientsInfo = new Map();
     this.io = new Server(port, {
       cors: {
         origin: '*',
@@ -26,37 +28,32 @@ export class RelayServer {
   createRoom = (socket: Socket) => {
     try {
       socket.on('presenterOffer', async (data) => {
-        dotenv.config();
-        const pc_config = {
-          iceServers: [
-            {
-              urls: ['stun:stun.l.google.com:19302']
-            },
-            {
-              urls: process.env.TURN_URL as string,
-              username: process.env.TURN_USERNAME as string,
-              credential: process.env.TURN_PASSWORD as string
-            }
-          ]
-        };
         const RTCPC = new RTCPeerConnection(pc_config);
-        this.relayServerRTCPC = RTCPC;
-
+        this.clientsInfo.set(socket.id, new ClientInfo(ClientType.PRESENTER, RTCPC));
+        this.roomsInfo.set(data.roomId, new RoomInfo(data.roomId, socket, RTCPC));
         RTCPC.ontrack = (event) => {
-          const stream = event.streams[0];
-          this.presenterStream = stream;
-          console.log('stream', stream, stream.getTracks()[0].id);
+          const roomInfo = this.roomsInfo.get(data.roomId);
+          if (roomInfo) {
+            roomInfo.stream = event.streams[0];
+          }
         };
 
-        this.getServerCandidate(socket, data.socketId);
+        socket.join(socket.id);
+        this.exchangeCandidate('/create-room', socket);
 
         await RTCPC.setRemoteDescription(data.SDP);
         const SDP = await RTCPC.createAnswer();
-        socket.emit(`${data.socketId}-serverAnswer`, {
-          isStudent: false,
+        this.io.of('/create-room').to(socket.id).emit('serverAnswer', {
           SDP: SDP
         });
         RTCPC.setLocalDescription(SDP);
+
+        const clientInfo = this.clientsInfo.get(socket.id);
+        if (!clientInfo) {
+          throw new Error('발표자가 존재하지 않습니다.');
+        }
+        clientInfo.roomId = data.roomId;
+        socket.join(data.roomId);
       });
     } catch (e) {
       console.log(e);
@@ -66,62 +63,96 @@ export class RelayServer {
   enterRoom = (socket: Socket) => {
     try {
       socket.on('studentOffer', async (data) => {
-        const socketId = data.socketId;
-        const RTCPC = new RTCPeerConnection();
-
-        this.presenterStream.getTracks().forEach((track: any) => {
+        const RTCPC = new RTCPeerConnection(pc_config);
+        this.clientsInfo.set(socket.id, new ClientInfo(ClientType.STUDENT, RTCPC));
+        const presenterStream = this.roomsInfo.get(data.roomId)?.stream;
+        if (!presenterStream) {
+          return;
+        }
+        presenterStream.getTracks().forEach((track: any) => {
           RTCPC.addTrack(track);
           console.log(track, track.kind, track.id);
         });
 
-        this.studentRTCPCs.set(socketId, RTCPC);
-
-        this.exchangeCandidate(socket, socketId);
+        socket.join(socket.id);
+        this.exchangeCandidate('/enter-room', socket);
 
         await RTCPC.setRemoteDescription(data.SDP);
         const SDP = await RTCPC.createAnswer();
-        socket.emit(`${data.socketId}-serverAnswer`, {
-          isStudent: true,
+        this.io.of('/enter-room').to(socket.id).emit(`serverAnswer`, {
           SDP: SDP
         });
         RTCPC.setLocalDescription(SDP);
+
+        const roomInfo = this.roomsInfo.get(data.roomId);
+        const clientInfo = this.clientsInfo.get(socket.id);
+        if (!clientInfo || !roomInfo) {
+          throw new Error('발표자가 존재하지 않습니다.');
+        }
+        roomInfo.studentSocketList.add(socket);
+        clientInfo.roomId = data.roomId;
+        socket.join(data.roomId);
       });
     } catch (e) {
       console.log(e);
     }
   };
 
-  getServerCandidate = (socket: Socket, presenterSocketId: string) => {
+  lecture = (socket: Socket) => {
+    const clientInfo = this.clientsInfo.get(socket.id);
+    if (!clientInfo || !clientInfo.roomId) {
+      throw new Error('잘못된 사용자 입니다.');
+    }
+    socket.on('editBoard', (data) => {
+      if (clientInfo.type !== ClientType.PRESENTER) {
+        throw new Error('해당 발표자가 존재하지 않습니다.');
+      }
+      this.io.of('/lecture').to(clientInfo.roomId).emit('edit', new Message('whiteBoard', data.content));
+    });
+    socket.on('question', (data) => {
+      if (clientInfo.type !== ClientType.STUDENT) {
+        throw new Error('해당 참여자가 존재하지 않습니다.');
+      }
+      const presenterSocket = this.roomsInfo.get(clientInfo.roomId)?.presenterSocket;
+      if (!presenterSocket) {
+        throw new Error('해당 방이 존재하지 않습니다');
+      }
+      this.io.of('/lecture').to(presenterSocket.id).emit('question', new Message('question', data.content));
+    });
+    socket.on('endOfLecture', (data) => {
+      if (clientInfo.type !== ClientType.PRESENTER) {
+        throw new Error('해당 발표자가 존재하지 않습니다');
+      }
+      this.io.of('/lecture').to(clientInfo.roomId).emit('end', new Message('lecture', data.content));
+      this.roomsInfo.get(clientInfo.roomId)?.endLecture();
+      this.roomsInfo.delete(clientInfo.roomId);
+      clientInfo.roomId = '';
+    });
+    socket.on('leaveLecture', () => {
+      if (clientInfo.type !== ClientType.STUDENT) {
+        throw new Error('해당 참여자가 존재하지 않습니다');
+      }
+      this.roomsInfo.get(clientInfo.roomId)?.exitRoom(socket);
+      this.io.of('/lecture').to(clientInfo.roomId).emit('exit', new Message('lecture', 'success'));
+    });
+  };
+
+  exchangeCandidate = (namespace: string, socket: Socket) => {
     try {
-      this.relayServerRTCPC.onicecandidate = (e) => {
+      const RTCPC = this.clientsInfo.get(socket.id)?.RTCPC;
+      if (!RTCPC) {
+        console.log('Unable to exchange candidates');
+        return;
+      }
+      RTCPC.onicecandidate = (e) => {
         if (e.candidate) {
-          socket.emit(`${presenterSocketId}-serverCandidate`, {
+          this.io.of(namespace).to(socket.id).emit(`serverCandidate`, {
             candidate: e.candidate
           });
         }
       };
-      socket.on('presenterCandidate', (data) => {
-        this.relayServerRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate));
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  exchangeCandidate = (socket: Socket, socketId: any) => {
-    try {
-      const RTCPC = this.studentRTCPCs.get(socketId);
-      if (RTCPC) {
-        RTCPC.onicecandidate = (e) => {
-          if (e.candidate) {
-            socket.emit(`${socketId}-serverCandidate`, {
-              candidate: e.candidate
-            });
-          }
-        };
-      }
-      socket.on('studentCandidate', (data) => {
-        RTCPC?.addIceCandidate(new RTCIceCandidate(data.candidate));
+      socket.on('clientCandidate', (data) => {
+        RTCPC.addIceCandidate(new RTCIceCandidate(data.candidate));
       });
     } catch (e) {
       console.log(e);

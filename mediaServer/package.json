@@ -7,6 +7,7 @@
     "build": "tsc",
     "start": "tsc && node dist/main.js",
     "dev": "nodemon --exec ts-node src/main.ts",
+    "windowDebug": "tsc && @powershell -Command $env:DEBUG='*';node dist/main.js",
     "test": "jest"
   },
   "keywords": [],
@@ -17,6 +18,7 @@
     "@types/node": "^20.9.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "@typescript-eslint/parser": "^6.11.0",
+    "debug": "^4.3.4",
     "eslint": "^8.53.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",

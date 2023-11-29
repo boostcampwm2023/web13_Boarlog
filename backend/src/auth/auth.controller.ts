@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Request, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
+import { CustomAuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { UserInfoDto } from './dto/userInfo.dto';
 
@@ -20,6 +21,21 @@ export class AuthController {
   @Get('/google/redirect')
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req: any, @Res() res: Response) {
-    res.send(req.user.jwt);
+    const cookie = req.user.cookie;
+    res.setHeader('Set-Cookie', cookie);
+    res.redirect('/');
+    return res.send();
+  }
+
+  @UseGuards(CustomAuthGuard)
+  @Get('profile')
+  getProfile(@Request() req) {
+    return req.user;
+  }
+
+  @Get('logout')
+  logout(@Res() res: Response) {
+    res.setHeader(`Set-Cookie`, `Authentication=; HttpOnly; Path=/; Max-Age=0`);
+    return res.sendStatus(200);
   }
 }

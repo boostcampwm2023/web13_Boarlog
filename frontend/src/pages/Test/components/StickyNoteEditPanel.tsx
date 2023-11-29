@@ -1,12 +1,14 @@
-import SSVG from "@/assets/svgs/S.svg?react";
-import MSVG from "@/assets/svgs/M.svg?react";
-import LSVG from "@/assets/svgs/L.svg?react";
-import XLSVG from "@/assets/svgs/XL.svg?react";
-import AlignLeftSVG from "@/assets/svgs/formatAlignLeft.svg?react";
-import AlignCenterSVG from "@/assets/svgs/formatAlignCenter.svg?react";
-import AlignRightSVG from "@/assets/svgs/formatAlignRight.svg?react";
-import PalletteSVG from "@/assets/svgs/palette.svg?react";
-import DeleteMemoSVG from "@/assets/svgs/deleteMemo.svg?react";
+import SIcon from "@/assets/svgs/S.svg?react";
+import MIcon from "@/assets/svgs/M.svg?react";
+import LIcon from "@/assets/svgs/L.svg?react";
+import XLIcon from "@/assets/svgs/XL.svg?react";
+import AlignLeftIcon from "@/assets/svgs/formatAlignLeft.svg?react";
+import AlignCenterIcon from "@/assets/svgs/formatAlignCenter.svg?react";
+import AlignRightIcon from "@/assets/svgs/formatAlignRight.svg?react";
+import PalletteIcon from "@/assets/svgs/palette.svg?react";
+import DeleteMemoIcon from "@/assets/svgs/deleteMemo.svg?react";
+
+import { fabricObjectWithItem } from "./stateStickyNoteInstance";
 
 import { useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
@@ -51,8 +53,7 @@ const StickyNoteEditPanel = () => {
   const noteInstance = useRecoilValue(stickyNoteInstance);
   const canvas = useRecoilValue(cavasInstanceState);
 
-  const getClickedMemoData = (noteInstance: fabric.Object): { align: FormatAlign; fontSize: FontSize } => {
-    // @ts-ignore
+  const getClickedMemoData = (noteInstance: fabricObjectWithItem): { align: FormatAlign; fontSize: FontSize } => {
     const textBox = noteInstance.item(1);
 
     const align = textBox.get("textAlign");
@@ -88,7 +89,7 @@ const StickyNoteEditPanel = () => {
 
   useEffect(() => {
     if (!noteInstance || !canvas) return;
-    // @ts-ignore
+
     const textBox = noteInstance.item(1);
 
     const fontPixel = getFontSizePixelByCode(fontSize);
@@ -100,7 +101,6 @@ const StickyNoteEditPanel = () => {
   useEffect(() => {
     if (!noteInstance || !canvas) return;
 
-    // @ts-ignore
     const textBox = noteInstance.item(1);
     textBox.set({ textAlign: formatAlign });
 
@@ -128,7 +128,7 @@ const StickyNoteEditPanel = () => {
               handleFontSizeButtonClick("s");
             }}
           >
-            <SSVG style={fontSize === "s" ? { fill: ACTIVE_COLOR } : undefined} />
+            <SIcon style={fontSize === "s" ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
           <button
             type="button"
@@ -139,7 +139,7 @@ const StickyNoteEditPanel = () => {
               handleFontSizeButtonClick("m");
             }}
           >
-            <MSVG style={fontSize === "m" ? { fill: ACTIVE_COLOR } : undefined} />
+            <MIcon style={fontSize === "m" ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
           <button
             type="button"
@@ -150,7 +150,7 @@ const StickyNoteEditPanel = () => {
               handleFontSizeButtonClick("l");
             }}
           >
-            <LSVG style={fontSize === "l" ? { fill: ACTIVE_COLOR } : undefined} />
+            <LIcon style={fontSize === "l" ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
           <button
             type="button"
@@ -161,7 +161,7 @@ const StickyNoteEditPanel = () => {
               handleFontSizeButtonClick("xl");
             }}
           >
-            <XLSVG style={fontSize === "xl" ? { fill: ACTIVE_COLOR } : undefined} />
+            <XLIcon style={fontSize === "xl" ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
         </div>
         <div className="flex items-center mx-3 gap-2">
@@ -174,7 +174,7 @@ const StickyNoteEditPanel = () => {
               handleFormatAlignButtonClick("left");
             }}
           >
-            <AlignLeftSVG style={formatAlign === "left" ? { fill: ACTIVE_COLOR } : undefined} />
+            <AlignLeftIcon style={formatAlign === "left" ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
           <button
             type="button"
@@ -185,7 +185,7 @@ const StickyNoteEditPanel = () => {
               handleFormatAlignButtonClick("center");
             }}
           >
-            <AlignCenterSVG style={formatAlign === "center" ? { fill: ACTIVE_COLOR } : undefined} />
+            <AlignCenterIcon style={formatAlign === "center" ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
           <button
             type="button"
@@ -196,7 +196,7 @@ const StickyNoteEditPanel = () => {
               handleFormatAlignButtonClick("right");
             }}
           >
-            <AlignRightSVG style={formatAlign === "right" ? { fill: ACTIVE_COLOR } : undefined} />
+            <AlignRightIcon style={formatAlign === "right" ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
         </div>
         <div className="flex items-center gap-2 before:content-[''] before:block before:w-px before:h-[20px] before:bg-grayscale-gray">
@@ -210,7 +210,7 @@ const StickyNoteEditPanel = () => {
               handlePalletteButtonClick();
             }}
           >
-            <PalletteSVG style={isPalletteActive ? { fill: ACTIVE_COLOR } : undefined} />
+            <PalletteIcon style={isPalletteActive ? { fill: ACTIVE_COLOR } : undefined} />
           </button>
           <button
             type="button"
@@ -220,7 +220,7 @@ const StickyNoteEditPanel = () => {
               handleDeleteNote();
             }}
           >
-            <DeleteMemoSVG />
+            <DeleteMemoIcon />
           </button>
         </div>
       </div>

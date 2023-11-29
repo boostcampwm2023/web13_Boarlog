@@ -32,7 +32,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       await this.authService.signUp(user);
     }
 
-    const jwt = await this.authService.generateJWT(user);
-    return { jwt };
+    const cookie = await this.authService.generateCookie(user);
+    return { cookie };
   }
 }
