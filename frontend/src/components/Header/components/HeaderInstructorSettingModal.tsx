@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSetRecoilState } from "recoil";
-import selectedMicrophoneState from "./stateMicrophone";
+import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 
 interface HeaderSettingModalProps {
@@ -40,13 +40,13 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
           isSettingClicked ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
-        <div className="flex flex-row gap-3 w-full h-10 justify-start">
+        <div className="flex flex-row gap-3 w-full justify-start">
           <p id="input-device-label">마이크 선택</p>
         </div>
 
         <select
           aria-labelledby="input-device-label"
-          className="border w-full"
+          className="border w-full rounded-xl px-3 py-4"
           onChange={(e) => setSelectedMicrophone(e.target.value)}
         >
           {microphoneDevices.map((device) => (

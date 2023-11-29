@@ -10,8 +10,9 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
+import { useToast } from "@/components/Toast/useToast";
 
-import selectedMicrophoneState from "./stateMicrophone";
+import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 
 const HeaderInstructorControls = () => {
@@ -24,6 +25,7 @@ const HeaderInstructorControls = () => {
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeState);
   const setInputMicVolumeState = useSetRecoilState(micVolmeState);
+  const showToast = useToast();
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -34,6 +36,18 @@ const HeaderInstructorControls = () => {
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
   const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
+  const pc_config = {
+    iceServers: [
+      {
+        urls: ["stun:stun.l.google.com:19302"]
+      },
+      {
+        urls: import.meta.env.VITE_TURN_URL as string,
+        username: import.meta.env.VITE_TURN_USERNAME as string,
+        credential: import.meta.env.VITE_TURN_PASSWORD as string
+      }
+    ]
+  };
 
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
@@ -84,7 +98,7 @@ const HeaderInstructorControls = () => {
       startTimer();
 
       // 2. 로컬 RTCPeerConnection 생성
-      pcRef.current = new RTCPeerConnection();
+      pcRef.current = new RTCPeerConnection(pc_config);
       // 3. 로컬 stream에 track 추가, 발표자의 미디어 트랙을 로컬 RTCPeerConnection에 추가
       if (updatedStreamRef.current) {
         updatedStreamRef.current.getTracks().forEach((track) => {
@@ -190,7 +204,7 @@ const HeaderInstructorControls = () => {
 
   // 경과 시간을 표시하기 위한 부분입니다
   const startTimer = () => {
-    let startTime = Date.now();
+    const startTime = Date.now();
     const updateElapsedTime = () => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsedTime);
@@ -225,9 +239,11 @@ const HeaderInstructorControls = () => {
       prevInputMicVolumeRef.current = inputMicVolumeRef.current;
       setInputMicVolumeState(0);
       setIsMicOn(false);
+      showToast({ message: "마이크 음소거 되었습니다", type: "alert" });
     } else {
       setInputMicVolumeState(prevInputMicVolumeRef.current);
       setIsMicOn(true);
+      showToast({ message: "마이크 음소거가 해제되었습니다", type: "success" });
     }
   };
 
