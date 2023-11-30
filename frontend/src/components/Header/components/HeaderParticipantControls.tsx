@@ -40,7 +40,8 @@ const HeaderParticipantControls = () => {
 
   const navigate = useNavigate();
   const showToast = useToast();
-  const MEDIA_SERVER_URL = "http://110.165.16.37:3000/enter-room";
+
+  const MEDIA_SERVER_URL = "https://www.boarlog.site/enter-room";
   const pc_config = {
     iceServers: [
       {

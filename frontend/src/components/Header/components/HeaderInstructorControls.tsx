@@ -15,6 +15,7 @@ import { useToast } from "@/components/Toast/useToast";
 import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
+import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 
 const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
@@ -29,16 +30,19 @@ const HeaderInstructorControls = () => {
   const showToast = useToast();
 
   const canvasRef = useRecoilValue(canvasRefState);
+  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
+  //const lectureSocketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
-  const MEDIA_SERVER_URL = "http://110.165.16.37:3000/create-room";
+  const MEDIA_SERVER_URL = "https://www.boarlog.site";
+  //const MEDIA_SERVER_URL2 = "http://boarlog.store:3000/lecture";
   const pc_config = {
     iceServers: [
       {
@@ -88,7 +92,7 @@ const HeaderInstructorControls = () => {
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
-      socketRef.current = io(MEDIA_SERVER_URL);
+      socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
@@ -167,6 +171,15 @@ const HeaderInstructorControls = () => {
       }
     };
   }
+
+  /*
+  if (!socketRef.current) return;
+  socketRef.current.emit("edit", {
+    type: "whiteBoard",
+    roomId: ${roomId},
+    "content": ${변경 내용}
+  });
+  */
 
   async function listenForServerAnswer() {
     // 6. 서버로부터 answer 받음
@@ -269,6 +282,40 @@ const HeaderInstructorControls = () => {
     }
   };
 
+  let saveJSON: any = null;
+
+  const save = () => {
+    if (!fabricCanvasRef) return;
+    saveJSON = JSON.stringify(fabricCanvasRef);
+    console.log(saveJSON);
+    alert("save canvas!");
+  };
+
+  const load = () => {
+    //alert("load canvas!");
+
+    /*
+    if (!fabricCanvasRef) return;
+    fabricCanvasRef.loadFromJSON(test, () => {
+      console.log("JSON 데이터 로드 완료");
+      fabricCanvasRef.renderAll();
+    });
+    */
+    //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
+    if (!socketRef.current) return;
+    socketRef.current.emit("edit", {
+      type: "whiteBoard",
+      roomId: 1,
+      content: "test"
+    });
+
+    socketRef.current.emit("edit", {
+      type: "whiteBoard",
+      roomId: 1,
+      content: "test"
+    });
+  };
+
   return (
     <>
       <div className="flex gap-2 fixed left-1/2 -translate-x-1/2">
@@ -303,6 +350,12 @@ const HeaderInstructorControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
+      </SmallButton>
+      <SmallButton className={"bg-boarlog-100"} onClick={save}>
+        1
+      </SmallButton>
+      <SmallButton className={"bg-boarlog-100"} onClick={load}>
+        2
       </SmallButton>
       <Modal
         modalText="강의를 종료하시겠습니까?"
