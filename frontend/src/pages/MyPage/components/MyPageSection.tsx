@@ -16,10 +16,6 @@ const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
   const [nickname, setNickname] = useState("");
   const [isValid, setIsValid] = useState(false);
 
-  useEffect(() => {
-    showToast({ message: "닉네임을 설정해주세요.", type: "default" });
-  }, []);
-
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newNickname = event.target.value;
     setNickname(newNickname);
@@ -36,7 +32,7 @@ const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
 
   return (
     <div className="flex flex-col items-center mt-32 st:mt-36">
-      <section className="flex relative w-11/12 max-w-3xl p-8 flex-col items-center gap-8 rounded-2xl border-default shadow-xl">
+      <section className="flex relative w-11/12 max-w-3xl p-6 flex-col items-center gap-8 rounded-2xl border-default shadow-xl">
         <img
           src={profileImage ? profileImage : ProfileBig}
           alt="프로필 이미지"
@@ -63,7 +59,7 @@ const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
         <div className="w-full max-w-sm">
           <Button type="full" buttonStyle={isValid ? "blue" : "black"} onClick={handleStartButtonClicked}>
             <EnterIcon className="fill-grayscale-white" />
-            볼록 시작하기
+            닉네임 변경 완료하기
           </Button>
         </div>
 

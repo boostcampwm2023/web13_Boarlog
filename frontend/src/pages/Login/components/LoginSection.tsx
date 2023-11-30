@@ -7,9 +7,9 @@ const LoginSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="flex relative w-11/12 max-w-xl p-8 flex-col items-center gap-4 rounded-xl border-default shadow-xl">
-      <img src={logoBig} alt="Boarlog 로고" className="absolute -top-20 w-40 h-40 lg:w-56 st:h-56 lg:-top-28"></img>
-      <h2 className="semibold-32 mt-20 lg:mt-28">Boarlog</h2>
+    <section className="flex relative w-11/12 max-w-xl p-6 flex-col items-center gap-4 rounded-xl border-default shadow-xl">
+      <img src={logoBig} alt="Boarlog 로고" className="absolute -top-20 w-40 h-40 sm:w-56 sm:h-56 sm:-top-28"></img>
+      <h2 className="semibold-32 mt-20 sm:mt-28">Boarlog</h2>
 
       <div className="flex flex-col gap-1 justify-center items-center">
         <h3 className="semibold-18 text-grayscale-darkgray">기록으로 남기는 실시간 강의</h3>

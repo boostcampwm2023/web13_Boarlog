@@ -20,11 +20,11 @@ const ReplayLectureCard = () => {
         앞으로 그룹 프로젝트에서 활용할 React Hooks에 대해 간단히 알아봅시다. useEffect와 useState에 대해서 학습합니다.
       </p>
       <div className="flex flex-row justify-between w-full items-center">
-        <div className="flex flex-row gap-1 semibold-16 text-boarlog-100">
+        <div className="flex flex-row gap-1 items-center semibold-16 text-boarlog-100">
           <CalendarIcon className="w-4 h-4 fill-boarlog-100" />
           2023.00.00 00:00
         </div>{" "}
-        <div className="flex flex-row gap-1 semibold-16 text-alert-100">
+        <div className="flex flex-row gap-1 items-center semibold-16 text-alert-100">
           <PlayIcon className="w-4 h-4 fill-alert-100" />
           00:00
         </div>
