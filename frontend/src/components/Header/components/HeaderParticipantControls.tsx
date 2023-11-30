@@ -96,7 +96,7 @@ const HeaderParticipantControls = () => {
         videoRef.current.play();
       }
     };
-    showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다", type: "alert" });
+    showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다.", type: "alert" });
   };
 
   const leaveLecture = () => {
@@ -204,16 +204,16 @@ const HeaderParticipantControls = () => {
       // 최초 연결 후 음소거 해제
       startAnalyse();
       setisSpeakerOn(true);
-      showToast({ message: "음소거가 해제되었습니다", type: "success" });
+      showToast({ message: "음소거가 해제되었습니다.", type: "success" });
     } else if (isSpeakerOn) {
       prevSpeakerVolumeRef.current = speakerVolumeRef.current;
       setSpeakerVolume(0);
       setisSpeakerOn(false);
-      showToast({ message: "음소거 되었습니다", type: "alert" });
+      showToast({ message: "음소거 되었습니다.", type: "alert" });
     } else {
       setSpeakerVolume(prevSpeakerVolumeRef.current);
       setisSpeakerOn(true);
-      showToast({ message: "음소거가 해제되었습니다", type: "success" });
+      showToast({ message: "음소거가 해제되었습니다.", type: "success" });
     }
   };
 

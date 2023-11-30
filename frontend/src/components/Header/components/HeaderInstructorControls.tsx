@@ -15,12 +15,13 @@ import { useToast } from "@/components/Toast/useToast";
 import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
-import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+//import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 
 const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStartModalOpen, setIsStartModalOpen] = useState(false);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [micVolume, setMicVolume] = useState<number>(0);
 
@@ -30,19 +31,17 @@ const HeaderInstructorControls = () => {
   const showToast = useToast();
 
   const canvasRef = useRecoilValue(canvasRefState);
-  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+  //const fabricCanvasRef = useRecoilValue(cavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
-  //const lectureSocketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
-  //const MEDIA_SERVER_URL2 = "http://boarlog.store:3000/lecture";
   const pc_config = {
     iceServers: [
       {
@@ -66,16 +65,25 @@ const HeaderInstructorControls = () => {
   }, [selectedMicrophone]);
 
   const startLecture = async () => {
-    if (!selectedMicrophone) return alert("음성 입력장치(마이크)를 먼저 선택해주세요");
+    if (!selectedMicrophone) {
+      showToast({ message: "음성 입력장치(마이크)를 먼저 선택해 주세요.", type: "alert" });
+      return;
+    }
+
+    setIsStartModalOpen(false);
 
     await initConnection();
     await createPresenterOffer();
     listenForServerAnswer();
     setIsLectureStart(true);
+    showToast({ message: "강의가 시작되었습니다.", type: "success" });
   };
 
   const stopLecture = () => {
-    if (!isLectureStart) return alert("강의가 시작되지 않았습니다.");
+    if (!isLectureStart) {
+      showToast({ message: "강의가 시작되지 않았습니다.", type: "alert" });
+      return;
+    }
 
     setIsLectureStart(false);
     setElapsedTime(0);
@@ -86,16 +94,18 @@ const HeaderInstructorControls = () => {
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
-    setIsModalOpen(false); // 일단은 모달만 닫습니다.
+    setIsCloseModalOpen(false);
+    showToast({ message: "강의가 종료되었습니다.", type: "alert" });
   };
 
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
       socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
+      if (!socketRef.current) throw new Error("소켓 연결 실패");
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
-      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: selectedMicrophone }
       });
@@ -141,7 +151,7 @@ const HeaderInstructorControls = () => {
   async function createPresenterOffer() {
     // 4. 발표자의 offer 생성
     try {
-      if (!pcRef.current || !socketRef.current) return;
+      if (!pcRef.current || !socketRef.current) throw new Error("RTCPeerConnection 또는 소켓 연결 실패");
       const SDP = await pcRef.current.createOffer({
         offerToReceiveAudio: false,
         offerToReceiveVideo: false
@@ -171,15 +181,6 @@ const HeaderInstructorControls = () => {
       }
     };
   }
-
-  /*
-  if (!socketRef.current) return;
-  socketRef.current.emit("edit", {
-    type: "whiteBoard",
-    roomId: ${roomId},
-    "content": ${변경 내용}
-  });
-  */
 
   async function listenForServerAnswer() {
     // 6. 서버로부터 answer 받음
@@ -251,7 +252,7 @@ const HeaderInstructorControls = () => {
   // 기존에 미디어 서버에 보내는 오디오 트랙을 새 마이크의 오디오 트랙으로 교체
   const replaceAudioTrack = async () => {
     try {
-      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: selectedMicrophone }
       });
@@ -274,33 +275,31 @@ const HeaderInstructorControls = () => {
       prevInputMicVolumeRef.current = inputMicVolumeRef.current;
       setInputMicVolumeState(0);
       setIsMicOn(false);
-      showToast({ message: "마이크 음소거 되었습니다", type: "alert" });
+      showToast({ message: "마이크 음소거 되었습니다.", type: "alert" });
     } else {
       setInputMicVolumeState(prevInputMicVolumeRef.current);
       setIsMicOn(true);
-      showToast({ message: "마이크 음소거가 해제되었습니다", type: "success" });
+      showToast({ message: "마이크 음소거가 해제되었습니다.", type: "success" });
     }
   };
 
+  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
+  // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
+  // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
+  /*
   let saveJSON: any = null;
-
   const save = () => {
     if (!fabricCanvasRef) return;
     saveJSON = JSON.stringify(fabricCanvasRef);
     console.log(saveJSON);
-    alert("save canvas!");
   };
-
-  const load = () => {
-    //alert("load canvas!");
-
-    /*
+  const load = () => {    
     if (!fabricCanvasRef) return;
     fabricCanvasRef.loadFromJSON(test, () => {
       console.log("JSON 데이터 로드 완료");
       fabricCanvasRef.renderAll();
     });
-    */
+    
     //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
     if (!socketRef.current) return;
     socketRef.current.emit("edit", {
@@ -315,6 +314,7 @@ const HeaderInstructorControls = () => {
       content: "test"
     });
   };
+  */
 
   return (
     <>
@@ -330,7 +330,7 @@ const HeaderInstructorControls = () => {
 
       <SmallButton
         className={`text-grayscale-white ${isLectureStart ? "bg-alert-100" : "bg-boarlog-100"}`}
-        onClick={!isLectureStart ? startLecture : () => setIsModalOpen(true)}
+        onClick={!isLectureStart ? () => setIsStartModalOpen(true) : () => setIsCloseModalOpen(true)}
       >
         {isLectureStart ? (
           <>
@@ -351,12 +351,16 @@ const HeaderInstructorControls = () => {
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
       </SmallButton>
-      <SmallButton className={"bg-boarlog-100"} onClick={save}>
-        1
-      </SmallButton>
-      <SmallButton className={"bg-boarlog-100"} onClick={load}>
-        2
-      </SmallButton>
+      <Modal
+        modalText="강의를 시작하시겠습니까?"
+        cancelText="취소"
+        confirmText="강의 시작하기"
+        cancelButtonStyle="black"
+        confirmButtonStyle="blue"
+        confirmClick={startLecture}
+        isModalOpen={isStartModalOpen}
+        setIsModalOpen={setIsStartModalOpen}
+      />
       <Modal
         modalText="강의를 종료하시겠습니까?"
         cancelText="취소"
@@ -364,8 +368,8 @@ const HeaderInstructorControls = () => {
         cancelButtonStyle="black"
         confirmButtonStyle="red"
         confirmClick={stopLecture}
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
+        isModalOpen={isCloseModalOpen}
+        setIsModalOpen={setIsCloseModalOpen}
       />
     </>
   );
