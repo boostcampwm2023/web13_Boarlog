@@ -102,7 +102,7 @@ const Toolbar = () => {
         prevTextBox: fabric.Textbox,
         memoGroup: fabricObjectWithAddWithUpdate
       ) => {
-        let newTextContents = dummyTextBox.text;
+        let newTextContents = dummyTextBox.text?.replace(/\n/g, "");
 
         // 만약 텍스트 박스를 비운채로 편집을 마쳤다면 메모의 내용을 다시 디폴트 상태로 돌려줍니다.
         if (newTextContents?.length === 0) newTextContents = "더블 클릭해 메모 내용을 편집하세요...";
@@ -123,6 +123,7 @@ const Toolbar = () => {
       const handleEditText = ({ target }: fabric.IEvent<MouseEvent>) => {
         if (!target) return;
         const textBox = (target as fabricObjectWithItem).item(1);
+        const backGround = (target as fabricObjectWithItem).item(0);
 
         // @ts-ignore
         const { left: memoLeft, top: memoTop, ...rest } = target;
@@ -147,6 +148,24 @@ const Toolbar = () => {
 
         // 더미 텍스트 박스를 캔버스에 추가한다.
         canvas.add(dummyTextBox);
+        let dummyTextBoxPrevHeight = dummyTextBox.height;
+        dummyTextBox.on("changed", () => {
+          const dummyTextBoxCurrentHeight = dummyTextBox.height;
+          if (dummyTextBoxPrevHeight !== dummyTextBoxCurrentHeight) {
+            if (!dummyTextBoxCurrentHeight) return;
+            if (dummyTextBoxCurrentHeight < 150) {
+              backGround.set({ height: 150 });
+              // @ts-ignore
+              target.addWithUpdate();
+              return;
+            }
+
+            backGround.set({ height: dummyTextBoxCurrentHeight + 20 });
+            // @ts-ignore
+            target.addWithUpdate();
+            dummyTextBoxPrevHeight = dummyTextBoxCurrentHeight;
+          }
+        });
 
         // 더미 텍스트 박스를 선택하고 텍스트 수정 모드로 바꾸고 텍스트 박스 내 모든 텍스트를 선택한다.
         canvas.setActiveObject(dummyTextBox);
@@ -193,7 +212,6 @@ const Toolbar = () => {
     });
 
     canvas.on("selection:created", ({ selected }) => {
-      console.log(selected);
       if (activeTool === "eraser") {
         selected?.forEach((object) => canvas.remove(object));
       }
