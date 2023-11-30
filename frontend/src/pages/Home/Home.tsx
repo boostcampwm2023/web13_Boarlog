@@ -44,7 +44,7 @@ const Home = () => {
       <section className="flex flex-col my-20 items-center justify-center">
         <h1 className="semibold-64 mb-2">시작하기</h1>
         <p className="semibold-20 text-grayscale-darkgray">볼록과 함께 실시간 강의를 경험해보세요.</p>
-        <div className="flex flex-col items-center justify-center gap-8 mt-16 hm:flex-row w-full">
+        <div className="flex flex-col items-center justify-center gap-8 mt-16 home:flex-row w-full">
           <MainCard isButtonClicked={isNewLectureClicked}>
             <NewLectureFront handleNewLectureTrue={handleNewLectureTrue} />
             <NewLectureBack handleNewLectureFalse={handleNewLectureFalse} />
