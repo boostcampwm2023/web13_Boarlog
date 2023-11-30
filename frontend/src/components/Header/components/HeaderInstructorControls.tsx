@@ -38,7 +38,7 @@ const HeaderInstructorControls = () => {
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
-  const MEDIA_SERVER_URL = "http://localhost:3000/create-room";
+  const MEDIA_SERVER_URL = "http://110.165.16.37:3000/create-room";
   const pc_config = {
     iceServers: [
       {
@@ -139,8 +139,8 @@ const HeaderInstructorControls = () => {
     try {
       if (!pcRef.current || !socketRef.current) return;
       const SDP = await pcRef.current.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true
+        offerToReceiveAudio: false,
+        offerToReceiveVideo: false
       });
       socketRef.current.emit("presenterOffer", {
         socketId: socketRef.current.id,
