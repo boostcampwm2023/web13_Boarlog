@@ -96,8 +96,9 @@ const DUMMY_DATA = [
 
 const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
   const showToast = useToast();
-  const [nickname, setNickname] = useState("");
-  const [isValid, setIsValid] = useState(false);
+  const [nickname, setNickname] = useState("볼록이");
+  const [isNicknameEdit, setIsNicknameEdit] = useState(false);
+  const [isValid, setIsValid] = useState(true);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newNickname = event.target.value;
@@ -105,17 +106,27 @@ const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
     setIsValid(NICKNAME_REGEXP.test(newNickname));
   };
 
-  const handleStartButtonClicked = () => {
-    if (isValid) {
-      showToast({ message: "닉네임 변경을 완료했습니다.", type: "success" });
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleEditButtonClicked();
+  };
+
+  const handleEditButtonClicked = () => {
+    if (isNicknameEdit) {
+      if (isValid) {
+        showToast({ message: "닉네임 변경을 완료했습니다.", type: "success" });
+        setIsNicknameEdit(false);
+      } else {
+        showToast({ message: "올바르지 않은 닉네임입니다.", type: "alert" });
+      }
     } else {
-      showToast({ message: "올바르지 않은 닉네임입니다.", type: "alert" });
+      showToast({ message: "닉네임을 변경합니다.", type: "default" });
+      setIsNicknameEdit(true);
     }
   };
 
   return (
-    <div className="flex flex-col items-center mt-32 sm:mt-36">
-      <section className="flex relative w-11/12 max-w-3xl p-6 flex-col items-center gap-8 rounded-2xl border-default shadow-xl">
+    <div className="flex flex-col items-center my-32 sm:mt-36">
+      <section className="flex relative w-11/12 max-w-3xl p-6 flex-col items-center gap-6 rounded-2xl border-default shadow-xl">
         <img
           src={profileImage ? profileImage : ProfileBig}
           alt="프로필 이미지"
@@ -126,23 +137,36 @@ const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
           type="text"
           value={nickname}
           onChange={handleChange}
-          size={nickname.length || 3}
+          onKeyDown={handleKeyDown}
+          size={nickname.length + 1 || 3}
           placeholder="닉네임"
           maxLength={10}
-          className="mt-20 sm:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200 rounded-none"
+          disabled={!isNicknameEdit}
+          className="mt-20 sm:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200 rounded-none disabled:border-none disabled:text-grayscale-black disabled:bg-grayscale-white"
         />
 
         <div className="flex flex-col gap-1 justify-center items-center">
-          <p className="semibold-18 text-grayscale-darkgray">사용할 닉네임을 입력해 주세요.</p>
-          <p className={`medium-12 ${isValid ? "text-boarlog-100" : "text-alert-100"}`}>
-            한글, 영문, 숫자, -, _, ., 총 10자 이내
-          </p>
+          {isNicknameEdit ? (
+            <>
+              {" "}
+              <p className="semibold-18 text-grayscale-darkgray">사용할 닉네임을 입력해 주세요.</p>
+              <p className={`medium-12 ${isValid ? "text-boarlog-100" : "text-alert-100"}`}>
+                한글, 영문, 숫자, -, _, ., 총 10자 이내
+              </p>
+            </>
+          ) : (
+            <p className="semibold-16 text-grayscale-darkgray">boostcamp.team528@gmail.com</p>
+          )}
         </div>
 
         <div className="w-full max-w-sm">
-          <Button type="full" buttonStyle={isValid ? "blue" : "black"} onClick={handleStartButtonClicked}>
+          <Button
+            type="full"
+            buttonStyle={isNicknameEdit && isValid ? "blue" : "black"}
+            onClick={handleEditButtonClicked}
+          >
             <EnterIcon className="fill-grayscale-white" />
-            닉네임 변경 완료하기
+            {isNicknameEdit ? "닉네임 변경 완료하기" : "닉네임 변경하기"}
           </Button>
         </div>
 
