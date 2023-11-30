@@ -65,18 +65,25 @@ const HeaderInstructorControls = () => {
   }, [selectedMicrophone]);
 
   const startLecture = async () => {
-    if (!selectedMicrophone) return alert("음성 입력장치(마이크)를 먼저 선택해주세요");
+    if (!selectedMicrophone) {
+      showToast({ message: "음성 입력장치(마이크)를 먼저 선택해주세요", type: "alert" });
+      return;
+    }
+
+    setIsStartModalOpen(false);
 
     await initConnection();
     await createPresenterOffer();
     listenForServerAnswer();
     setIsLectureStart(true);
-
-    setIsStartModalOpen(false);
+    showToast({ message: "강의가 시작되었습니다", type: "success" });
   };
 
   const stopLecture = () => {
-    if (!isLectureStart) return alert("강의가 시작되지 않았습니다.");
+    if (!isLectureStart) {
+      showToast({ message: "강의가 시작되지 않았습니다.", type: "alert" });
+      return;
+    }
 
     setIsLectureStart(false);
     setElapsedTime(0);
@@ -88,12 +95,14 @@ const HeaderInstructorControls = () => {
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsCloseModalOpen(false);
+    showToast({ message: "강의가 종료되었습니다", type: "alert" });
   };
 
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
       socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
+      if (!socketRef.current) throw new Error("소켓 연결 실패");
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
@@ -142,7 +151,7 @@ const HeaderInstructorControls = () => {
   async function createPresenterOffer() {
     // 4. 발표자의 offer 생성
     try {
-      if (!pcRef.current || !socketRef.current) return;
+      if (!pcRef.current || !socketRef.current) throw new Error("RTCPeerConnection 또는 소켓 연결 실패");
       const SDP = await pcRef.current.createOffer({
         offerToReceiveAudio: false,
         offerToReceiveVideo: false
