@@ -172,15 +172,6 @@ const HeaderInstructorControls = () => {
     };
   }
 
-  /*
-  if (!socketRef.current) return;
-  socketRef.current.emit("edit", {
-    type: "whiteBoard",
-    roomId: ${roomId},
-    "content": ${변경 내용}
-  });
-  */
-
   async function listenForServerAnswer() {
     // 6. 서버로부터 answer 받음
     if (!socketRef.current) return;
@@ -282,25 +273,21 @@ const HeaderInstructorControls = () => {
     }
   };
 
+  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다. 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
+  /*
   let saveJSON: any = null;
-
   const save = () => {
     if (!fabricCanvasRef) return;
     saveJSON = JSON.stringify(fabricCanvasRef);
     console.log(saveJSON);
-    alert("save canvas!");
   };
-
-  const load = () => {
-    //alert("load canvas!");
-
-    /*
+  const load = () => {    
     if (!fabricCanvasRef) return;
     fabricCanvasRef.loadFromJSON(test, () => {
       console.log("JSON 데이터 로드 완료");
       fabricCanvasRef.renderAll();
     });
-    */
+    
     //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
     if (!socketRef.current) return;
     socketRef.current.emit("edit", {
@@ -315,6 +302,7 @@ const HeaderInstructorControls = () => {
       content: "test"
     });
   };
+  */
 
   return (
     <>
@@ -350,12 +338,6 @@ const HeaderInstructorControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
-      </SmallButton>
-      <SmallButton className={"bg-boarlog-100"} onClick={save}>
-        1
-      </SmallButton>
-      <SmallButton className={"bg-boarlog-100"} onClick={load}>
-        2
       </SmallButton>
       <Modal
         modalText="강의를 종료하시겠습니까?"
