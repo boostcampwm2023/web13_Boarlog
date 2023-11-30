@@ -202,7 +202,7 @@ const HeaderParticipantControls = () => {
 
   return (
     <>
-      <div className="flex gap-2 fixed left-1/2 -translate-x-1/2">
+      <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
         <VolumeMeter micVolume={micVolume} />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(elapsedTime / 60)
@@ -214,7 +214,7 @@ const HeaderParticipantControls = () => {
 
       <SmallButton className={`text-grayscale-white bg-alert-100`} onClick={() => setIsModalOpen(true)}>
         <StopIcon className="w-5 h-5 fill-grayscale-white" />
-        강의 나가기
+        <p className="hidden home:block">강의 나가기</p>
       </SmallButton>
       <SmallButton className={`text-grayscale-white ${isSpeakerOn ? "bg-boarlog-100" : "bg-alert-100"}`} onClick={mute}>
         {isSpeakerOn ? (

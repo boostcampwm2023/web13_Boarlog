@@ -23,7 +23,7 @@ const HeaderCodeCopyButton = ({ lectureCode }: HeaderCodeCopyButtonProps) => {
   return (
     <SmallButton onClick={handleShareButtonClicked} className="bg-grayscale-lightgray">
       <ShareIcon className="fill-grayscale-black" />
-      {lectureCode}
+      <p className="hidden home:block">{lectureCode}</p>
     </SmallButton>
   );
 };
