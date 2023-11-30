@@ -60,7 +60,7 @@ const QuestionList = () => {
   }, []);
 
   return (
-    <section className="w-60 h-[80vh] border border-default rounded-xl absolute top-2.5 left-20 mb-6 bg-grayscale-white">
+    <section className="w-60 h-[41rem] border border-default rounded-xl absolute top-2.5 left-20 mb-6 bg-grayscale-white">
       <h2 className="semibold-18 inline-block mt-1 p-4">질문 리스트</h2>
       <div className="h-[36rem] px-4 overflow-scroll">
         <ul ref={listRef}>

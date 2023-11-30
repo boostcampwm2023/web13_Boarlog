@@ -5,9 +5,12 @@ import activeToolState from "./stateActiveTool";
 
 const IndicatorBubble = ({ count }: { count: number }) => {
   return (
-    <div className="absolute -top-2 -right-2 flex justify-center items-center rounded-xl w-5 h-5  bg-alert-100 medium-12 text-grayscale-white">
-      {count}
-    </div>
+    <>
+      <div className="animate-ping absolute -top-2 -right-2 rounded-xl w-5 h-5  bg-alert-100"></div>
+      <div className="absolute -top-2 -right-2 flex justify-center items-center rounded-xl w-5 h-5  bg-alert-100 medium-12 text-grayscale-white">
+        {count}
+      </div>
+    </>
   );
 };
 
