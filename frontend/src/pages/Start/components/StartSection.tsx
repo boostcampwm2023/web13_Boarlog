@@ -26,6 +26,10 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
     setIsValid(NICKNAME_REGEXP.test(newNickname));
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleStartButtonClicked();
+  };
+
   const handleStartButtonClicked = () => {
     if (isValid) {
       showToast({ message: "메인 페이지로 이동합니다.", type: "success" });
@@ -47,7 +51,8 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
           type="text"
           value={nickname}
           onChange={handleChange}
-          size={nickname.length || 3}
+          onKeyDown={handleKeyDown}
+          size={nickname.length + 1 || 3}
           placeholder="닉네임"
           maxLength={10}
           className="mt-20 sm:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200 rounded-none"
