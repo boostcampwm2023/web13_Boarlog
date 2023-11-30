@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="test WebRTC">
+  <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../commons/css/main.css"/>
+</head>
+<body>
+<div id="container">
+  <h1>참여자</h1>
+  <video id="localVideo" playsinline autoplay muted height="500px" width="500px"></video>
+  <div>
+    <button id="startButton">시작</button>
+    <button id="callButton">방 생성</button>
+    <button id="hangupButton">방 나가기</button>
+  </div>
+</div>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script type="module">
+  const socket = io('http://110.165.16.37:3000/enter-room');
+
+  const startButton = document.getElementById('startButton');
+  const callButton = document.getElementById('callButton');
+  const hangupButton = document.getElementById('hangupButton');
+  callButton.disabled = true;
+  hangupButton.disabled = true;
+
+  const canvas = document.querySelector('canvas');
+  const localVideo = document.getElementById('localVideo');
+
+  let localStream = undefined;
+  let presenterRTCPC;
+  let tmp = []
+  const pc_config = {
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+        ]
+      },
+      // {
+      //   urls: "",
+      //   username: "",
+      //   credential: "",
+      //
+      // }
+    ],
+  };
+
+  const start = async () => {
+    try {
+      localVideo.srcObject = localStream;
+      localVideo.addEventListener('loadedmetadata', () => {
+        localVideo.play();
+      })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  //start().then(getStream)
+  getStream().then(start);
+
+  async function getStream() {
+    try {
+      presenterRTCPC = new RTCPeerConnection(pc_config);
+      const stream = new MediaStream();
+      localStream = stream;
+
+      await createStudentOffer();
+      await setServerAnswer();
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  function getStudentCandidate() {
+    presenterRTCPC.onicecandidate = (e) => {
+      if (e.candidate) {
+        socket.emit('clientCandidate', {
+          candidate: e.candidate,
+          studentSocketId: socket.id
+        });
+      }
+    }
+  }
+
+  async function createStudentOffer() {
+    try {
+      const SDP = await presenterRTCPC.createOffer({
+        offerToReceiveAudio:true,
+        offerToReceiveVideo:true
+      });
+      socket.emit('studentOffer', {
+        socketId: socket.id,
+        roomId: 1,    // FIXME: 테스트를 위한 roomId 고정
+        SDP: SDP
+      });
+
+      presenterRTCPC.setLocalDescription(SDP);
+      getStudentCandidate()
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async function setServerAnswer() {
+    socket.on(`serverAnswer`, (data) => {
+      presenterRTCPC.setRemoteDescription(data.SDP)
+    })
+    socket.on(`serverCandidate`, (data) => {
+      presenterRTCPC.addIceCandidate(new RTCIceCandidate(data.candidate))
+    });
+  }
+
+  presenterRTCPC.ontrack = (event) => {
+    localStream.addTrack(event.track);
+  }
+
+  startButton.onclick = start;
+</script>
+<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+<script src="../commons/js/streamVisualizer.js"></script>
+</body>
+</html>

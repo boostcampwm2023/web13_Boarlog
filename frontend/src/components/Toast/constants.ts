@@ -1,0 +1,2 @@
+export const TOAST_AVAILABLE_TIME = 3000;
+export const TOAST_ANIMATION_TIME = 500;

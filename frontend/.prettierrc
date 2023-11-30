@@ -1,0 +1,9 @@
+{
+  "printWidth": 120,
+  "tapWidth": 2,
+  "semi": true,
+  "quoteProps": "as-needed",
+  "bracketSameLine": false,
+  "trailingComma": "none",
+  "endOfLine": "lf"
+}
