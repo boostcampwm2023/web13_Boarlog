@@ -5,9 +5,7 @@ const Login = () => {
   return (
     <>
       <Header type="login" />
-      <div className="flex flex-1 items-center justify-center h-[calc(100vh-6rem)]">
-        <LoginSection />
-      </div>
+      <LoginSection />
     </>
   );
 };
