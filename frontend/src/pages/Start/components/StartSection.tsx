@@ -37,11 +37,11 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
   };
 
   return (
-    <section className="flex relative w-11/12 max-w-xl p-8 flex-col items-center gap-8 rounded-xl border-default shadow-xl">
+    <section className="flex relative w-11/12 max-w-xl p-6 flex-col items-center gap-8 rounded-xl border-default shadow-xl">
       <img
         src={profileImage ? profileImage : ProfileBig}
         alt="프로필 이미지"
-        className="absolute -top-20 w-40 h-40 st:w-56 st:h-56 st:-top-28"
+        className="absolute -top-20 w-40 h-40 sm:w-56 sm:h-56 sm:-top-28"
       />
 
       <input
@@ -51,7 +51,7 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
         size={nickname.length || 1}
         placeholder="닉네임"
         maxLength={10}
-        className="mt-20 st:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200"
+        className="mt-20 sm:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200"
       />
 
       <div className="flex flex-col gap-1 justify-center items-center">
