@@ -36,7 +36,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
         onClick={() => setIsSettingClicked(!isSettingClicked)}
       />
       <div
-        className={`flex flex-col absolute top-24 right-4 items-center gap-4 px-6 py-4 w-96 h-fit semibold-18 bg-grayscale-white rounded-xl border-default duration-500 ${
+        className={`flex flex-col fixed sm:absolute top-24 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-4 items-center gap-4 px-6 py-4 w-11/12 sm:w-96 h-fit bg-grayscale-white rounded-xl border-default duration-500 ${
           isSettingClicked ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >

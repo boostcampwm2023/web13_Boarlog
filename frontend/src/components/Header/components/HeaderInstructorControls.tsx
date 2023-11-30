@@ -318,7 +318,7 @@ const HeaderInstructorControls = () => {
 
   return (
     <>
-      <div className="flex gap-2 fixed left-1/2 -translate-x-1/2">
+      <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
         <VolumeMeter micVolume={micVolume} />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(elapsedTime / 60)
@@ -335,12 +335,12 @@ const HeaderInstructorControls = () => {
         {isLectureStart ? (
           <>
             <StopIcon className="w-5 h-5 fill-grayscale-white" />
-            강의 종료
+            <p className="hidden home:block">강의 종료</p>
           </>
         ) : (
           <>
             <PlayIcon className="w-5 h-5 fill-grayscale-white" />
-            강의 시작
+            <p className="hidden home:block">강의 시작</p>
           </>
         )}
       </SmallButton>

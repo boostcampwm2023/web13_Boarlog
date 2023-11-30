@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import ProfileSmall from "@/assets/imgs/profileSmall.png";
 import LogoutIcon from "@/assets/svgs/logout.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
+import Button from "@/components/Button/Button";
+import { useToast } from "@/components/Toast/useToast";
 
 interface HeaderProfileModalProps {
   isProfileClicked: boolean;
@@ -10,6 +12,12 @@ interface HeaderProfileModalProps {
 
 const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderProfileModalProps) => {
   const navigate = useNavigate();
+  const showToast = useToast();
+
+  const handleLogoutButtonClicked = () => {
+    showToast({ message: "로그아웃에 성공했습니다.", type: "success" });
+    navigate("/login");
+  };
 
   const moveToMyPage = () => {
     navigate("/mypage");
@@ -24,7 +32,7 @@ const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderPro
         onClick={() => setIsProfileClicked(!isProfileClicked)}
       />
       <div
-        className={`flex flex-col absolute top-24 right-4 items-center gap-4 px-6 py-4 w-96 h-fit bg-grayscale-white rounded-xl border-default duration-500 ${
+        className={`flex flex-col fixed sm:absolute top-24 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-4 items-center gap-4 px-6 py-4 w-11/12 sm:w-96 h-fit bg-grayscale-white rounded-xl border-default duration-500 ${
           isProfileClicked ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
@@ -36,21 +44,14 @@ const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderPro
           </div>
         </div>
         <div className="flex flex-row gap-4 w-full">
-          <button
-            className="flex flex-row flex-grow justify-center items-center gap-1 py-3 rounded-xl bg-grayscale-black semibold-18 text-grayscale-white hover:bg-grayscale-darkgray duration-500"
-            type="button"
-          >
+          <Button type="grow" buttonStyle="black" onClick={handleLogoutButtonClicked}>
             <LogoutIcon className="fill-grayscale-white" />
             로그아웃
-          </button>
-          <button
-            className="flex flex-row flex-grow justify-center items-center gap-1 py-3 rounded-xl bg-grayscale-black semibold-18 text-grayscale-white hover:bg-grayscale-darkgray duration-500"
-            type="button"
-            onClick={moveToMyPage}
-          >
+          </Button>
+          <Button type="grow" buttonStyle="black" onClick={moveToMyPage}>
             <UserIcon className="fill-grayscale-white" />
             마이페이지
-          </button>
+          </Button>
         </div>
       </div>
     </>

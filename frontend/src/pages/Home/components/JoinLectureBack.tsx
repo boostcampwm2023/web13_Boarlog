@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import Button from "@/components/Button/Button";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import CloseIcon from "@/assets/svgs/close.svg?react";
@@ -22,10 +23,14 @@ const JoinLectureBack = ({
   setCodeInputs
 }: JoinLectureBackProps) => {
   const showToast = useToast();
+  const navigate = useNavigate();
 
   const handleSearchButtonClicked = () => {
-    if (codeInputs.join("").length !== 6) showToast({ message: "강의 코드를 올바르게 입력해주세요.", type: "alert" });
-    else handleLectureSearchClickedTrue();
+    if (isLectureSearchClicked) navigate("/participant");
+    else {
+      if (codeInputs.join("").length !== 6) showToast({ message: "강의 코드를 올바르게 입력해주세요.", type: "alert" });
+      else handleLectureSearchClickedTrue();
+    }
   };
 
   return (

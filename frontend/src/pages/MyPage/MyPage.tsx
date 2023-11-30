@@ -1,10 +1,11 @@
 import Header from "@/components/Header/Header";
+import MyPageSection from "./components/MyPageSection";
 
 const MyPage = () => {
   return (
     <>
       <Header type="main" />
-      마이 페이지
+      <MyPageSection profileImage="" />
     </>
   );
 };
