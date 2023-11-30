@@ -19,7 +19,7 @@ const HeaderLogo = ({ type }: LogoButtonProps) => {
         <img src={logoSmall} alt="로고" />
         {type === "normal" && <h1 className="hidden sm:block">Boarlog</h1>}
       </button>
-      {type === "lecture" && <h1 className="hidden sm:block">lecture name</h1>}
+      {type === "lecture" && <h1 className="hidden sm:block truncate max-w-[15vw]">React Hooks에 대해 알아보자</h1>}
     </>
   );
 };
