@@ -7,7 +7,9 @@ import activeToolState from "./stateActiveTool";
 import questionCountState from "./stateQuestionCount";
 import clickedQuestionContentsState from "./stateClickedQuestionContents";
 
-const colorSetArray = [
+const QUESTIONS_URL = "/dummyQuestionData.json";
+
+const COLOR_SET = [
   { background: "bg-memo-red", border: "border-memo-border-red" },
   { background: "bg-memo-yellow", border: "border-memo-border-yellow" },
   { background: "bg-memo-forsythia", border: "border-memo-border-forsythia" },
@@ -16,12 +18,10 @@ const colorSetArray = [
 ];
 
 const getColorSetByIndex = (index: number) => {
-  const randomIndex = index % colorSetArray.length;
+  const randomIndex = index % COLOR_SET.length;
 
-  return colorSetArray[randomIndex].background + " " + colorSetArray[randomIndex].border;
+  return COLOR_SET[randomIndex].background + " " + COLOR_SET[randomIndex].border;
 };
-
-const QUESTIONS_URL = "/dummyQuestionData.json";
 
 const QuestionList = () => {
   const listRef = useRef<HTMLUListElement>(null);
@@ -60,7 +60,7 @@ const QuestionList = () => {
   }, []);
 
   return (
-    <section className="w-60 h-[80vh] border  rounded-xl absolute top-2.5 left-20 mb-6 bg-grayscale-white">
+    <section className="w-60 h-[80vh] border border-default rounded-xl absolute top-2.5 left-20 mb-6 bg-grayscale-white">
       <h2 className="semibold-18 inline-block mt-1 p-4">질문 리스트</h2>
       <div className="h-[36rem] px-4 overflow-scroll">
         <ul ref={listRef}>
