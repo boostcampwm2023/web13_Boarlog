@@ -66,7 +66,7 @@ const HeaderInstructorControls = () => {
 
   const startLecture = async () => {
     if (!selectedMicrophone) {
-      showToast({ message: "음성 입력장치(마이크)를 먼저 선택해 주세요", type: "alert" });
+      showToast({ message: "음성 입력장치(마이크)를 먼저 선택해 주세요.", type: "alert" });
       return;
     }
 
@@ -76,7 +76,7 @@ const HeaderInstructorControls = () => {
     await createPresenterOffer();
     listenForServerAnswer();
     setIsLectureStart(true);
-    showToast({ message: "강의가 시작되었습니다", type: "success" });
+    showToast({ message: "강의가 시작되었습니다.", type: "success" });
   };
 
   const stopLecture = () => {
@@ -95,7 +95,7 @@ const HeaderInstructorControls = () => {
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsCloseModalOpen(false);
-    showToast({ message: "강의가 종료되었습니다", type: "alert" });
+    showToast({ message: "강의가 종료되었습니다.", type: "alert" });
   };
 
   const initConnection = async () => {
@@ -275,11 +275,11 @@ const HeaderInstructorControls = () => {
       prevInputMicVolumeRef.current = inputMicVolumeRef.current;
       setInputMicVolumeState(0);
       setIsMicOn(false);
-      showToast({ message: "마이크 음소거 되었습니다", type: "alert" });
+      showToast({ message: "마이크 음소거 되었습니다.", type: "alert" });
     } else {
       setInputMicVolumeState(prevInputMicVolumeRef.current);
       setIsMicOn(true);
-      showToast({ message: "마이크 음소거가 해제되었습니다", type: "success" });
+      showToast({ message: "마이크 음소거가 해제되었습니다.", type: "success" });
     }
   };
 
