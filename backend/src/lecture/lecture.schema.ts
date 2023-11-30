@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { User } from '../schema/user.schema';
+import { User } from 'src/user/user.schema';
 
 @Schema()
 export class Lecture {
@@ -15,6 +15,12 @@ export class Lecture {
 
   @Prop({ default: false })
   is_end: boolean;
+
+  @Prop()
+  audio_file: string;
+
+  @Prop()
+  start_time: Date;
 }
 
 export const LectureSchema = SchemaFactory.createForClass(Lecture);

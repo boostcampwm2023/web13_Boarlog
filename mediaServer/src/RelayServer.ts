@@ -50,7 +50,7 @@ export class RelayServer {
 
         const clientInfo = this.clientsInfo.get(socket.id);
         if (!clientInfo) {
-          throw new Error('발표자가 존재하지 않습니다.');
+          throw new Error('해당 발표자가 존재하지 않습니다.');
         }
         clientInfo.roomId = data.roomId;
         socket.join(data.roomId);
@@ -86,7 +86,7 @@ export class RelayServer {
         const roomInfo = this.roomsInfo.get(data.roomId);
         const clientInfo = this.clientsInfo.get(socket.id);
         if (!clientInfo || !roomInfo) {
-          throw new Error('발표자가 존재하지 않습니다.');
+          throw new Error('해당 참여자가 존재하지 않습니다.');
         }
         roomInfo.studentSocketList.add(socket);
         clientInfo.roomId = data.roomId;
@@ -102,37 +102,41 @@ export class RelayServer {
     if (!clientInfo || !clientInfo.roomId) {
       throw new Error('잘못된 사용자 입니다.');
     }
-    socket.on('editBoard', (data) => {
-      if (clientInfo.type !== ClientType.PRESENTER) {
+
+    socket.on('edit', (data) => {
+      if (clientInfo.type !== ClientType.PRESENTER || clientInfo.roomId !== data.roomId) {
         throw new Error('해당 발표자가 존재하지 않습니다.');
       }
-      this.io.of('/lecture').to(clientInfo.roomId).emit('edit', new Message('whiteBoard', data.content));
+      this.io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content));
     });
-    socket.on('question', (data) => {
-      if (clientInfo.type !== ClientType.STUDENT) {
+
+    socket.on('ask', (data) => {
+      if (clientInfo.type !== ClientType.STUDENT || clientInfo !== data.roomId) {
         throw new Error('해당 참여자가 존재하지 않습니다.');
       }
       const presenterSocket = this.roomsInfo.get(clientInfo.roomId)?.presenterSocket;
       if (!presenterSocket) {
         throw new Error('해당 방이 존재하지 않습니다');
       }
-      this.io.of('/lecture').to(presenterSocket.id).emit('question', new Message('question', data.content));
+      this.io.of('/lecture').to(presenterSocket.id).emit('asked', new Message(data.type, data.content));
     });
-    socket.on('endOfLecture', (data) => {
-      if (clientInfo.type !== ClientType.PRESENTER) {
+
+    socket.on('end', (data) => {
+      if (clientInfo.type !== ClientType.PRESENTER || clientInfo.roomId !== data.roomId) {
         throw new Error('해당 발표자가 존재하지 않습니다');
       }
-      this.io.of('/lecture').to(clientInfo.roomId).emit('end', new Message('lecture', data.content));
+      this.io.of('/lecture').to(clientInfo.roomId).emit('ended', new Message(data.type, 'finish'));
       this.roomsInfo.get(clientInfo.roomId)?.endLecture();
       this.roomsInfo.delete(clientInfo.roomId);
       clientInfo.roomId = '';
     });
-    socket.on('leaveLecture', () => {
-      if (clientInfo.type !== ClientType.STUDENT) {
+
+    socket.on('leave', (data) => {
+      if (clientInfo.type !== ClientType.STUDENT || clientInfo.roomId !== data.roomId) {
         throw new Error('해당 참여자가 존재하지 않습니다');
       }
       this.roomsInfo.get(clientInfo.roomId)?.exitRoom(socket);
-      this.io.of('/lecture').to(clientInfo.roomId).emit('exit', new Message('lecture', 'success'));
+      this.io.of('/lecture').to(clientInfo.roomId).emit('response', new Message(data.type, 'success'));
     });
   };
 

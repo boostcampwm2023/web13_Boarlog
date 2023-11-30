@@ -8,13 +8,14 @@ interface LogoButtonProps {
 const HeaderLogo = ({ type }: LogoButtonProps) => {
   const navigate = useNavigate();
 
-  const moveToMainPage = () => {
-    navigate("/");
+  const handleLogoClicked = () => {
+    if (type === "normal") navigate("/login");
+    else navigate("/");
   };
 
   return (
     <>
-      <button type="button" className="flex flex-row items-center gap-4" onClick={moveToMainPage}>
+      <button type="button" className="flex flex-row items-center gap-4" onClick={handleLogoClicked}>
         <img src={logoSmall} alt="로고" />
         {type === "normal" && <h1>Boarlog</h1>}
       </button>
