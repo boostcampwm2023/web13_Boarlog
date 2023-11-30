@@ -19,7 +19,7 @@ const Header = ({ type }: HeaderProps) => {
   return (
     <header className="flex w-100 h-20 items-center justify-between px-6 py-4 bg-grayscale-white border-header box-border z-10 sticky top-0">
       <div className="flex items-center gap-4 semibold-20">
-        {(type === "login" || type === "main") && <HeaderLogo type="normal" />}
+        {(type === "login" || type === "main") && <HeaderLogo type={type === "login" ? "login" : "normal"} />}
         {(type === "instructor" || type === "participant") && (
           <>
             <HeaderLogo type="lecture" />

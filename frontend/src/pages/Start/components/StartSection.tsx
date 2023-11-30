@@ -47,10 +47,10 @@ const StartSection = ({ profileImage }: StartSectionProps) => {
           type="text"
           value={nickname}
           onChange={handleChange}
-          size={nickname.length || 1}
+          size={nickname.length || 3}
           placeholder="닉네임"
           maxLength={10}
-          className="mt-20 sm:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200"
+          className="mt-20 sm:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200 rounded-none"
         />
 
         <div className="flex flex-col gap-1 justify-center items-center">

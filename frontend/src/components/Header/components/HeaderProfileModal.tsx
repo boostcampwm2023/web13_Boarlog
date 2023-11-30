@@ -3,6 +3,7 @@ import ProfileSmall from "@/assets/imgs/profileSmall.png";
 import LogoutIcon from "@/assets/svgs/logout.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
 import Button from "@/components/Button/Button";
+import { useToast } from "@/components/Toast/useToast";
 
 interface HeaderProfileModalProps {
   isProfileClicked: boolean;
@@ -11,6 +12,12 @@ interface HeaderProfileModalProps {
 
 const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderProfileModalProps) => {
   const navigate = useNavigate();
+  const showToast = useToast();
+
+  const handleLogoutButtonClicked = () => {
+    showToast({ message: "로그아웃에 성공했습니다.", type: "success" });
+    navigate("/login");
+  };
 
   const moveToMyPage = () => {
     navigate("/mypage");
@@ -37,7 +44,7 @@ const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderPro
           </div>
         </div>
         <div className="flex flex-row gap-4 w-full">
-          <Button type="grow" buttonStyle="black">
+          <Button type="grow" buttonStyle="black" onClick={handleLogoutButtonClicked}>
             <LogoutIcon className="fill-grayscale-white" />
             로그아웃
           </Button>
