@@ -7,11 +7,15 @@ import StickyNoteEditPanel from "./StickyNoteEditPanel";
 import cavasInstanceState from "./stateCanvasInstance";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
+import canvasRefState from "./stateCanvasRef";
+
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const setCanvas = useSetRecoilState(cavasInstanceState);
   const isEditPanelVisible = useRecoilValue(stickyNoteEditPanelVisibilityState);
+
+  const setCanvasRef = useSetRecoilState(canvasRefState);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -24,6 +28,8 @@ const CanvasSection = () => {
     });
 
     setCanvas(newCanvas);
+
+    newCanvas.backgroundColor = "white";
 
     // 휠을 이용해서 줌인/줌아웃
     newCanvas.on("mouse:wheel", (opt) => {
@@ -66,6 +72,9 @@ const CanvasSection = () => {
     // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
     newCanvas.isDrawingMode = true;
+
+    // fabric.js 캔버스가 연결된 canvas를 헤더에서 사용 가능하게 ref로 전달
+    setCanvasRef({ current: canvasRef.current });
 
     // 언마운트 시 캔버스 정리, 이벤트 제거
     return () => {

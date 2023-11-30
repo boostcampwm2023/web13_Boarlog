@@ -12,7 +12,8 @@ import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
 import selectedSpeakerState from "./stateSelectedSpeaker";
-import speakerVolmeState from "./stateSpeakerVolme";
+import speakerVolmeState from "./stateSpeakerVolume";
+import videoRefState from "@/pages/Test/components/stateVideoRef";
 
 const HeaderParticipantControls = () => {
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
@@ -23,8 +24,9 @@ const HeaderParticipantControls = () => {
   const [didMount, setDidMount] = useState(false);
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
-  const SpeakerVolume = useRecoilValue(speakerVolmeState);
+  const speakerVolume = useRecoilValue(speakerVolmeState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
+  const videoRef = useRecoilValue(videoRefState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -38,16 +40,11 @@ const HeaderParticipantControls = () => {
 
   const navigate = useNavigate();
   const showToast = useToast();
-  const MEDIA_SERVER_URL = "http://localhost:3000/enter-room";
+  const MEDIA_SERVER_URL = "http://110.165.16.37:3000/enter-room";
   const pc_config = {
     iceServers: [
       {
         urls: ["stun:stun.l.google.com:19302"]
-      },
-      {
-        urls: import.meta.env.VITE_TURN_URL as string,
-        username: import.meta.env.VITE_TURN_USERNAME as string,
-        credential: import.meta.env.VITE_TURN_PASSWORD as string
       }
     ]
   };
@@ -62,8 +59,8 @@ const HeaderParticipantControls = () => {
   }, [didMount]);
 
   useEffect(() => {
-    speakerVolumeRef.current = SpeakerVolume;
-  }, [SpeakerVolume]);
+    speakerVolumeRef.current = speakerVolume;
+  }, [speakerVolume]);
   useEffect(() => {
     if (!audioContextRef.current) return;
     (audioContextRef.current as any).setSinkId(selectedSpeaker);
@@ -74,6 +71,30 @@ const HeaderParticipantControls = () => {
 
     await createStudentOffer();
     await setServerAnswer();
+
+    if (!pcRef.current) return;
+    pcRef.current.ontrack = (event) => {
+      console.log(event.track);
+
+      if (!mediaStreamRef.current || !localAudioRef.current || !videoRef.current) return;
+      if (event.track.kind === "audio") {
+        mediaStreamRef.current.addTrack(event.track);
+        localAudioRef.current.srcObject = mediaStreamRef.current;
+      } else if (event.track.kind === "video") {
+        mediaStreamRef.current.addTrack(event.track);
+        videoRef.current.srcObject = mediaStreamRef.current;
+        videoRef.current.addEventListener("loadstart", () => {
+          console.log("loadstart");
+        });
+        videoRef.current.addEventListener("progress", () => {
+          console.log("progress");
+        });
+        videoRef.current.addEventListener("loadedmetadata", () => {
+          console.log("loadedmetadata");
+        });
+        videoRef.current.play();
+      }
+    };
     showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다", type: "alert" });
   };
 
@@ -97,40 +118,22 @@ const HeaderParticipantControls = () => {
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
 
-      if (!pcRef.current) return;
-      pcRef.current.ontrack = (event) => {
-        if (!mediaStreamRef.current || !localAudioRef.current) return;
-        if (event.track.kind === "audio") {
-          mediaStreamRef.current.addTrack(event.track);
-          localAudioRef.current.srcObject = mediaStreamRef.current;
-        }
-      };
+      console.log("initConnection");
     } catch (e) {
       console.error("연결 에러", e);
     }
   };
 
-  function getStudentCandidate() {
-    if (!pcRef.current) return;
-    pcRef.current.onicecandidate = (e) => {
-      if (e.candidate) {
-        if (!socketRef.current) return;
-        socketRef.current.emit("studentCandidate", {
-          candidate: e.candidate,
-          studentSocketId: socketRef.current.id
-        });
-      }
-    };
-  }
-
   async function createStudentOffer() {
     try {
       if (!pcRef.current || !socketRef.current) return;
       const SDP = await pcRef.current.createOffer({
-        offerToReceiveAudio: true
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true
       });
       socketRef.current.emit("studentOffer", {
         socketId: socketRef.current.id,
+        roomId: 1,
         SDP: SDP
       });
 
@@ -141,13 +144,26 @@ const HeaderParticipantControls = () => {
     }
   }
 
+  function getStudentCandidate() {
+    if (!pcRef.current) return;
+    pcRef.current.onicecandidate = (e) => {
+      if (e.candidate) {
+        if (!socketRef.current) return;
+        socketRef.current.emit("clientCandidate", {
+          candidate: e.candidate,
+          studentSocketId: socketRef.current.id
+        });
+      }
+    };
+  }
+
   async function setServerAnswer() {
     if (!socketRef.current) return;
-    socketRef.current.on(`${socketRef.current.id}-serverAnswer`, (data) => {
+    socketRef.current.on(`serverAnswer`, (data) => {
       if (!pcRef.current) return;
       pcRef.current.setRemoteDescription(data.SDP);
     });
-    socketRef.current.on(`${socketRef.current.id}-serverCandidate`, (data) => {
+    socketRef.current.on(`serverCandidate`, (data) => {
       if (!pcRef.current) return;
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
     });

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSetRecoilState } from "recoil";
 
 import selectedSpeakerState from "./stateSelectedSpeaker";
-import speakerVolmeState from "./stateSpeakerVolme";
+import speakerVolumeState from "./stateSpeakerVolume";
 
 interface HeaderSettingModalProps {
   isSettingClicked: boolean;
@@ -13,7 +13,7 @@ const HeaderSettingModal = ({ isSettingClicked, setIsSettingClicked }: HeaderSet
   const [speakerDevices, setSpeakerDevices] = useState<MediaDeviceInfo[]>([]);
 
   const setSelectedSpeaker = useSetRecoilState(selectedSpeakerState);
-  const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
+  const setSpeakerVolume = useSetRecoilState(speakerVolumeState);
 
   useEffect(() => {
     // 마이크 장치 목록 가져오기
