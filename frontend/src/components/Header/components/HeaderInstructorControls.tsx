@@ -35,13 +35,14 @@ const HeaderInstructorControls = () => {
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
+  //const lectureSocketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
-  const MEDIA_SERVER_URL = "http://boarlog.store:3000/create-room";
-  const MEDIA_SERVER_URL2 = "http://boarlog.store:3000/lecture";
+  const MEDIA_SERVER_URL = "https://www.boarlog.site";
+  //const MEDIA_SERVER_URL2 = "http://boarlog.store:3000/lecture";
   const pc_config = {
     iceServers: [
       {
@@ -91,7 +92,7 @@ const HeaderInstructorControls = () => {
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
-      socketRef.current = io(MEDIA_SERVER_URL);
+      socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
@@ -283,259 +284,6 @@ const HeaderInstructorControls = () => {
 
   let saveJSON: any = null;
 
-  let test = {
-    version: "5.3.0",
-    objects: [
-      {
-        type: "group",
-        version: "5.3.0",
-        originX: "left",
-        originY: "top",
-        left: 282.92,
-        top: 272.23,
-        width: 201,
-        height: 151,
-        fill: "rgb(0,0,0)",
-        stroke: null,
-        strokeWidth: 0,
-        strokeDashArray: null,
-        strokeLineCap: "butt",
-        strokeDashOffset: 0,
-        strokeLineJoin: "miter",
-        strokeUniform: false,
-        strokeMiterLimit: 4,
-        scaleX: 1,
-        scaleY: 1,
-        angle: 0,
-        flipX: false,
-        flipY: false,
-        opacity: 1,
-        shadow: null,
-        visible: true,
-        backgroundColor: "",
-        fillRule: "nonzero",
-        paintFirst: "fill",
-        globalCompositeOperation: "source-over",
-        skewX: 0,
-        skewY: 0,
-        objects: [
-          {
-            type: "rect",
-            version: "5.3.0",
-            originX: "left",
-            originY: "top",
-            left: -100.5,
-            top: -75.5,
-            width: 200,
-            height: 150,
-            fill: "#FEE490",
-            stroke: "#F2C947",
-            strokeWidth: 1,
-            strokeDashArray: null,
-            strokeLineCap: "butt",
-            strokeDashOffset: 0,
-            strokeLineJoin: "miter",
-            strokeUniform: false,
-            strokeMiterLimit: 4,
-            scaleX: 1,
-            scaleY: 1,
-            angle: 0,
-            flipX: false,
-            flipY: false,
-            opacity: 1,
-            shadow: null,
-            visible: true,
-            backgroundColor: "",
-            fillRule: "nonzero",
-            paintFirst: "fill",
-            globalCompositeOperation: "source-over",
-            skewX: 0,
-            skewY: 0,
-            rx: 0,
-            ry: 0
-          },
-          {
-            type: "textbox",
-            version: "5.3.0",
-            originX: "left",
-            originY: "top",
-            left: -90.5,
-            top: -65.5,
-            width: 180,
-            height: 43.93,
-            fill: "black",
-            stroke: null,
-            strokeWidth: 1,
-            strokeDashArray: null,
-            strokeLineCap: "butt",
-            strokeDashOffset: 0,
-            strokeLineJoin: "miter",
-            strokeUniform: false,
-            strokeMiterLimit: 4,
-            scaleX: 1,
-            scaleY: 1,
-            angle: 0,
-            flipX: false,
-            flipY: false,
-            opacity: 1,
-            shadow: null,
-            visible: true,
-            backgroundColor: "",
-            fillRule: "nonzero",
-            paintFirst: "fill",
-            globalCompositeOperation: "source-over",
-            skewX: 0,
-            skewY: 0,
-            fontFamily: "Times New Roman",
-            fontWeight: "normal",
-            fontSize: 18,
-            text: "더블 클릭해 메모 내용을 편집하세요...",
-            underline: false,
-            overline: false,
-            linethrough: false,
-            textAlign: "left",
-            fontStyle: "normal",
-            lineHeight: 1.16,
-            textBackgroundColor: "",
-            charSpacing: 0,
-            styles: [],
-            direction: "ltr",
-            path: null,
-            pathStartOffset: 0,
-            pathSide: "left",
-            pathAlign: "baseline",
-            minWidth: 20,
-            splitByGrapheme: true
-          }
-        ]
-      },
-      {
-        type: "group",
-        version: "5.3.0",
-        originX: "left",
-        originY: "top",
-        left: 689.81,
-        top: 147.28,
-        width: 201,
-        height: 151,
-        fill: "rgb(0,0,0)",
-        stroke: null,
-        strokeWidth: 0,
-        strokeDashArray: null,
-        strokeLineCap: "butt",
-        strokeDashOffset: 0,
-        strokeLineJoin: "miter",
-        strokeUniform: false,
-        strokeMiterLimit: 4,
-        scaleX: 1,
-        scaleY: 1,
-        angle: 0,
-        flipX: false,
-        flipY: false,
-        opacity: 1,
-        shadow: null,
-        visible: true,
-        backgroundColor: "",
-        fillRule: "nonzero",
-        paintFirst: "fill",
-        globalCompositeOperation: "source-over",
-        skewX: 0,
-        skewY: 0,
-        objects: [
-          {
-            type: "rect",
-            version: "5.3.0",
-            originX: "left",
-            originY: "top",
-            left: -100.5,
-            top: -75.5,
-            width: 200,
-            height: 150,
-            fill: "#FEE490",
-            stroke: "#F2C947",
-            strokeWidth: 1,
-            strokeDashArray: null,
-            strokeLineCap: "butt",
-            strokeDashOffset: 0,
-            strokeLineJoin: "miter",
-            strokeUniform: false,
-            strokeMiterLimit: 4,
-            scaleX: 1,
-            scaleY: 1,
-            angle: 0,
-            flipX: false,
-            flipY: false,
-            opacity: 1,
-            shadow: null,
-            visible: true,
-            backgroundColor: "",
-            fillRule: "nonzero",
-            paintFirst: "fill",
-            globalCompositeOperation: "source-over",
-            skewX: 0,
-            skewY: 0,
-            rx: 0,
-            ry: 0
-          },
-          {
-            type: "textbox",
-            version: "5.3.0",
-            originX: "left",
-            originY: "top",
-            left: -90.5,
-            top: -65.5,
-            width: 180,
-            height: 20.34,
-            fill: "black",
-            stroke: null,
-            strokeWidth: 1,
-            strokeDashArray: null,
-            strokeLineCap: "butt",
-            strokeDashOffset: 0,
-            strokeLineJoin: "miter",
-            strokeUniform: false,
-            strokeMiterLimit: 4,
-            scaleX: 1,
-            scaleY: 1,
-            angle: 0,
-            flipX: false,
-            flipY: false,
-            opacity: 1,
-            shadow: null,
-            visible: true,
-            backgroundColor: "",
-            fillRule: "nonzero",
-            paintFirst: "fill",
-            globalCompositeOperation: "source-over",
-            skewX: 0,
-            skewY: 0,
-            fontFamily: "Times New Roman",
-            fontWeight: "normal",
-            fontSize: 18,
-            text: "12314",
-            underline: false,
-            overline: false,
-            linethrough: false,
-            textAlign: "left",
-            fontStyle: "normal",
-            lineHeight: 1.16,
-            textBackgroundColor: "",
-            charSpacing: 0,
-            styles: [],
-            direction: "ltr",
-            path: null,
-            pathStartOffset: 0,
-            pathSide: "left",
-            pathAlign: "baseline",
-            minWidth: 20,
-            splitByGrapheme: true
-          }
-        ]
-      }
-    ],
-    background: "white"
-  };
-
   const save = () => {
     if (!fabricCanvasRef) return;
     saveJSON = JSON.stringify(fabricCanvasRef);
@@ -546,10 +294,25 @@ const HeaderInstructorControls = () => {
   const load = () => {
     //alert("load canvas!");
 
+    /*
     if (!fabricCanvasRef) return;
     fabricCanvasRef.loadFromJSON(test, () => {
       console.log("JSON 데이터 로드 완료");
       fabricCanvasRef.renderAll();
+    });
+    */
+    //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
+    if (!socketRef.current) return;
+    socketRef.current.emit("edit", {
+      type: "whiteBoard",
+      roomId: 1,
+      content: "test"
+    });
+
+    socketRef.current.emit("edit", {
+      type: "whiteBoard",
+      roomId: 1,
+      content: "test"
     });
   };
 
