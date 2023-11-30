@@ -2,14 +2,14 @@ import { useNavigate } from "react-router-dom";
 import logoSmall from "@/assets/imgs/logoSmall.png";
 
 interface LogoButtonProps {
-  type: "normal" | "lecture";
+  type: "login" | "normal" | "lecture";
 }
 
 const HeaderLogo = ({ type }: LogoButtonProps) => {
   const navigate = useNavigate();
 
   const handleLogoClicked = () => {
-    if (type === "normal") navigate("/login");
+    if (type === "login") navigate("/login");
     else navigate("/");
   };
 
