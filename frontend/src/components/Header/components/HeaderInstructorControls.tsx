@@ -15,12 +15,13 @@ import { useToast } from "@/components/Toast/useToast";
 import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
-import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+//import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 
 const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isStartModalOpen, setIsStartModalOpen] = useState(false);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [micVolume, setMicVolume] = useState<number>(0);
 
@@ -30,19 +31,17 @@ const HeaderInstructorControls = () => {
   const showToast = useToast();
 
   const canvasRef = useRecoilValue(canvasRefState);
-  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+  //const fabricCanvasRef = useRecoilValue(cavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const socketRef = useRef<Socket>();
-  //const lectureSocketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
-  //const MEDIA_SERVER_URL2 = "http://boarlog.store:3000/lecture";
   const pc_config = {
     iceServers: [
       {
@@ -72,6 +71,8 @@ const HeaderInstructorControls = () => {
     await createPresenterOffer();
     listenForServerAnswer();
     setIsLectureStart(true);
+
+    setIsStartModalOpen(false);
   };
 
   const stopLecture = () => {
@@ -86,7 +87,7 @@ const HeaderInstructorControls = () => {
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
-    setIsModalOpen(false); // 일단은 모달만 닫습니다.
+    setIsCloseModalOpen(false);
   };
 
   const initConnection = async () => {
@@ -273,7 +274,9 @@ const HeaderInstructorControls = () => {
     }
   };
 
-  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다. 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
+  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
+  // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
+  // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
   /*
   let saveJSON: any = null;
   const save = () => {
@@ -318,7 +321,7 @@ const HeaderInstructorControls = () => {
 
       <SmallButton
         className={`text-grayscale-white ${isLectureStart ? "bg-alert-100" : "bg-boarlog-100"}`}
-        onClick={!isLectureStart ? startLecture : () => setIsModalOpen(true)}
+        onClick={!isLectureStart ? () => setIsStartModalOpen(true) : () => setIsCloseModalOpen(true)}
       >
         {isLectureStart ? (
           <>
@@ -340,14 +343,24 @@ const HeaderInstructorControls = () => {
         )}
       </SmallButton>
       <Modal
+        modalText="강의를 시작하시겠습니까?"
+        cancelText="취소"
+        confirmText="강의 시작하기"
+        cancelButtonStyle="black"
+        confirmButtonStyle="blue"
+        confirmClick={startLecture}
+        isModalOpen={isStartModalOpen}
+        setIsModalOpen={setIsStartModalOpen}
+      />
+      <Modal
         modalText="강의를 종료하시겠습니까?"
         cancelText="취소"
         confirmText="강의 종료하기"
         cancelButtonStyle="black"
         confirmButtonStyle="red"
         confirmClick={stopLecture}
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
+        isModalOpen={isCloseModalOpen}
+        setIsModalOpen={setIsCloseModalOpen}
       />
     </>
   );
