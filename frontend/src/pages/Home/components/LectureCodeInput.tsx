@@ -37,7 +37,8 @@ const LectureCodeInput = ({ inputs, setInputs, keyPress }: LectureCodeInputProps
       {inputs.map((value, index) => (
         <input
           key={index}
-          type="string"
+          type="text"
+          inputMode="numeric"
           maxLength={1}
           value={value}
           onChange={handleChange(index)}
