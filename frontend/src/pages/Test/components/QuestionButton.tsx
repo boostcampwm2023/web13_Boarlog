@@ -1,14 +1,11 @@
 import QuestionIcon from "@/assets/svgs/whiteboard/question.svg?react";
-import { useState } from "react";
-import { ToolType } from "./Toolbar";
+import { useRecoilState, useSetRecoilState } from "recoil";
+import isQuestionListOpenState from "./stateIsQuestionListOpen";
+import activeToolState from "./stateActiveTool";
 
-interface QuestionButtonProps {
-  setTool: React.Dispatch<React.SetStateAction<ToolType>>;
-}
-
-const QuestionButton = ({ setTool }: QuestionButtonProps) => {
-  const [isQuestionListOpen, setIsQuestionListOpen] = useState<boolean>(false);
-
+const QuestionButton = () => {
+  const [isQuestionListOpen, setIsQuestionListOpen] = useRecoilState(isQuestionListOpenState);
+  const setActiveTool = useSetRecoilState(activeToolState);
   return (
     <button
       type="button"
@@ -18,7 +15,7 @@ const QuestionButton = ({ setTool }: QuestionButtonProps) => {
       aria-label="질문 리스트"
       aria-pressed={isQuestionListOpen}
       onClick={() => {
-        if (!isQuestionListOpen) setTool("select");
+        if (!isQuestionListOpen) setActiveTool("select");
         setIsQuestionListOpen(!isQuestionListOpen);
       }}
     >

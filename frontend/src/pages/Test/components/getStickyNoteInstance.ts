@@ -5,7 +5,11 @@ const MEMO_COLOR = {
   "memo-border-yellow": "#F2C947"
 };
 
-export const getStickyNoteInstance = (mousePositionX: number, mousePositionY: number) => {
+export const getStickyNoteInstance = (
+  mousePositionX: number,
+  mousePositionY: number,
+  content = "더블 클릭해 메모 내용을 편집하세요..."
+) => {
   const note = new fabric.Rect({
     left: mousePositionX,
     top: mousePositionY,
@@ -16,7 +20,7 @@ export const getStickyNoteInstance = (mousePositionX: number, mousePositionY: nu
     strokeWidth: 1
   });
 
-  const text = new fabric.Textbox("더블 클릭해 메모 내용을 편집하세요...", {
+  const text = new fabric.Textbox(content, {
     left: mousePositionX + 10,
     top: mousePositionY + 10,
     width: 180,
