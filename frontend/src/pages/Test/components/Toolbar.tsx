@@ -28,7 +28,7 @@ const Toolbar = () => {
   const canvas = useRecoilValue(canvasInstanceState);
   const setVisibilityEditPanel = useSetRecoilState(stickyNoteEditPanelVisibilityState);
   const setStickyNoteInstance = useSetRecoilState(stickyNoteInstance);
-  const [questionContents, setQuestionContents] = useRecoilState(clickedQuestionContentsState);
+  const questionContents = useRecoilValue(clickedQuestionContentsState);
   const setDefaultQuestionContents = useResetRecoilState(clickedQuestionContentsState);
   const setIsQuestionListOpen = useSetRecoilState(isQuestionListOpenState);
 
