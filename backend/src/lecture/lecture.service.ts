@@ -34,9 +34,13 @@ export class LectureService {
 
   async endLecture(updateLectureDto: UpdateLectureDto) {
     const lecture = await this.findLectureByCode(updateLectureDto.code);
-    return await this.lectureModel
-      .findByIdAndUpdate(lecture.lecture_id, { $set: { is_end: true, audio_file: updateLectureDto.audio } })
-      .exec();
+    await Promise.all([
+      this.enterCodeModel.deleteOne({ lecture_id: lecture.lecture_id }),
+      this.lectureModel
+        .findByIdAndUpdate(lecture.lecture_id, { $set: { is_end: true, audio_file: updateLectureDto.audio } })
+        .exec()
+    ]);
+    return;
   }
 
   async generateRoomCode() {
