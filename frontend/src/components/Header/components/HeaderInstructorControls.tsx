@@ -66,7 +66,7 @@ const HeaderInstructorControls = () => {
 
   const startLecture = async () => {
     if (!selectedMicrophone) {
-      showToast({ message: "음성 입력장치(마이크)를 먼저 선택해주세요", type: "alert" });
+      showToast({ message: "음성 입력장치(마이크)를 먼저 선택해 주세요", type: "alert" });
       return;
     }
 
@@ -105,7 +105,7 @@ const HeaderInstructorControls = () => {
       if (!socketRef.current) throw new Error("소켓 연결 실패");
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
-      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: selectedMicrophone }
       });
@@ -252,7 +252,7 @@ const HeaderInstructorControls = () => {
   // 기존에 미디어 서버에 보내는 오디오 트랙을 새 마이크의 오디오 트랙으로 교체
   const replaceAudioTrack = async () => {
     try {
-      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해주세요");
+      if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: selectedMicrophone }
       });
