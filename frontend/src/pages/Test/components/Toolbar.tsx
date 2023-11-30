@@ -7,27 +7,30 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursor from "@/assets/svgs/addStickyMemoCursor.svg";
 import EraserCursor from "@/assets/svgs/eraserMouseCursor.svg";
 
-import { fabricObjectWithAddWithUpdate, fabricObjectWithItem } from "./stateStickyNoteInstance";
-
-import { useState, useEffect } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useEffect } from "react";
+import { useRecoilValue, useSetRecoilState, useRecoilState, useResetRecoilState } from "recoil";
 import { fabric } from "fabric";
 import { getStickyNoteInstance } from "./getStickyNoteInstance";
 
 import ToolButton from "./ToolButton";
 import ColorPanel from "./ColorPanel";
+import QuestionButton from "./QuestionButton";
 
+import activeToolState from "./stateActiveTool";
 import canvasInstanceState from "./stateCanvasInstance";
-import stickyNoteInstance from "./stateStickyNoteInstance";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
-
-type ToolType = "select" | "pen" | "stickyNote" | "image" | "eraser" | "hand";
+import stickyNoteInstance, { fabricObjectWithAddWithUpdate, fabricObjectWithItem } from "./stateStickyNoteInstance";
+import clickedQuestionContentsState from "./stateClickedQuestionContents";
+import isQuestionListOpenState from "./stateIsQuestionListOpen";
 
 const Toolbar = () => {
-  const [activeTool, setActiveTool] = useState<ToolType>("pen");
+  const [activeTool, setActiveTool] = useRecoilState(activeToolState);
   const canvas = useRecoilValue(canvasInstanceState);
   const setVisibilityEditPanel = useSetRecoilState(stickyNoteEditPanelVisibilityState);
   const setStickyNoteInstance = useSetRecoilState(stickyNoteInstance);
+  const questionContents = useRecoilValue(clickedQuestionContentsState);
+  const setDefaultQuestionContents = useResetRecoilState(clickedQuestionContentsState);
+  const setIsQuestionListOpen = useSetRecoilState(isQuestionListOpenState);
 
   /**
    * @description 화이트 보드에 그려져 있는 요소들을 클릭을 통해 선택 가능한지 여부를 제어하기 위한 함수입니다.
@@ -73,9 +76,14 @@ const Toolbar = () => {
       if (!absolutePointer) return;
       const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
 
-      const stickyMemo = getStickyNoteInstance(mousePositionX, mousePositionY);
+      const stickyMemo =
+        questionContents?.length === 0
+          ? getStickyNoteInstance(mousePositionX, mousePositionY)
+          : getStickyNoteInstance(mousePositionX, mousePositionY, questionContents);
 
       canvas.add(stickyMemo);
+
+      setDefaultQuestionContents();
 
       const handleClear = () => {
         canvas.fire("visiOff");
@@ -251,44 +259,66 @@ const Toolbar = () => {
   }, [activeTool]);
 
   return (
-    <div className="flex flex-col items-center justify-center p-2 gap-1 rounded-xl bg-grayscale-lightgray border border-grayscale-lightgray shadow-md absolute top-2.5 left-2.5">
-      <ToolButton
-        icon={MouseIcon}
-        onClick={() => setActiveTool("select")}
-        disabled={activeTool === "select"}
-        title="Select Tool"
-      />
-      <ToolButton
-        icon={PenIcon}
-        onClick={() => setActiveTool("pen")}
-        disabled={activeTool === "pen"}
-        title="Pen Tool"
-      />
-      <ToolButton
-        icon={StickyNoteIcon}
-        onClick={() => setActiveTool("stickyNote")}
-        disabled={activeTool === "stickyNote"}
-        title="Add Stikynote (포스트잇 추가)"
-      />
-      <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
-      <ToolButton
-        icon={ImageIcon}
-        onClick={() => setActiveTool("image")}
-        disabled={activeTool === "image"}
-        title="Image Tool"
-      />
-      <ToolButton
-        icon={EraserIcon}
-        onClick={() => setActiveTool("eraser")}
-        disabled={activeTool === "eraser"}
-        title="Eraser Tool"
-      />
-      <ToolButton
-        icon={HandIcon}
-        onClick={() => setActiveTool("hand")}
-        disabled={activeTool === "hand"}
-        title="Hand Tool"
-      />
+    <div className="absolute top-2.5 left-2.5">
+      <QuestionButton />
+      <div className="flex flex-col items-center justify-center p-2 w-12 gap-1 rounded-xl bg-grayscale-lightgray border border-grayscale-lightgray shadow-md ">
+        <ToolButton
+          icon={MouseIcon}
+          onClick={() => {
+            setActiveTool("select");
+            setIsQuestionListOpen(false);
+          }}
+          disabled={activeTool === "select"}
+          title="Select Tool"
+        />
+        <ToolButton
+          icon={PenIcon}
+          onClick={() => {
+            setActiveTool("pen");
+            setIsQuestionListOpen(false);
+          }}
+          disabled={activeTool === "pen"}
+          title="Pen Tool"
+        />
+        <ToolButton
+          icon={StickyNoteIcon}
+          onClick={() => {
+            setDefaultQuestionContents();
+            setActiveTool("stickyNote");
+            setIsQuestionListOpen(false);
+          }}
+          disabled={activeTool === "stickyNote"}
+          title="Add Stikynote (포스트잇 추가)"
+        />
+        <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
+        <ToolButton
+          icon={ImageIcon}
+          onClick={() => {
+            setActiveTool("image");
+            setIsQuestionListOpen(false);
+          }}
+          disabled={activeTool === "image"}
+          title="Image Tool"
+        />
+        <ToolButton
+          icon={EraserIcon}
+          onClick={() => {
+            setActiveTool("eraser");
+            setIsQuestionListOpen(false);
+          }}
+          disabled={activeTool === "eraser"}
+          title="Eraser Tool"
+        />
+        <ToolButton
+          icon={HandIcon}
+          onClick={() => {
+            setActiveTool("hand");
+            setIsQuestionListOpen(false);
+          }}
+          disabled={activeTool === "hand"}
+          title="Hand Tool"
+        />
+      </div>
     </div>
   );
 };

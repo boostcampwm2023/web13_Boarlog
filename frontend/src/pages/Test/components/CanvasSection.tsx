@@ -4,8 +4,11 @@ import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
 import StickyNoteEditPanel from "./StickyNoteEditPanel";
+import QuestionList from "./QuestionList";
+
 import cavasInstanceState from "./stateCanvasInstance";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
+import isQuestionListOpenState from "./stateIsQuestionListOpen";
 
 import canvasRefState from "./stateCanvasRef";
 
@@ -13,6 +16,7 @@ const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const setCanvas = useSetRecoilState(cavasInstanceState);
   const isEditPanelVisible = useRecoilValue(stickyNoteEditPanelVisibilityState);
+  const isQuestionListOpen = useRecoilValue(isQuestionListOpenState);
 
   const setCanvasRef = useSetRecoilState(canvasRefState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -86,7 +90,9 @@ const CanvasSection = () => {
   return (
     <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
       <canvas ref={canvasRef} />
+
       <Toolbar />
+      {isQuestionListOpen && <QuestionList />}
       {isEditPanelVisible && <StickyNoteEditPanel />}
     </div>
   );
