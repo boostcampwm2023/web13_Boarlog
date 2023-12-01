@@ -289,10 +289,26 @@ const HeaderInstructorControls = () => {
   // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
 
   let saveJSON: any = null;
-  const save = () => {
-    if (!fabricCanvasRef) return;
-    saveJSON = JSON.stringify(fabricCanvasRef);
+  const onFrameIdRef2 = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+
+  function saveCanvasData() {
+    const newJSONData = JSON.stringify(fabricCanvasRef);
+    if (saveJSON !== newJSONData) {
+      saveJSON = newJSONData;
+      console.log(saveJSON);
+    }
+    saveJSON = newJSONData;
     console.log(saveJSON);
+    onFrameIdRef2.current = window.requestAnimationFrame(saveCanvasData);
+  }
+
+  // Start the animation loop
+  const save = () => {
+    onFrameIdRef2.current = window.requestAnimationFrame(saveCanvasData);
+  };
+  const cancle = () => {
+    if (!onFrameIdRef2.current) return;
+    window.cancelAnimationFrame(onFrameIdRef2.current);
   };
   const load = () => {
     if (!fabricCanvasRef) return;
@@ -354,10 +370,13 @@ const HeaderInstructorControls = () => {
         )}
       </SmallButton>
       <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={save}>
-        저장
+        1
+      </SmallButton>
+      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={cancle}>
+        2
       </SmallButton>
       <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={load}>
-        불러오기
+        3
       </SmallButton>
       <Modal
         modalText="강의를 시작하시겠습니까?"
