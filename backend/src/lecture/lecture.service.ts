@@ -59,6 +59,6 @@ export class LectureService {
 
   async findLectureInfo(enterCode: EnterCode) {
     const result = await this.lectureModel.findById(enterCode.lecture_id).exec();
-    return LectureInfoDto.of(enterCode.code, result);
+    return LectureInfoDto.of(result);
   }
 }
