@@ -15,7 +15,7 @@ import { useToast } from "@/components/Toast/useToast";
 import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
-//import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 
 const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
@@ -31,7 +31,7 @@ const HeaderInstructorControls = () => {
   const showToast = useToast();
 
   const canvasRef = useRecoilValue(canvasRefState);
-  //const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -41,7 +41,8 @@ const HeaderInstructorControls = () => {
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
-  const MEDIA_SERVER_URL = "https://www.boarlog.site";
+  const MEDIA_SERVER_URL = "http://localhost:3000";
+  //const MEDIA_SERVER_URL = "https://www.boarlog.site";
   const pc_config = {
     iceServers: [
       {
@@ -286,20 +287,21 @@ const HeaderInstructorControls = () => {
   // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
   // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
   // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
-  /*
+
   let saveJSON: any = null;
   const save = () => {
     if (!fabricCanvasRef) return;
     saveJSON = JSON.stringify(fabricCanvasRef);
     console.log(saveJSON);
   };
-  const load = () => {    
+  const load = () => {
     if (!fabricCanvasRef) return;
-    fabricCanvasRef.loadFromJSON(test, () => {
+    fabricCanvasRef.loadFromJSON(saveJSON, () => {
       console.log("JSON 데이터 로드 완료");
       fabricCanvasRef.renderAll();
     });
-    
+
+    /*
     //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
     if (!socketRef.current) return;
     socketRef.current.emit("edit", {
@@ -313,8 +315,8 @@ const HeaderInstructorControls = () => {
       roomId: 1,
       content: "test"
     });
+    */
   };
-  */
 
   return (
     <>
@@ -350,6 +352,12 @@ const HeaderInstructorControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
+      </SmallButton>
+      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={save}>
+        저장
+      </SmallButton>
+      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={load}>
+        불러오기
       </SmallButton>
       <Modal
         modalText="강의를 시작하시겠습니까?"
