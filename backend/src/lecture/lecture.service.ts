@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GenerateUtils } from 'src/utils/GenerateUtils';
 import { CreateLectureDto } from './dto/create-lecture.dto';
+import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { EnterCode } from './lecture-code.schema';
 import { Lecture } from './lecture.schema';
@@ -34,9 +35,13 @@ export class LectureService {
 
   async endLecture(updateLectureDto: UpdateLectureDto) {
     const lecture = await this.findLectureByCode(updateLectureDto.code);
-    return await this.lectureModel
-      .findByIdAndUpdate(lecture.lecture_id, { $set: { is_end: true, audio_file: updateLectureDto.audio } })
-      .exec();
+    await Promise.all([
+      this.enterCodeModel.deleteOne({ lecture_id: lecture.lecture_id }),
+      this.lectureModel
+        .findByIdAndUpdate(lecture.lecture_id, { $set: { is_end: true, audio_file: updateLectureDto.audio } })
+        .exec()
+    ]);
+    return;
   }
 
   async generateRoomCode() {
@@ -50,5 +55,10 @@ export class LectureService {
 
   async findLectureByCode(code: string) {
     return await this.enterCodeModel.findOne({ code: code });
+  }
+
+  async findLectureInfo(enterCode: EnterCode) {
+    const result = await this.lectureModel.findById(enterCode.lecture_id).exec();
+    return LectureInfoDto.of(result);
   }
 }

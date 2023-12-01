@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Param, Patch, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { CreateLectureDto } from './dto/create-lecture.dto';
@@ -34,6 +34,16 @@ export class LectureController {
       return;
     }
     const result = await this.userService.updateLecture(enterLectureDto.email, enterCodeDocument.lecture_id);
+    res.status(HttpStatus.OK).send(result);
+  }
+
+  @Get()
+  async getLectureInfo(@Query('code') code: string, @Res() res: Response) {
+    const enterCodeDocument = await this.lectureService.findLectureByCode(code);
+    if (!enterCodeDocument) {
+      throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    const result = await this.lectureService.findLectureInfo(enterCodeDocument);
     res.status(HttpStatus.OK).send(result);
   }
 }
