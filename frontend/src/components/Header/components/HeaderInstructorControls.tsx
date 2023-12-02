@@ -288,23 +288,35 @@ const HeaderInstructorControls = () => {
   // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
   // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
 
-  let saveJSON: any = null;
+  interface ICanvasData {
+    canvasJSON: string;
+    viewport: number[];
+  }
+  let instructorCanvasData: ICanvasData = {
+    canvasJSON: "",
+    viewport: [1, 0, 0, 1, 0, 0]
+  };
+  let instructorCanvasDataRef = useRef<ICanvasData>(instructorCanvasData);
+  instructorCanvasDataRef.current = instructorCanvasData;
+
   const onFrameIdRef2 = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
 
   function saveCanvasData() {
+    if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
+
     const newJSONData = JSON.stringify(fabricCanvasRef);
-    if (saveJSON !== newJSONData) {
-      saveJSON = newJSONData;
-      console.log(saveJSON);
+    const newViewport = fabricCanvasRef.viewportTransform;
+
+    if (instructorCanvasData.canvasJSON !== newJSONData || instructorCanvasData.viewport !== newViewport) {
+      instructorCanvasData.canvasJSON = newJSONData;
+      instructorCanvasData.viewport = newViewport;
+      //console.log(instructorCanvasData.canvasJSON);
     }
-    saveJSON = newJSONData;
-    console.log(saveJSON);
-    onFrameIdRef2.current = window.requestAnimationFrame(saveCanvasData);
   }
 
-  // Start the animation loop
   const save = () => {
-    onFrameIdRef2.current = window.requestAnimationFrame(saveCanvasData);
+    saveCanvasData();
+    //onFrameIdRef2.current = window.requestAnimationFrame(saveCanvasData);
   };
   const cancle = () => {
     if (!onFrameIdRef2.current) return;
@@ -312,10 +324,13 @@ const HeaderInstructorControls = () => {
   };
   const load = () => {
     if (!fabricCanvasRef) return;
-    fabricCanvasRef.loadFromJSON(saveJSON, () => {
+    console.log("------------------");
+
+    fabricCanvasRef.loadFromJSON(instructorCanvasDataRef.current.canvasJSON, () => {
       console.log("JSON 데이터 로드 완료");
-      fabricCanvasRef.renderAll();
+      //fabricCanvasRef.renderAll();
     });
+    fabricCanvasRef.setViewportTransform(instructorCanvasDataRef.current.viewport);
 
     /*
     //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
