@@ -206,17 +206,21 @@ const Toolbar = () => {
 
     canvas.defaultCursor = `url("${EraserCursor}"), auto`;
 
-    canvas.on("mouse:up", ({ target }) => {
+    const handleMouseUp = (target: fabric.Object | undefined) => {
       if (!target) return;
       canvas.remove(target);
-    });
+    };
 
-    canvas.on("selection:created", ({ selected }) => {
+    const handleSelectionCreated = (selected: fabric.Object[] | undefined) => {
       if (activeTool === "eraser") {
         selected?.forEach((object) => canvas.remove(object));
       }
       canvas.discardActiveObject().renderAll();
-    });
+    };
+
+    canvas.on("mouse:up", ({ target }) => handleMouseUp(target));
+
+    canvas.on("selection:created", ({ selected }) => handleSelectionCreated(selected));
   };
 
   const handleHand = () => {
@@ -247,6 +251,7 @@ const Toolbar = () => {
     canvas.off("mouse:down");
     canvas.off("mouse:move");
     canvas.off("mouse:up");
+    canvas.off("selection:created");
 
     resetCanvasOption();
 
