@@ -102,10 +102,11 @@ const Toolbar = () => {
         prevTextBox: fabric.Textbox,
         memoGroup: fabricObjectWithAddWithUpdate
       ) => {
-        let newTextContents = dummyTextBox.text?.replace(/\n/g, "");
+        let newTextContents = dummyTextBox.text;
 
         // 만약 텍스트 박스를 비운채로 편집을 마쳤다면 메모의 내용을 다시 디폴트 상태로 돌려줍니다.
-        if (newTextContents?.length === 0) newTextContents = "더블 클릭해 메모 내용을 편집하세요...";
+        if (dummyTextBox.text?.replace(/\n|\s/g, "")?.length === 0)
+          newTextContents = "더블 클릭해 메모 내용을 편집하세요...";
 
         // 더미 텍스트를 보여주기 전 숨겼던 텍스트 박스를 보여주고 새로운 내용으로 텍스트를 갱신합니다.
         prevTextBox.set({
