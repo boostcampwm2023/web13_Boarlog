@@ -69,6 +69,7 @@ const HeaderParticipantControls = () => {
   }, [selectedSpeaker]);
 
   const enterLecture = async () => {
+    showToast({ message: "서버에 접속하는 중입니다.", type: "default" });
     await initConnection();
 
     await createStudentOffer();
@@ -93,11 +94,11 @@ const HeaderParticipantControls = () => {
         });
         videoRef.current.addEventListener("loadedmetadata", () => {
           console.log("loadedmetadata");
+          showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다.", type: "alert" });
         });
         videoRef.current.play();
       }
     };
-    showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다.", type: "alert" });
   };
 
   const leaveLecture = () => {

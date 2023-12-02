@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
+import { fabric } from "fabric";
 
 import VolumeMeter from "./VolumeMeter";
 
@@ -32,6 +33,8 @@ const HeaderInstructorControls = () => {
 
   const canvasRef = useRecoilValue(canvasRefState);
   const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+
+  const localVideoRef = useRef<HTMLVideoElement>(null);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -118,12 +121,15 @@ const HeaderInstructorControls = () => {
 
       // canvas의 내용을 캡쳐하여 스트림으로 생성
       if (!canvasRef.current) return;
-      const canvasStream = canvasRef.current.captureStream();
+      const canvasStream = canvasRef.current.captureStream(30);
 
       // canvas 스트림의 track을 updatedStream에 추가
       canvasStream.getTracks().forEach((track) => {
         if (!updatedStreamRef.current) return;
         updatedStreamRef.current.addTrack(track);
+
+        const frameRate = track.getSettings();
+        console.log("getSettings:", track.getSettings());
       });
 
       // RTCPeerConnection 생성
@@ -139,6 +145,9 @@ const HeaderInstructorControls = () => {
       } else {
         console.error("no stream");
       }
+
+      if (!localVideoRef.current || !updatedStreamRef.current) return;
+      localVideoRef.current.srcObject = updatedStreamRef.current;
 
       // RTCPeerConnection에 추가된 트랙 확인 (디버깅용)
       const senders = pcRef.current.getSenders();
@@ -232,6 +241,9 @@ const HeaderInstructorControls = () => {
 
     const onFrame = () => {
       gainNode.gain.value = inputMicVolumeRef.current;
+
+      if (!fabricCanvasRef) return;
+      fabricCanvasRef.renderAll();
 
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
@@ -355,6 +367,34 @@ const HeaderInstructorControls = () => {
     });
     */
   };
+  const sendtest = () => {
+    if (!updatedStreamRef.current) return;
+    //console.log(updatedStreamRef.current.getVideoTracks()[0]);
+    //updatedStreamRef.current.getVideoTracks()[0].requestFrame();
+
+    /*
+    var rect = new fabric.Rect({
+      left: 200,
+      top: 200,
+      fill: "red",
+      width: 20,
+      height: 20
+    });
+
+    if (!fabricCanvasRef) return;
+    fabricCanvasRef.add(rect);
+    */
+
+    function createAndRemoveRect() {
+      if (!fabricCanvasRef) return;
+      fabricCanvasRef.renderAll();
+    }
+    setInterval(createAndRemoveRect, 100);
+
+    //fabricCanvasRef.renderAll();
+
+    console.log("sendtest");
+  };
 
   return (
     <>
@@ -397,7 +437,7 @@ const HeaderInstructorControls = () => {
       <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={cancle}>
         2
       </SmallButton>
-      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={load}>
+      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={sendtest}>
         3
       </SmallButton>
       <Modal
@@ -420,6 +460,7 @@ const HeaderInstructorControls = () => {
         isModalOpen={isCloseModalOpen}
         setIsModalOpen={setIsCloseModalOpen}
       />
+      <video id="localVideo" controls autoPlay height="500px" width="500px" ref={localVideoRef} hidden></video>
     </>
   );
 };
