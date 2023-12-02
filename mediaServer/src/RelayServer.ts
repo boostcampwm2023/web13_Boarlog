@@ -1,9 +1,10 @@
 import { Server, Socket } from 'socket.io';
 import { RTCIceCandidate, RTCPeerConnection } from 'wrtc';
-import { pc_config } from './pc.config';
+import { pc_config } from './config/pc.config';
 import { RoomInfo } from './models/RoomInfo';
 import { ClientInfo, ClientType } from './models/ClientInfo';
 import { Message } from './models/Message';
+import { mediaConverter } from './utils/MediaConverter';
 
 export class RelayServer {
   private readonly io;
@@ -35,6 +36,7 @@ export class RelayServer {
           const roomInfo = this.roomsInfo.get(data.roomId);
           if (roomInfo) {
             roomInfo.stream = event.streams[0];
+            mediaConverter.setSink(event.streams[0], data.roomId);
           }
         };
 
@@ -54,6 +56,7 @@ export class RelayServer {
         }
         clientInfo.roomId = data.roomId;
         socket.join(data.roomId);
+        this.endLecture(socket, RTCPC);
       });
     } catch (e) {
       console.log(e);
@@ -95,6 +98,15 @@ export class RelayServer {
     } catch (e) {
       console.log(e);
     }
+  };
+
+  endLecture = (socket: Socket, RTCPC: RTCPeerConnection) => {
+    socket.on('end', (data) => {
+      mediaConverter.setFfmpeg(data.roomId, '640x480');
+      this.roomsInfo.get(data.roomId)?.endLecture();
+      this.roomsInfo.delete(data.roomId);
+      RTCPC.close();
+    });
   };
 
   lecture = (socket: Socket) => {
