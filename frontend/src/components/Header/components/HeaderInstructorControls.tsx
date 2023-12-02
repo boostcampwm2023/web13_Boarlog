@@ -75,9 +75,7 @@ const HeaderInstructorControls = () => {
 
     await initConnection();
     await createPresenterOffer();
-    listenForServerAnswer();
-    setIsLectureStart(true);
-    showToast({ message: "강의가 시작되었습니다.", type: "success" });
+    await listenForServerAnswer();
   };
 
   const stopLecture = () => {
@@ -103,7 +101,11 @@ const HeaderInstructorControls = () => {
     try {
       // 0. 소켓 연결
       socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
-      if (!socketRef.current) throw new Error("소켓 연결 실패");
+
+      socketRef.current.on("connect_error", (err) => {
+        console.error(err.message);
+        showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+      });
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
@@ -113,7 +115,6 @@ const HeaderInstructorControls = () => {
       mediaStreamRef.current = stream;
 
       await setupAudioAnalysis(stream);
-      startTimer();
 
       // canvas의 내용을 캡쳐하여 스트림으로 생성
       if (!canvasRef.current) return;
@@ -195,6 +196,12 @@ const HeaderInstructorControls = () => {
       if (!pcRef.current) return;
       console.log("7. 서버로부터 candidate 받음");
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+
+      if (!isLectureStart) {
+        setIsLectureStart(true);
+        startTimer();
+        showToast({ message: "강의가 시작되었습니다.", type: "success" });
+      }
     });
   }
 
