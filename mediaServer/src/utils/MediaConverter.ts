@@ -115,8 +115,16 @@ class MediaConverter {
     if (!stream && !sinkList) {
       return;
     }
-    fs.unlinkSync(path.join(outputDir, `video-${roomId}.sock`));
-    fs.unlinkSync(path.join(outputDir, `audio-${roomId}.sock`));
+    fs.unlink(path.join(outputDir, `video-${roomId}.sock`), (err) => {
+      if (err) {
+        console.log(`video-${roomId}.sock을 찾을 수 없습니다.`);
+      }
+    });
+    fs.unlink(path.join(outputDir, `audio-${roomId}.sock`), (err) => {
+      if (err) {
+        console.log(`audio-${roomId}.sock을 찾을 수 없습니다.`);
+      }
+    });
     sinkList?.videoSink.stop();
     sinkList?.audioSink.stop();
     stream?.video.end();
