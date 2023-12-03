@@ -12,9 +12,8 @@
   <video id="localVideo" playsinline autoplay muted></video>
   <canvas></canvas>
   <div>
-    <button id="startButton">시작</button>
-    <button id="callButton">방 생성</button>
-    <button id="hangupButton">방 나가기</button>
+    <button id="startButton">미디어 서버 연결하기</button>
+    <button id="endButton">방 나가기</button>
   </div>
 </div>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -22,17 +21,13 @@
   const socket = io('http://110.165.16.37:3000/create-room');
 
   const startButton = document.getElementById('startButton');
-  const callButton = document.getElementById('callButton');
-  const hangupButton = document.getElementById('hangupButton');
-  callButton.disabled = true;
-  hangupButton.disabled = true;
+  const endButton = document.getElementById('endButton');
+  startButton.disabled = false;
+  endButton.disabled = true;
 
   const canvas = document.querySelector('canvas');
   const localVideo = document.getElementById('localVideo');
 
-  let localStream = undefined;
-  let presenterRTCPC;
-  let tmp = []
   const pc_config = {
     iceServers: [
       {
@@ -48,6 +43,8 @@
       // }
     ],
   };
+  let localStream = undefined;
+  let presenterRTCPC = new RTCPeerConnection();
 
   const start = async () => {
     try {
@@ -58,7 +55,7 @@
       });
       localStream = stream;
       localVideo.srcObject = stream;
-      callButton.disabled = false;
+      endButton.disabled = false;
       presenterRTCPC = new RTCPeerConnection(pc_config);
 
       if (localStream) {
@@ -68,12 +65,11 @@
       } else {
         console.log('no stream')
       }
+      await setStream();
     } catch (e) {
       console.log(e)
     }
   }
-
-  start().then(setStream)
 
   async function setStream() {
     try {
@@ -124,7 +120,16 @@
     });
   }
 
+  function end() {
+    socket.emit('end', {roomId: 1})
+    presenterRTCPC.close();
+    presenterRTCPC = null;
+    startButton.disabled = false;
+    endButton.disabled = true;
+  }
+
   startButton.onclick = start;
+  endButton.onclick = end;
 </script>
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="../commons/js/streamVisualizer.js"></script>
