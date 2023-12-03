@@ -102,7 +102,7 @@ export class RelayServer {
 
   endLecture = (socket: Socket, RTCPC: RTCPeerConnection) => {
     socket.on('end', (data) => {
-      mediaConverter.setFfmpeg(data.roomId, '640x480');
+      mediaConverter.setFfmpeg(data.roomId);
       this.roomsInfo.get(data.roomId)?.endLecture();
       this.roomsInfo.delete(data.roomId);
       RTCPC.close();
