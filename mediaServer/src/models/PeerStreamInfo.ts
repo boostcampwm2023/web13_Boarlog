@@ -83,10 +83,10 @@ export class PeerStreamInfo {
     };
   };
 
-  stopRecording() {
+  stopRecording = () => {
     this._sinkList.videoSink.stop();
     this._sinkList.audioSink.stop();
     this._video.end();
     this._audio.end();
-  }
+  };
 }

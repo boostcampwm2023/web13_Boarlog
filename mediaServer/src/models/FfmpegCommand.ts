@@ -31,7 +31,7 @@ export class FfmpegCommand {
       .output(recordFilePath);
   }
 
-  run() {
+  run = () => {
     this._command.run();
-  }
+  };
 }
