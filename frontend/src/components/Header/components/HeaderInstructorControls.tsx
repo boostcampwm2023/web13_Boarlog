@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { io, Socket } from "socket.io-client";
-import { fabric } from "fabric";
 
 import VolumeMeter from "./VolumeMeter";
 
