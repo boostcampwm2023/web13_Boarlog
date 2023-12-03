@@ -100,6 +100,7 @@ export class RelayServer {
     }
   };
 
+  // FIXME: 테스트를 위해 임시로 만든 기능 (추후 프론트엔드 연동 완료 시 제거 필요)
   endLecture = (socket: Socket, RTCPC: RTCPeerConnection) => {
     socket.on('end', (data) => {
       mediaConverter.setFfmpeg(data.roomId);
