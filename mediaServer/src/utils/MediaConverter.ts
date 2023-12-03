@@ -68,9 +68,9 @@ class MediaConverter {
     this.mediaStreamToFile(streamInfo.video, streamInfo.videoTempFileName);
     this.mediaStreamToFile(streamInfo.audio, streamInfo.audioTempFileName);
     streamInfo.proc = new FfmpegCommand(
-      path.join(outputDir, streamInfo.videoTempFileName),
-      path.join(outputDir, streamInfo.audioTempFileName),
-      path.join(outputDir, streamInfo.recordFileName),
+      this.getOutputAbsolutePath(streamInfo.videoTempFileName),
+      this.getOutputAbsolutePath(streamInfo.audioTempFileName),
+      this.getOutputAbsolutePath(streamInfo.recordFileName),
       streamInfo.videoSize,
       roomId,
       streamInfo,
@@ -92,18 +92,22 @@ class MediaConverter {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
     }
-    fs.unlink(path.join(outputDir, `video-${roomId}.sock`), (err) => {
-      if (err) {
-        console.log(`video-${roomId}.sock을 찾을 수 없습니다.`);
-      }
-    });
-    fs.unlink(path.join(outputDir, `audio-${roomId}.sock`), (err) => {
-      if (err) {
-        console.log(`audio-${roomId}.sock을 찾을 수 없습니다.`);
-      }
-    });
     streamInfo.stopRecording();
+    this.deleteTempFile(streamInfo.videoTempFileName);
+    this.deleteTempFile(streamInfo.audioTempFileName);
     this.peerStreamInfoList.delete(roomId);
+  };
+
+  getOutputAbsolutePath = (fileName: string) => {
+    return path.join(outputDir, fileName);
+  };
+
+  deleteTempFile = (tempFileName: string) => {
+    fs.unlink(path.join(outputDir, tempFileName), (err) => {
+      if (err) {
+        console.log(`${tempFileName}을 찾을 수 없습니다.`);
+      }
+    });
   };
 }
 
