@@ -13,7 +13,7 @@
   <div>
     <button id="startButton">시작</button>
     <button id="callButton">방 생성</button>
-    <button id="hangupButton">방 나가기</button>
+    <button id="endButton">방 나가기</button>
   </div>
 </div>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -22,7 +22,7 @@
 
   const startButton = document.getElementById('startButton');
   const callButton = document.getElementById('callButton');
-  const hangupButton = document.getElementById('hangupButton');
+  const hangupButton = document.getElementById('endButton');
   callButton.disabled = true;
   hangupButton.disabled = true;
 
