@@ -13,6 +13,7 @@ import ToastContainer from "./components/Toast/ToastContainer";
 import Start from "./pages/Start/Start";
 import MyPage from "./pages/MyPage/MyPage";
 import Error from "./pages/Error/Error";
+import LectureEnd from "./pages/LectureEnd/LectureEnd";
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
           <Route path="/test" element={<Test />} />
           <Route path="/instructor" element={<Instructor />} />
           <Route path="/participant" element={<Participant />} />
+          <Route path="/lecture-end" element={<LectureEnd />} />
           <Route path="/example" element={<Example />} />
           <Route path="/error" element={<Error />} />
           <Route path="/*" element={<Navigate to="/error" />} />

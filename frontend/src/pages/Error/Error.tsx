@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LogoBig from "@/assets/imgs/logoBig.png";
 import Button from "@/components/Button/Button";
 import HomeIcon from "@/assets/svgs/home.svg?react";
