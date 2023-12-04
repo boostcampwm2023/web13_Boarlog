@@ -131,6 +131,9 @@ const HeaderParticipantControls = () => {
       roomId: `1`
     });
 
+    if (localAudioRef.current) localAudioRef.current.srcObject = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
@@ -138,7 +141,7 @@ const HeaderParticipantControls = () => {
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsModalOpen(false);
-    navigate("/");
+    navigate("/test");
   };
 
   const initConnection = async () => {

@@ -221,7 +221,7 @@ const HeaderInstructorControls = () => {
       if (!isLectureStartRef.current && managerRef.current) {
         isLectureStartRef.current = true;
         startTimer();
-        showToast({ message: "강의가 시작되었습니다. 1", type: "success" });
+        showToast({ message: "강의가 시작되었습니다.", type: "success" });
         socketRef2.current = managerRef.current.socket("/lecture", {
           auth: {
             accessToken: sampleAccessToken,
@@ -264,6 +264,7 @@ const HeaderInstructorControls = () => {
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
+      saveCanvasData();
       gainNode.gain.value = inputMicVolumeRef.current;
 
       if (!fabricCanvasRef) return;
@@ -330,7 +331,49 @@ const HeaderInstructorControls = () => {
     }
   };
 
-  const submit = () => {
+  const submitData = (data: unknown) => {
+    if (!socketRef2.current) return;
+    console.log("submit");
+    socketRef2.current.emit("edit", {
+      type: "whiteBoard",
+      roomId: `1`,
+      content: data
+    });
+  };
+
+  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
+  // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
+  // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
+
+  interface ICanvasData {
+    canvasJSON: string;
+    viewport: number[];
+  }
+  let canvasData: ICanvasData = {
+    canvasJSON: "",
+    viewport: [1, 0, 0, 1, 0, 0]
+  };
+
+  function saveCanvasData() {
+    if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
+
+    const newJSONData = JSON.stringify(fabricCanvasRef);
+    const newViewport = fabricCanvasRef.viewportTransform;
+
+    if (canvasData.canvasJSON !== newJSONData || JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport)) {
+      console.log(
+        canvasData.canvasJSON !== newJSONData,
+        JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport)
+      );
+      console.log(JSON.stringify(canvasData.viewport), JSON.stringify(newViewport));
+      canvasData.canvasJSON = newJSONData;
+      canvasData.viewport = newViewport;
+      submitData(canvasData);
+    }
+  }
+  const save = () => {
+    //saveCanvasData();
+
     if (!socketRef2.current) return;
     console.log("submit");
     socketRef2.current.emit("edit", {
@@ -340,47 +383,10 @@ const HeaderInstructorControls = () => {
     });
   };
 
-  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
-  // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
-  // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
-  /*
-  interface ICanvasData {
-    canvasJSON: string;
-    viewport: number[];
-  }
-  let instructorCanvasData: ICanvasData = {
-    canvasJSON: "",
-    viewport: [1, 0, 0, 1, 0, 0]
-  };
-  let instructorCanvasDataRef = useRef<ICanvasData>(instructorCanvasData);
-  instructorCanvasDataRef.current = instructorCanvasData;
-
-  const onFrameIdRef2 = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
-
-  function saveCanvasData() {
-    if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
-
-    const newJSONData = JSON.stringify(fabricCanvasRef);
-    const newViewport = fabricCanvasRef.viewportTransform;
-
-    if (instructorCanvasData.canvasJSON !== newJSONData || instructorCanvasData.viewport !== newViewport) {
-      instructorCanvasData.canvasJSON = newJSONData;
-      instructorCanvasData.viewport = newViewport;
-    }
-  }
-
-  const save = () => {
-    saveCanvasData();
-    //onFrameIdRef2.current = window.requestAnimationFrame(saveCanvasData);
-  };
-  const cancel = () => {
-    if (!onFrameIdRef2.current) return;
-    window.cancelAnimationFrame(onFrameIdRef2.current);
-  };
   const load = () => {
     if (!fabricCanvasRef) return;
-    fabricCanvasRef.loadFromJSON(instructorCanvasDataRef.current.canvasJSON, () => {});
-    fabricCanvasRef.setViewportTransform(instructorCanvasDataRef.current.viewport);
+    fabricCanvasRef.loadFromJSON(canvasData.canvasJSON, () => {});
+    fabricCanvasRef.setViewportTransform(canvasData.viewport);
 
     //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
     if (!socketRef.current) return;
@@ -390,7 +396,6 @@ const HeaderInstructorControls = () => {
       content: "test"
     });
   };
-  */
 
   return (
     <>
@@ -427,7 +432,7 @@ const HeaderInstructorControls = () => {
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
       </SmallButton>
-      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={submit}>
+      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={save}>
         전송
       </SmallButton>
       <Modal
