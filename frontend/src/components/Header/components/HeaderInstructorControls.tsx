@@ -15,7 +15,7 @@ import { useToast } from "@/components/Toast/useToast";
 import selectedMicrophoneState from "./stateSelectedMicrophone";
 import micVolmeState from "./stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
-//import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 
 const HeaderInstructorControls = () => {
   const [isLectureStart, setIsLectureStart] = useState(false);
@@ -31,7 +31,7 @@ const HeaderInstructorControls = () => {
   const showToast = useToast();
 
   const canvasRef = useRecoilValue(canvasRefState);
-  //const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -74,9 +74,7 @@ const HeaderInstructorControls = () => {
 
     await initConnection();
     await createPresenterOffer();
-    listenForServerAnswer();
-    setIsLectureStart(true);
-    showToast({ message: "강의가 시작되었습니다.", type: "success" });
+    await listenForServerAnswer();
   };
 
   const stopLecture = () => {
@@ -102,7 +100,11 @@ const HeaderInstructorControls = () => {
     try {
       // 0. 소켓 연결
       socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
-      if (!socketRef.current) throw new Error("소켓 연결 실패");
+
+      socketRef.current.on("connect_error", (err) => {
+        console.error(err.message);
+        showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+      });
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
@@ -112,7 +114,6 @@ const HeaderInstructorControls = () => {
       mediaStreamRef.current = stream;
 
       await setupAudioAnalysis(stream);
-      startTimer();
 
       // canvas의 내용을 캡쳐하여 스트림으로 생성
       if (!canvasRef.current) return;
@@ -194,6 +195,12 @@ const HeaderInstructorControls = () => {
       if (!pcRef.current) return;
       console.log("7. 서버로부터 candidate 받음");
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+
+      if (!isLectureStart) {
+        setIsLectureStart(true);
+        startTimer();
+        showToast({ message: "강의가 시작되었습니다.", type: "success" });
+      }
     });
   }
 
@@ -224,6 +231,9 @@ const HeaderInstructorControls = () => {
 
     const onFrame = () => {
       gainNode.gain.value = inputMicVolumeRef.current;
+
+      if (!fabricCanvasRef) return;
+      fabricCanvasRef.renderAll();
 
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
@@ -287,27 +297,46 @@ const HeaderInstructorControls = () => {
   // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
   // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
   /*
-  let saveJSON: any = null;
-  const save = () => {
-    if (!fabricCanvasRef) return;
-    saveJSON = JSON.stringify(fabricCanvasRef);
-    console.log(saveJSON);
+  interface ICanvasData {
+    canvasJSON: string;
+    viewport: number[];
+  }
+  let instructorCanvasData: ICanvasData = {
+    canvasJSON: "",
+    viewport: [1, 0, 0, 1, 0, 0]
   };
-  const load = () => {    
+  let instructorCanvasDataRef = useRef<ICanvasData>(instructorCanvasData);
+  instructorCanvasDataRef.current = instructorCanvasData;
+
+  const onFrameIdRef2 = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+
+  function saveCanvasData() {
+    if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
+
+    const newJSONData = JSON.stringify(fabricCanvasRef);
+    const newViewport = fabricCanvasRef.viewportTransform;
+
+    if (instructorCanvasData.canvasJSON !== newJSONData || instructorCanvasData.viewport !== newViewport) {
+      instructorCanvasData.canvasJSON = newJSONData;
+      instructorCanvasData.viewport = newViewport;
+    }
+  }
+
+  const save = () => {
+    saveCanvasData();
+    //onFrameIdRef2.current = window.requestAnimationFrame(saveCanvasData);
+  };
+  const cancel = () => {
+    if (!onFrameIdRef2.current) return;
+    window.cancelAnimationFrame(onFrameIdRef2.current);
+  };
+  const load = () => {
     if (!fabricCanvasRef) return;
-    fabricCanvasRef.loadFromJSON(test, () => {
-      console.log("JSON 데이터 로드 완료");
-      fabricCanvasRef.renderAll();
-    });
-    
+    fabricCanvasRef.loadFromJSON(instructorCanvasDataRef.current.canvasJSON, () => {});
+    fabricCanvasRef.setViewportTransform(instructorCanvasDataRef.current.viewport);
+
     //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
     if (!socketRef.current) return;
-    socketRef.current.emit("edit", {
-      type: "whiteBoard",
-      roomId: 1,
-      content: "test"
-    });
-
     socketRef.current.emit("edit", {
       type: "whiteBoard",
       roomId: 1,
