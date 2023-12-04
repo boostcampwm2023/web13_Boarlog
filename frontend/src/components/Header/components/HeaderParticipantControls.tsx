@@ -11,8 +11,8 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
-import selectedSpeakerState from "./stateSelectedSpeaker";
-import speakerVolmeState from "./stateSpeakerVolume";
+import selectedSpeakerState from "../../../stores/stateSelectedSpeaker";
+import speakerVolmeState from "../../../stores/stateSpeakerVolume";
 import videoRefState from "@/pages/Test/components/stateVideoRef";
 
 const HeaderParticipantControls = () => {

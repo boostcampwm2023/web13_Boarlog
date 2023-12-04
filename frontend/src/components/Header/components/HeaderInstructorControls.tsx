@@ -12,8 +12,8 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
-import selectedMicrophoneState from "./stateSelectedMicrophone";
-import micVolmeState from "./stateMicVolme";
+import selectedMicrophoneState from "../../../stores/stateSelectedMicrophone";
+import micVolmeState from "../../../stores/stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 
@@ -266,15 +266,18 @@ const HeaderInstructorControls = () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: selectedMicrophone }
       });
+
       if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 기존 미디어 트랙 중지
       mediaStreamRef.current = stream;
 
       await setupAudioAnalysis(stream);
 
       if (!updatedStreamRef.current || !pcRef.current) return;
+
+      const newAudioTrack = updatedStreamRef.current.getAudioTracks()[0];
       // 기존트랙: pcRef.current.getSenders()[0].track
       // 새트랙: updatedStreamRef.current.getAudioTracks()[0]
-      pcRef.current.getSenders()[0].replaceTrack(updatedStreamRef.current.getAudioTracks()[0]);
+      pcRef.current.getSenders()[0].replaceTrack(newAudioTrack);
     } catch (error) {
       console.error("오디오 replace 작업 실패", error);
     }
