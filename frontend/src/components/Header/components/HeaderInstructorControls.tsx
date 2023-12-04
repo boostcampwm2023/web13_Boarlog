@@ -18,7 +18,8 @@ import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 
 const HeaderInstructorControls = () => {
-  const [isLectureStart, setIsLectureStart] = useState(false);
+  const isLectureStartRef = useRef<boolean>(false);
+
   const [isMicOn, setIsMicOn] = useState(true);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
@@ -68,7 +69,7 @@ const HeaderInstructorControls = () => {
     inputMicVolumeRef.current = inputMicVolume;
   }, [inputMicVolume]);
   useEffect(() => {
-    if (isLectureStart) {
+    if (isLectureStartRef.current) {
       replaceAudioTrack();
     }
   }, [selectedMicrophone]);
@@ -87,12 +88,11 @@ const HeaderInstructorControls = () => {
   };
 
   const stopLecture = () => {
-    if (!isLectureStart) {
+    if (!isLectureStartRef.current) {
       showToast({ message: "강의가 시작되지 않았습니다.", type: "alert" });
       return;
     }
-
-    setIsLectureStart(false);
+    isLectureStartRef.current = false;
     setElapsedTime(0);
 
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
@@ -218,10 +218,10 @@ const HeaderInstructorControls = () => {
       console.log("7. 서버로부터 candidate 받음");
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
 
-      if (!isLectureStart && managerRef.current) {
-        setIsLectureStart(true);
+      if (!isLectureStartRef.current && managerRef.current) {
+        isLectureStartRef.current = true;
         startTimer();
-        showToast({ message: "강의가 시작되었습니다.", type: "success" });
+        showToast({ message: "강의가 시작되었습니다. 1", type: "success" });
         socketRef2.current = managerRef.current.socket("/lecture", {
           auth: {
             accessToken: sampleAccessToken,
@@ -229,6 +229,9 @@ const HeaderInstructorControls = () => {
           }
         });
         socketRef2.current.on("asked", (data) => {
+          console.log(data);
+        });
+        socketRef2.current.on("response", (data) => {
           console.log(data);
         });
       }
@@ -402,10 +405,10 @@ const HeaderInstructorControls = () => {
       </div>
 
       <SmallButton
-        className={`text-grayscale-white ${isLectureStart ? "bg-alert-100" : "bg-boarlog-100"}`}
-        onClick={!isLectureStart ? () => setIsStartModalOpen(true) : () => setIsCloseModalOpen(true)}
+        className={`text-grayscale-white ${isLectureStartRef.current ? "bg-alert-100" : "bg-boarlog-100"}`}
+        onClick={!isLectureStartRef.current ? () => setIsStartModalOpen(true) : () => setIsCloseModalOpen(true)}
       >
-        {isLectureStart ? (
+        {isLectureStartRef.current ? (
           <>
             <StopIcon className="w-5 h-5 fill-grayscale-white" />
             <p className="hidden home:block">강의 종료</p>

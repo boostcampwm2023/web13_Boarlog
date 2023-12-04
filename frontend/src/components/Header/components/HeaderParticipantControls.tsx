@@ -48,7 +48,7 @@ const HeaderParticipantControls = () => {
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
   const LOCAL_SERVER_URL = "http://localhost:3000";
   const sampleAccessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
 
   const pc_config = {
     iceServers: [
@@ -89,8 +89,8 @@ const HeaderParticipantControls = () => {
         refreshToken: "sample"
       }
     });
-    socketRef2.current.on("ended", (data) => {
-      console.log(data);
+    socketRef2.current.on("ended", () => {
+      showToast({ message: "강의가 종료되었습니다.", type: "alert" });
     });
     socketRef2.current.on("update", (data) => {
       console.log(data);
@@ -125,6 +125,12 @@ const HeaderParticipantControls = () => {
   const leaveLecture = () => {
     setElapsedTime(0);
 
+    if (!socketRef2.current) return;
+    socketRef2.current.emit("leave", {
+      type: "lecture",
+      roomId: `1`
+    });
+
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
@@ -144,7 +150,11 @@ const HeaderParticipantControls = () => {
           refreshToken: "test"
         }
       });
-      //socketRef.current = io(MEDIA_SERVER_URL);
+      socketRef.current.on("connect_error", (err) => {
+        console.error(err.message);
+        showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+      });
+
       pcRef.current = new RTCPeerConnection(pc_config);
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
