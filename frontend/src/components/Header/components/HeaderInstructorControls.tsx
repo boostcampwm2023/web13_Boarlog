@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { io, Socket } from "socket.io-client";
+import { io, Socket, Manager } from "socket.io-client";
 
 import VolumeMeter from "./VolumeMeter";
 
@@ -35,13 +35,17 @@ const HeaderInstructorControls = () => {
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+  const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
+
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
+  const LOCAL_SERVER_URL = "http://localhost:3000";
+
   const pc_config = {
     iceServers: [
       {
@@ -99,7 +103,18 @@ const HeaderInstructorControls = () => {
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
-      socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
+      const sampleAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
+
+      managerRef.current = new Manager(MEDIA_SERVER_URL);
+      // https://www.boarlog.site/
+      socketRef.current = managerRef.current.socket("/create-room", {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: "sample"
+        }
+      });
+      //socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
 
       socketRef.current.on("connect_error", (err) => {
         console.error(err.message);
@@ -159,7 +174,7 @@ const HeaderInstructorControls = () => {
       });
       socketRef.current.emit("presenterOffer", {
         socketId: socketRef.current.id,
-        roomId: 1,
+        roomId: `1`,
         SDP: SDP
       });
       pcRef.current.setLocalDescription(SDP);

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { io, Socket } from "socket.io-client";
+import { Socket, Manager } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
@@ -30,6 +30,7 @@ const HeaderParticipantControls = () => {
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+  const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
@@ -41,7 +42,8 @@ const HeaderParticipantControls = () => {
   const navigate = useNavigate();
   const showToast = useToast();
 
-  const MEDIA_SERVER_URL = "https://www.boarlog.site/enter-room";
+  const MEDIA_SERVER_URL = "https://www.boarlog.site";
+  const LOCAL_SERVER_URL = "http://localhost:3000";
   const pc_config = {
     iceServers: [
       {
@@ -115,7 +117,17 @@ const HeaderParticipantControls = () => {
 
   const initConnection = async () => {
     try {
-      socketRef.current = io(MEDIA_SERVER_URL);
+      const sampleAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
+
+      managerRef.current = new Manager(MEDIA_SERVER_URL);
+      socketRef.current = managerRef.current.socket("/enter-room", {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: "test"
+        }
+      });
+      //socketRef.current = io(MEDIA_SERVER_URL);
       pcRef.current = new RTCPeerConnection(pc_config);
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
@@ -135,7 +147,7 @@ const HeaderParticipantControls = () => {
       });
       socketRef.current.emit("studentOffer", {
         socketId: socketRef.current.id,
-        roomId: 1,
+        roomId: `1`,
         SDP: SDP
       });
 
