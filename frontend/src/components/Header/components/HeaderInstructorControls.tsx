@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { io, Socket, Manager } from "socket.io-client";
+import { Socket, Manager } from "socket.io-client";
 
 import VolumeMeter from "./VolumeMeter";
 
@@ -35,8 +35,11 @@ const HeaderInstructorControls = () => {
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+
   const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
+  const socketRef2 = useRef<Socket>();
+
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
@@ -45,6 +48,8 @@ const HeaderInstructorControls = () => {
 
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
   const LOCAL_SERVER_URL = "http://localhost:3000";
+  const sampleAccessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
 
   const pc_config = {
     iceServers: [
@@ -96,6 +101,12 @@ const HeaderInstructorControls = () => {
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
+    if (!socketRef2.current) return;
+    socketRef2.current.emit("end", {
+      type: "lecture",
+      roomId: `1`
+    });
+
     setIsCloseModalOpen(false);
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
   };
@@ -103,18 +114,14 @@ const HeaderInstructorControls = () => {
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
-      const sampleAccessToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
 
-      managerRef.current = new Manager(MEDIA_SERVER_URL);
-      // https://www.boarlog.site/
+      managerRef.current = new Manager(LOCAL_SERVER_URL);
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
           accessToken: sampleAccessToken,
           refreshToken: "sample"
         }
       });
-      //socketRef.current = io(`${MEDIA_SERVER_URL}/create-room`);
 
       socketRef.current.on("connect_error", (err) => {
         console.error(err.message);
@@ -211,10 +218,19 @@ const HeaderInstructorControls = () => {
       console.log("7. 서버로부터 candidate 받음");
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
 
-      if (!isLectureStart) {
+      if (!isLectureStart && managerRef.current) {
         setIsLectureStart(true);
         startTimer();
         showToast({ message: "강의가 시작되었습니다.", type: "success" });
+        socketRef2.current = managerRef.current.socket("/lecture", {
+          auth: {
+            accessToken: sampleAccessToken,
+            refreshToken: "sample"
+          }
+        });
+        socketRef2.current.on("asked", (data) => {
+          console.log(data);
+        });
       }
     });
   }
@@ -311,6 +327,16 @@ const HeaderInstructorControls = () => {
     }
   };
 
+  const submit = () => {
+    if (!socketRef2.current) return;
+    console.log("submit");
+    socketRef2.current.emit("edit", {
+      type: "whiteBoard",
+      roomId: `1`,
+      content: "test"
+    });
+  };
+
   // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
   // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
   // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
@@ -397,6 +423,9 @@ const HeaderInstructorControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
+      </SmallButton>
+      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={submit}>
+        전송
       </SmallButton>
       <Modal
         modalText="강의를 시작하시겠습니까?"

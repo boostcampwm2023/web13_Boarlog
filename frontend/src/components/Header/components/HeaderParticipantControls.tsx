@@ -30,8 +30,11 @@ const HeaderParticipantControls = () => {
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+
   const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
+  const socketRef2 = useRef<Socket>();
+
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
@@ -44,6 +47,9 @@ const HeaderParticipantControls = () => {
 
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
   const LOCAL_SERVER_URL = "http://localhost:3000";
+  const sampleAccessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
+
   const pc_config = {
     iceServers: [
       {
@@ -75,6 +81,20 @@ const HeaderParticipantControls = () => {
 
     await createStudentOffer();
     await setServerAnswer();
+
+    if (!managerRef.current) return;
+    socketRef2.current = managerRef.current.socket("/lecture", {
+      auth: {
+        accessToken: sampleAccessToken,
+        refreshToken: "sample"
+      }
+    });
+    socketRef2.current.on("ended", (data) => {
+      console.log(data);
+    });
+    socketRef2.current.on("update", (data) => {
+      console.log(data);
+    });
 
     if (!pcRef.current) return;
     pcRef.current.ontrack = (event) => {
@@ -117,10 +137,7 @@ const HeaderParticipantControls = () => {
 
   const initConnection = async () => {
     try {
-      const sampleAccessToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
-
-      managerRef.current = new Manager(MEDIA_SERVER_URL);
+      managerRef.current = new Manager(LOCAL_SERVER_URL);
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
           accessToken: sampleAccessToken,
@@ -230,6 +247,16 @@ const HeaderParticipantControls = () => {
     }
   };
 
+  const submit = () => {
+    if (!socketRef2.current) return;
+    console.log("질문이 있습니다!");
+    socketRef2.current.emit("ask", {
+      type: "question",
+      roomId: `1`,
+      content: "질문이 있습니다!"
+    });
+  };
+
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
@@ -252,6 +279,9 @@ const HeaderParticipantControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
+      </SmallButton>
+      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={submit}>
+        전송
       </SmallButton>
       <Modal
         modalText="강의를 나가시겠습니까?"
