@@ -1,15 +1,18 @@
 import { Body, Controller, Get, Post, Req, Request, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBody, ApiCookieAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CustomAuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { UserInfoDto } from './dto/userInfo.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/signup')
+  @ApiBody({ type: UserInfoDto })
   signUp(@Body() userInfo: UserInfoDto) {
     return this.authService.signUp(userInfo);
   }
@@ -27,6 +30,7 @@ export class AuthController {
     return res.send();
   }
 
+  @ApiCookieAuth()
   @UseGuards(CustomAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
@@ -34,6 +38,7 @@ export class AuthController {
   }
 
   @Get('logout')
+  @ApiResponse({ status: 200 })
   logout(@Res() res: Response) {
     res.setHeader(`Set-Cookie`, `Authentication=; HttpOnly; Path=/; Max-Age=0`);
     return res.sendStatus(200);
