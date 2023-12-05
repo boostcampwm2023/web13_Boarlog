@@ -91,8 +91,10 @@ export class RelayServer {
         this.exchangeCandidate('/enter-room', email, socket);
 
         await RTCPC.setRemoteDescription(data.SDP);
+        const startTime = this.roomsInfo.get(data.roomId)?.startTime;
         const SDP = await RTCPC.createAnswer();
         this.io.of('/enter-room').to(email).emit(`serverAnswer`, {
+          startTime: startTime,
           SDP: SDP
         });
         RTCPC.setLocalDescription(SDP);
