@@ -48,7 +48,7 @@ const HeaderParticipantControls = () => {
   const showToast = useToast();
 
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
-  const LOCAL_SERVER_URL = "http://localhost:3000";
+  //const LOCAL_SERVER_URL = "http://localhost:3000";
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
 
@@ -149,7 +149,7 @@ const HeaderParticipantControls = () => {
 
   const initConnection = async () => {
     try {
-      managerRef.current = new Manager(LOCAL_SERVER_URL);
+      managerRef.current = new Manager(MEDIA_SERVER_URL);
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
           accessToken: sampleAccessToken,

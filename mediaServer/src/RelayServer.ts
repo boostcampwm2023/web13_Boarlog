@@ -118,7 +118,7 @@ export class RelayServer {
     const clientInfo = this.clientsInfo.get(email);
     if (!clientInfo || !clientInfo.roomId) {
       // TODO: 추후 클라이언트로 에러처리 필요
-      console.log('잘못된 요청입니다. 1');
+      console.log('잘못된 요청입니다.');
       return;
     }
     const roomInfo = this.roomsInfo.get(clientInfo.roomId);
