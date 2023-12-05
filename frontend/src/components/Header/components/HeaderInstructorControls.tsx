@@ -16,6 +16,7 @@ import selectedMicrophoneState from "../../../stores/stateSelectedMicrophone";
 import micVolmeState from "../../../stores/stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+import instructorSocketState from "@//stores/stateInstructorSocketRef";
 
 const HeaderInstructorControls = () => {
   const isLectureStartRef = useRef<boolean>(false);
@@ -40,6 +41,8 @@ const HeaderInstructorControls = () => {
   const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
   const socketRef2 = useRef<Socket>();
+
+  const setInstructorSocket = useSetRecoilState(instructorSocketState);
 
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
@@ -228,6 +231,7 @@ const HeaderInstructorControls = () => {
             refreshToken: "sample"
           }
         });
+        setInstructorSocket(socketRef2.current);
         socketRef2.current.on("asked", (data) => {
           console.log(data);
         });
@@ -372,8 +376,6 @@ const HeaderInstructorControls = () => {
     }
   }
   const save = () => {
-    //saveCanvasData();
-
     if (!socketRef2.current) return;
     console.log("submit");
     socketRef2.current.emit("edit", {
@@ -383,19 +385,13 @@ const HeaderInstructorControls = () => {
     });
   };
 
+  /*
   const load = () => {
     if (!fabricCanvasRef) return;
     fabricCanvasRef.loadFromJSON(canvasData.canvasJSON, () => {});
     fabricCanvasRef.setViewportTransform(canvasData.viewport);
-
-    //lectureSocketRef.current = io(`${MEDIA_SERVER_URL}`);
-    if (!socketRef.current) return;
-    socketRef.current.emit("edit", {
-      type: "whiteBoard",
-      roomId: 1,
-      content: "test"
-    });
   };
+  */
 
   return (
     <>

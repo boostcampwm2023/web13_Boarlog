@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useSetRecoilState } from "recoil";
 import videoRefState from "../Test/components/stateVideoRef";
 
-const Participant = () => {
+const ParticipantJSON = () => {
   const setVideoRef = useSetRecoilState(videoRefState);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -20,4 +20,4 @@ const Participant = () => {
   );
 };
 
-export default Participant;
+export default ParticipantJSON;

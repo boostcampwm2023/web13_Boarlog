@@ -14,6 +14,7 @@ import { useToast } from "@/components/Toast/useToast";
 import selectedSpeakerState from "../../../stores/stateSelectedSpeaker";
 import speakerVolmeState from "../../../stores/stateSpeakerVolume";
 import videoRefState from "@/pages/Test/components/stateVideoRef";
+import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 const HeaderParticipantControls = () => {
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
@@ -34,6 +35,7 @@ const HeaderParticipantControls = () => {
   const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
   const socketRef2 = useRef<Socket>();
+  const setParticipantSocket = useSetRecoilState(participantSocketRefState);
 
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
@@ -89,6 +91,7 @@ const HeaderParticipantControls = () => {
         refreshToken: "sample"
       }
     });
+    setParticipantSocket(socketRef2.current);
     socketRef2.current.on("ended", () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
     });
