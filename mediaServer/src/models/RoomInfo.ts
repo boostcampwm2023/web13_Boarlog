@@ -8,6 +8,7 @@ export class RoomInfo {
   private readonly _presenterEmail: string;
   private readonly _presenterRTCPC: RTCPeerConnection;
   private readonly _studentInfoList: Set<ClientInfo>;
+  private readonly _startTime: Date;
   private _stream: MediaStream | null;
 
   constructor(roomId: string, email: string, RTCPC: RTCPeerConnection) {
@@ -16,6 +17,7 @@ export class RoomInfo {
     this._presenterEmail = email;
     this._presenterRTCPC = RTCPC;
     this._studentInfoList = new Set();
+    this._startTime = new Date();
     this._stream = null;
   }
 
@@ -29,6 +31,10 @@ export class RoomInfo {
 
   get studentInfoList(): Set<ClientInfo> {
     return this._studentInfoList;
+  }
+
+  get startTime() {
+    return this._startTime;
   }
 
   set stream(presenterStream: MediaStream) {

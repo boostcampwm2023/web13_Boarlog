@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -47,8 +47,8 @@ const HeaderParticipantControls = () => {
   const navigate = useNavigate();
   const showToast = useToast();
 
-  const MEDIA_SERVER_URL = "https://www.boarlog.site";
-  const LOCAL_SERVER_URL = "http://localhost:3000";
+  const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
+
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
 
@@ -131,7 +131,7 @@ const HeaderParticipantControls = () => {
     if (!socketRef2.current) return;
     socketRef2.current.emit("leave", {
       type: "lecture",
-      roomId: `1`
+      roomId: roomid
     });
 
     if (localAudioRef.current) localAudioRef.current.srcObject = null;
@@ -149,7 +149,7 @@ const HeaderParticipantControls = () => {
 
   const initConnection = async () => {
     try {
-      managerRef.current = new Manager(LOCAL_SERVER_URL);
+      managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
           accessToken: sampleAccessToken,
@@ -180,7 +180,7 @@ const HeaderParticipantControls = () => {
       });
       socketRef.current.emit("studentOffer", {
         socketId: socketRef.current.id,
-        roomId: `1`,
+        roomId: roomid,
         SDP: SDP
       });
 
@@ -208,6 +208,16 @@ const HeaderParticipantControls = () => {
     if (!socketRef.current) return;
     socketRef.current.on(`serverAnswer`, (data) => {
       if (!pcRef.current) return;
+
+      const startTime = new Date(data.startTime).getTime();
+
+      const updateElapsedTime = () => {
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        setElapsedTime(elapsedTime);
+      };
+      const timer = setInterval(updateElapsedTime, 1000);
+      timerIdRef.current = timer;
+
       pcRef.current.setRemoteDescription(data.SDP);
     });
     socketRef.current.on(`serverCandidate`, (data) => {

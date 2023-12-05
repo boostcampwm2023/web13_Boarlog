@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
+import { useLocation } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
 
@@ -50,8 +51,9 @@ const HeaderInstructorControls = () => {
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
 
-  const MEDIA_SERVER_URL = "https://www.boarlog.site";
-  const LOCAL_SERVER_URL = "http://localhost:3000";
+
+  const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
+
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
 
@@ -118,7 +120,8 @@ const HeaderInstructorControls = () => {
     try {
       // 0. 소켓 연결
 
-      managerRef.current = new Manager(LOCAL_SERVER_URL);
+      managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
+      
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
           accessToken: sampleAccessToken,
@@ -164,11 +167,31 @@ const HeaderInstructorControls = () => {
         console.error("no stream");
       }
 
-      // RTCPeerConnection에 추가된 트랙 확인 (디버깅용)
-      const senders = pcRef.current.getSenders();
-      senders.forEach((sender) => {
-        console.log("Sender Track:", sender.track);
-      });
+      pcRef.current.oniceconnectionstatechange = () => {
+        if (!pcRef.current) return;
+        console.log("ICE 연결 상태:", pcRef.current.iceConnectionState);
+        if (pcRef.current.iceConnectionState === "connected") {
+          isLectureStartRef.current = true;
+          startTimer();
+          showToast({ message: "강의가 시작되었습니다.", type: "success" });
+
+          if (!managerRef.current) return;
+          socketRef2.current = managerRef.current.socket("/lecture", {
+            auth: {
+              accessToken: sampleAccessToken,
+              refreshToken: "sample"
+            }
+          });
+          setInstructorSocket(socketRef2.current);
+          socketRef2.current.on("asked", (data) => {
+            console.log(data);
+          });
+          socketRef2.current.on("response", (data) => {
+            console.log(data);
+          });
+          console.log("연결 성공!");
+        }
+      };
     } catch (error) {
       console.error(error);
     }
@@ -184,7 +207,7 @@ const HeaderInstructorControls = () => {
       });
       socketRef.current.emit("presenterOffer", {
         socketId: socketRef.current.id,
-        roomId: `1`,
+        roomId: roomid,
         SDP: SDP
       });
       pcRef.current.setLocalDescription(SDP);
@@ -220,23 +243,6 @@ const HeaderInstructorControls = () => {
       if (!pcRef.current) return;
       console.log("7. 서버로부터 candidate 받음");
       pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
-
-      if (!isLectureStartRef.current && managerRef.current) {
-        isLectureStartRef.current = true;
-        startTimer();
-        showToast({ message: "강의가 시작되었습니다.", type: "success" });
-        socketRef2.current = managerRef.current.socket("/lecture", {
-          auth: {
-            accessToken: sampleAccessToken,
-            refreshToken: "sample"
-          }
-        });
-        setInstructorSocket(socketRef2.current);
-
-        socketRef2.current.on("response", (data) => {
-          console.log(data);
-        });
-      }
     });
   }
 
@@ -338,7 +344,7 @@ const HeaderInstructorControls = () => {
     console.log("submit");
     socketRef2.current.emit("edit", {
       type: "whiteBoard",
-      roomId: `1`,
+      roomId: roomid,
       content: data
     });
   };
