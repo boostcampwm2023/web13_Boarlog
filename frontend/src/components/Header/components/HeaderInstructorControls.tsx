@@ -120,7 +120,7 @@ const HeaderInstructorControls = () => {
     try {
       // 0. 소켓 연결
 
-      managerRef.current = new Manager(LOCAL_SERVER_URL);
+      managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
           accessToken: sampleAccessToken,

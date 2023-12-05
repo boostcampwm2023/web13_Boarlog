@@ -150,7 +150,7 @@ const HeaderParticipantControls = () => {
 
   const initConnection = async () => {
     try {
-      managerRef.current = new Manager(LOCAL_SERVER_URL);
+      managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
           accessToken: sampleAccessToken,
