@@ -7,6 +7,7 @@ import { EnterLectureDto } from './dto/enter-lecture.dto';
 import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { LectureService } from './lecture.service';
+import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
 
 @ApiTags('lecture')
 @Controller('lecture')
@@ -59,5 +60,22 @@ export class LectureController {
     }
     const result = await this.lectureService.findLectureInfo(enterCodeDocument);
     res.status(HttpStatus.OK).send(result);
+  }
+
+  @Post('/:code')
+  @ApiQuery({ name: 'code', type: 'string' })
+  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 404, description: '해당 강의가 없습니다.' })
+  async addWhiteBoardLog(
+    @Param('code') code: string,
+    @Body() whiteboardEventDto: WhiteboardEventDto,
+    @Res() res: Response
+  ) {
+    const enterCodeDocument = await this.lectureService.findLectureByCode(code);
+    if (!enterCodeDocument) {
+      throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    await this.lectureService.saveWhiteBoardLog(enterCodeDocument.lecture_id, whiteboardEventDto);
+    res.status(HttpStatus.CREATED).send();
   }
 }
