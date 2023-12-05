@@ -1,5 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { audioConfig, videoConfig } from '../config/ffmpeg.config';
+import { saveFile } from '../utils/ncp-storage';
 import { PeerStreamInfo } from './PeerStreamInfo';
 
 export class FfmpegCommand {
@@ -22,10 +23,12 @@ export class FfmpegCommand {
       .on('start', () => {
         console.log(`${roomId} 강의실 영상 녹화 시작`);
       })
-      .on('end', () => {
+      .on('end', async () => {
         streamInfo.recordEnd = true;
         endRecording(roomId);
         console.log(`${roomId} 강의실 영상 녹화 종료`);
+
+        const result = await saveFile(recordFilePath, roomId);
       })
       .size(videoSize)
       .output(recordFilePath);
