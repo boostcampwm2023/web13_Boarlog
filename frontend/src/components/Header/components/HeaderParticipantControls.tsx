@@ -144,7 +144,7 @@ const HeaderParticipantControls = () => {
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsModalOpen(false);
-    navigate("/test");
+    navigate("/");
   };
 
   const initConnection = async () => {
