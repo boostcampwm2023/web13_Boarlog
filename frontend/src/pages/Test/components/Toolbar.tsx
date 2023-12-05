@@ -7,9 +7,6 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursor from "@/assets/svgs/addStickyMemoCursor.svg";
 import EraserCursor from "@/assets/svgs/eraserMouseCursor.svg";
 
-import SmallButton from "@/components/SmallButton/SmallButton";
-import instructorSocketState from "@//stores/stateInstructorSocketRef";
-
 import { useEffect } from "react";
 import { useRecoilValue, useSetRecoilState, useRecoilState, useResetRecoilState } from "recoil";
 import { fabric } from "fabric";
@@ -35,7 +32,6 @@ const Toolbar = () => {
   const setDefaultQuestionContents = useResetRecoilState(clickedQuestionContentsState);
   const setIsQuestionListOpen = useSetRecoilState(isQuestionListOpenState);
 
-  const socket = useRecoilValue(instructorSocketState);
   /**
    * @description 화이트 보드에 그려져 있는 요소들을 클릭을 통해 선택 가능한지 여부를 제어하기 위한 함수입니다.
    */
@@ -251,19 +247,6 @@ const Toolbar = () => {
     canvas.on("mouse:up", handleMouseUp);
   };
 
-  const sumbit = () => {
-    if (!socket) return;
-    socket.emit("edit", {
-      type: "whiteBoard",
-      roomId: `1`,
-      content: "test"
-    });
-    socket.on("asked", (data) => {
-      console.log("질문수신", data);
-    });
-    console.log("전송");
-  };
-
   useEffect(() => {
     if (!(canvas instanceof fabric.Canvas)) return;
     canvas.off("mouse:down");
@@ -360,10 +343,6 @@ const Toolbar = () => {
           title="Hand Tool"
         />
       </div>
-
-      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={sumbit}>
-        전송
-      </SmallButton>
     </div>
   );
 };

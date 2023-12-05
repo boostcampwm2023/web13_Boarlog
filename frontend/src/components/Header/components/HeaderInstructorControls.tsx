@@ -375,16 +375,6 @@ const HeaderInstructorControls = () => {
       submitData(canvasData);
     }
   }
-  const save = () => {
-    if (!socketRef2.current) return;
-    console.log("submit");
-    socketRef2.current.emit("edit", {
-      type: "whiteBoard",
-      roomId: `1`,
-      content: "test"
-    });
-  };
-
   /*
   const load = () => {
     if (!fabricCanvasRef) return;
@@ -427,9 +417,6 @@ const HeaderInstructorControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
-      </SmallButton>
-      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={save}>
-        전송
       </SmallButton>
       <Modal
         modalText="강의를 시작하시겠습니까?"

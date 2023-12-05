@@ -263,16 +263,6 @@ const HeaderParticipantControls = () => {
     }
   };
 
-  const submit = () => {
-    if (!socketRef2.current) return;
-    console.log("질문이 있습니다!");
-    socketRef2.current.emit("ask", {
-      type: "question",
-      roomId: `1`,
-      content: "질문이 있습니다!"
-    });
-  };
-
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
@@ -295,9 +285,6 @@ const HeaderParticipantControls = () => {
         ) : (
           <MicOffIcon className="w-5 h-5 fill-grayscale-white" />
         )}
-      </SmallButton>
-      <SmallButton className={`text-grayscale-white bg-boarlog-100`} onClick={submit}>
-        전송
       </SmallButton>
       <Modal
         modalText="강의를 나가시겠습니까?"

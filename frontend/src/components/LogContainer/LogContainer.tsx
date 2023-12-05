@@ -1,5 +1,8 @@
 import SendMessage from "@/assets/svgs/sendMessage.svg?react";
+import participantSocketRefState from "@/stores/stateParticipantSocketRef";
+
 import { ChangeEvent, useRef, useState } from "react";
+import { useRecoilValue } from "recoil";
 
 interface LogItemInterface {
   key?: string;
@@ -28,6 +31,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
+  const socket = useRecoilValue(participantSocketRefState);
 
   const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const inputValue = target.value;
@@ -38,10 +42,16 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
     if (!messageInputRef.current) return;
     const inputRef = messageInputRef.current;
     const messageContents = inputRef.value;
-    if (!messageContents) return;
+    if (!messageContents || !socket) return;
     // 추후 사용자의 닉네임을 가져와야한다.
     // 추후 질문의 내용을 발표자에게 전송해야한다.
     setQuestionList([...questionList, { title: "닉네임", contents: messageContents }]);
+
+    socket.emit("ask", {
+      type: "question",
+      roomId: `1`,
+      content: messageContents
+    });
 
     inputRef.value = "";
   };
