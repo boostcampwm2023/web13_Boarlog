@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { io, Socket } from "socket.io-client";
+import { Socket, Manager } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
@@ -11,9 +11,10 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
-import selectedSpeakerState from "./stateSelectedSpeaker";
-import speakerVolmeState from "./stateSpeakerVolume";
+import selectedSpeakerState from "../../../stores/stateSelectedSpeaker";
+import speakerVolmeState from "../../../stores/stateSpeakerVolume";
 import videoRefState from "@/pages/Test/components/stateVideoRef";
+import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 const HeaderParticipantControls = () => {
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
@@ -30,7 +31,12 @@ const HeaderParticipantControls = () => {
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+
+  const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
+  const socketRef2 = useRef<Socket>();
+  const setParticipantSocket = useSetRecoilState(participantSocketRefState);
+
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
@@ -41,7 +47,11 @@ const HeaderParticipantControls = () => {
   const navigate = useNavigate();
   const showToast = useToast();
 
-  const MEDIA_SERVER_URL = "https://www.boarlog.site/enter-room";
+  const MEDIA_SERVER_URL = "https://www.boarlog.site";
+  //const LOCAL_SERVER_URL = "http://localhost:3000";
+  const sampleAccessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
+
   const pc_config = {
     iceServers: [
       {
@@ -74,6 +84,21 @@ const HeaderParticipantControls = () => {
     await createStudentOffer();
     await setServerAnswer();
 
+    if (!managerRef.current) return;
+    socketRef2.current = managerRef.current.socket("/lecture", {
+      auth: {
+        accessToken: sampleAccessToken,
+        refreshToken: "sample"
+      }
+    });
+    setParticipantSocket(socketRef2.current);
+    socketRef2.current.on("ended", () => {
+      showToast({ message: "강의가 종료되었습니다.", type: "alert" });
+    });
+    socketRef2.current.on("update", (data) => {
+      console.log(data);
+    });
+
     if (!pcRef.current) return;
     pcRef.current.ontrack = (event) => {
       console.log(event.track);
@@ -103,6 +128,15 @@ const HeaderParticipantControls = () => {
   const leaveLecture = () => {
     setElapsedTime(0);
 
+    if (!socketRef2.current) return;
+    socketRef2.current.emit("leave", {
+      type: "lecture",
+      roomId: `1`
+    });
+
+    if (localAudioRef.current) localAudioRef.current.srcObject = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
@@ -115,7 +149,18 @@ const HeaderParticipantControls = () => {
 
   const initConnection = async () => {
     try {
-      socketRef.current = io(MEDIA_SERVER_URL);
+      managerRef.current = new Manager(MEDIA_SERVER_URL);
+      socketRef.current = managerRef.current.socket("/enter-room", {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: "test"
+        }
+      });
+      socketRef.current.on("connect_error", (err) => {
+        console.error(err.message);
+        showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+      });
+
       pcRef.current = new RTCPeerConnection(pc_config);
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
@@ -135,7 +180,7 @@ const HeaderParticipantControls = () => {
       });
       socketRef.current.emit("studentOffer", {
         socketId: socketRef.current.id,
-        roomId: 1,
+        roomId: `1`,
         SDP: SDP
       });
 

@@ -149,7 +149,7 @@ export class RelayServer {
     });
 
     socket.on('ask', (data) => {
-      if (clientInfo.type !== ClientType.STUDENT || clientInfo !== data.roomId) {
+      if (clientInfo.type !== ClientType.STUDENT || clientInfo.roomId !== data.roomId) {
         // TODO: 추후 클라이언트로 에러처리 필요
         console.log('해당 참여자가 존재하지 않습니다.');
         return;
