@@ -1,6 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { audioConfig, videoConfig } from '../config/ffmpeg.config';
-import { saveFile } from '../utils/ncp-storage';
+import { uploadFileToObjectStorage } from '../utils/ncp-storage';
 import { PeerStreamInfo } from './PeerStreamInfo';
 
 export class FfmpegCommand {
@@ -28,7 +28,7 @@ export class FfmpegCommand {
         endRecording(roomId);
         console.log(`${roomId} 강의실 영상 녹화 종료`);
 
-        const url = await saveFile(recordFilePath, roomId);
+        const url = await uploadFileToObjectStorage(recordFilePath, roomId);
         console.log(`${url}에 파일 저장`);
 
         fetch(process.env.SERVER_API_URL as string, {
