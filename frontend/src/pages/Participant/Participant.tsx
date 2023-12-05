@@ -17,7 +17,7 @@ const Participant = () => {
     <>
       <Header type="participant" />
       <section className="relative">
-        <video className="w-[100vw] h-[calc(100vh-6rem)]" autoPlay muted ref={videoRef}></video>
+        <video className="w-[100vw] h-[calc(100vh-5rem)]" autoPlay muted ref={videoRef}></video>
         <QuestionPromptLogContainer type="question" className={"absolute top-2.5 right-2.5"} />
       </section>
     </>

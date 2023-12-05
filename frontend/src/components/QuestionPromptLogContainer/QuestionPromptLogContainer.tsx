@@ -1,8 +1,8 @@
 import SendMessage from "@/assets/svgs/sendMessage.svg?react";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 interface LogItemInterface {
-  key: string;
+  key?: string;
   title: string;
   contents: string;
 }
@@ -26,11 +26,20 @@ interface LogContainerInterface {
 
 const QuestionPromptLogContainer = ({ type, className }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
+  const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
+  const messageInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const inputValue = target.value;
-
     setIsInputEmpty(inputValue.replace(/\n|\s/g, "").length === 0);
+  };
+
+  const handleSendButtonClicked = () => {
+    const messageContents = messageInputRef.current?.value;
+    if (!messageContents) return;
+    // 추후 사용자의 닉네임을 가져와야한다.
+    // 추후 질문의 내용을 발표자에게 전송해야한다.
+    setQuestionList([...questionList, { title: "닉네임", contents: messageContents }]);
   };
 
   return (
@@ -41,19 +50,9 @@ const QuestionPromptLogContainer = ({ type, className }: LogContainerInterface) 
         {type === "question" ? "질문하기" : "강의 프롬프트"}
       </h2>
       <ul className="px-4 flex-grow overflow-y-auto	">
-        <LogItem
-          key="1"
-          title="닉네임"
-          contents="질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용"
-        />
-        <LogItem key="2" title="닉네임" contents="질문 내용" />
-        <LogItem key="3" title="닉네임" contents="질문 내용" />
-        <LogItem key="4" title="닉네임" contents="질문 내용" />
-        <LogItem
-          key="5"
-          title="닉네임"
-          contents="질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용질문 내용"
-        />
+        {questionList.map(({ title, contents }, index) => {
+          return <LogItem key={`${index}`} title={title} contents={contents} />;
+        })}
       </ul>
       {type === "question" && (
         <div className="flex justify-between p-4">
@@ -65,6 +64,7 @@ const QuestionPromptLogContainer = ({ type, className }: LogContainerInterface) 
             id="question-input"
             className="w-52 medium-12 border border-boarlog rounded-lg px-3 py-2"
             placeholder="질문을 입력해 주세요."
+            ref={messageInputRef}
             onChange={(event) => {
               handleInputChange(event);
             }}
@@ -76,6 +76,9 @@ const QuestionPromptLogContainer = ({ type, className }: LogContainerInterface) 
             type="button"
             aria-label="질문 전송"
             disabled={isInputEmpty}
+            onClick={() => {
+              handleSendButtonClicked();
+            }}
           >
             <SendMessage fill={isInputEmpty ? "black" : "white"} />
           </button>
