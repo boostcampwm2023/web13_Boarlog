@@ -3,6 +3,7 @@ import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 import { ChangeEvent, useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
+import { useLocation } from "react-router-dom";
 
 interface LogItemInterface {
   key?: string;
@@ -32,6 +33,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const socket = useRecoilValue(participantSocketRefState);
+  const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
 
   const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const inputValue = target.value;
@@ -49,7 +51,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
 
     socket.emit("ask", {
       type: "question",
-      roomId: `1`,
+      roomId: roomid,
       content: messageContents
     });
 
