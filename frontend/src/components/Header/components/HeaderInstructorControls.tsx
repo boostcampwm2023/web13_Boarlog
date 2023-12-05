@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
+import { useLocation } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
 
@@ -49,6 +50,9 @@ const HeaderInstructorControls = () => {
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
+
+  //const roomid = new URLSearchParams(useLocation().search).get("roomid");
+  //console.log("이거다", roomid);
 
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
   const LOCAL_SERVER_URL = "http://localhost:3000";
