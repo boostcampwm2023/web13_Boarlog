@@ -208,6 +208,16 @@ const HeaderParticipantControls = () => {
     if (!socketRef.current) return;
     socketRef.current.on(`serverAnswer`, (data) => {
       if (!pcRef.current) return;
+
+      const startTime = new Date(data.startTime).getTime();
+
+      const updateElapsedTime = () => {
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        setElapsedTime(elapsedTime);
+      };
+      const timer = setInterval(updateElapsedTime, 1000);
+      timerIdRef.current = timer;
+
       pcRef.current.setRemoteDescription(data.SDP);
     });
     socketRef.current.on(`serverCandidate`, (data) => {
