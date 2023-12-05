@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
+import { fabric } from "fabric";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -13,7 +14,9 @@ import { useToast } from "@/components/Toast/useToast";
 
 import selectedSpeakerState from "../../../stores/stateSelectedSpeaker";
 import speakerVolmeState from "../../../stores/stateSpeakerVolume";
-import videoRefState from "@/pages/Test/components/stateVideoRef";
+
+import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
+
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 const HeaderParticipantControls = () => {
@@ -27,7 +30,7 @@ const HeaderParticipantControls = () => {
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
   const speakerVolume = useRecoilValue(speakerVolmeState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
-  const videoRef = useRecoilValue(videoRefState);
+  const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -95,32 +98,36 @@ const HeaderParticipantControls = () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
     });
     socketRef2.current.on("update", (data) => {
-      console.log(data);
+      console.log(data.content);
+
+      if (!fabricCanvasRef) return;
+      fabricCanvasRef.loadFromJSON(data.content.canvasJSON, () => {});
+      fabricCanvasRef.setViewportTransform(data.content.viewport);
     });
 
     if (!pcRef.current) return;
     pcRef.current.ontrack = (event) => {
       console.log(event.track);
 
-      if (!mediaStreamRef.current || !localAudioRef.current || !videoRef.current) return;
+      if (!mediaStreamRef.current || !localAudioRef.current) return;
       if (event.track.kind === "audio") {
         mediaStreamRef.current.addTrack(event.track);
         localAudioRef.current.srcObject = mediaStreamRef.current;
       } else if (event.track.kind === "video") {
         mediaStreamRef.current.addTrack(event.track);
-        videoRef.current.srcObject = mediaStreamRef.current;
-        videoRef.current.addEventListener("loadstart", () => {
-          console.log("loadstart");
-        });
-        videoRef.current.addEventListener("progress", () => {
-          console.log("progress");
-        });
-        videoRef.current.addEventListener("loadedmetadata", () => {
-          console.log("loadedmetadata");
-          showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다.", type: "alert" });
-        });
-        videoRef.current.play();
       }
+
+      if (!fabricCanvasRef) return;
+      var rect = new fabric.Rect({
+        left: 100,
+        top: 100,
+        fill: "red",
+        width: 20,
+        height: 20
+      });
+
+      // "add" rectangle onto canvas
+      fabricCanvasRef.add(rect);
     };
   };
 
@@ -134,7 +141,6 @@ const HeaderParticipantControls = () => {
     });
 
     if (localAudioRef.current) localAudioRef.current.srcObject = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
 
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
@@ -248,7 +254,7 @@ const HeaderParticipantControls = () => {
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolume(normalizedVolume);
+      //setMicVolume(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);

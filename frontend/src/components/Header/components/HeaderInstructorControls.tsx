@@ -272,9 +272,6 @@ const HeaderInstructorControls = () => {
       saveCanvasData();
       gainNode.gain.value = inputMicVolumeRef.current;
 
-      if (!fabricCanvasRef) return;
-      fabricCanvasRef.renderAll();
-
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
       for (const amplitude of pcmData) {
@@ -282,7 +279,7 @@ const HeaderInstructorControls = () => {
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolume(normalizedVolume);
+      //setMicVolume(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
