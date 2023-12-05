@@ -28,7 +28,17 @@ export class FfmpegCommand {
         endRecording(roomId);
         console.log(`${roomId} 강의실 영상 녹화 종료`);
 
-        const result = await saveFile(recordFilePath, roomId);
+        const url = await saveFile(recordFilePath, roomId);
+        console.log(`${url}에 파일 저장`);
+
+        fetch(process.env.SERVER_API_URL as string, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: roomId,
+            audio: url
+          })
+        });
       })
       .size(videoSize)
       .output(recordFilePath);
