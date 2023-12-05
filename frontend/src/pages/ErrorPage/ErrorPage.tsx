@@ -3,7 +3,7 @@ import LogoBig from "@/assets/imgs/logoBig.png";
 import Button from "@/components/Button/Button";
 import HomeIcon from "@/assets/svgs/home.svg?react";
 
-const Error = () => {
+const ErrorPage = () => {
   const navigate = useNavigate();
 
   return (
@@ -22,4 +22,4 @@ const Error = () => {
   );
 };
 
-export default Error;
+export default ErrorPage;
