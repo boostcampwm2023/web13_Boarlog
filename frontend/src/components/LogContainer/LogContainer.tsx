@@ -1,5 +1,5 @@
 import SendMessage from "@/assets/svgs/sendMessage.svg?react";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 
 interface LogItemInterface {
   key?: string;
@@ -24,7 +24,7 @@ interface LogContainerInterface {
   className: string;
 }
 
-const QuestionPromptLogContainer = ({ type, className }: LogContainerInterface) => {
+const LogContainer = ({ type, className }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
@@ -35,11 +35,15 @@ const QuestionPromptLogContainer = ({ type, className }: LogContainerInterface) 
   };
 
   const handleSendButtonClicked = () => {
-    const messageContents = messageInputRef.current?.value;
+    if (!messageInputRef.current) return;
+    const inputRef = messageInputRef.current;
+    const messageContents = inputRef.value;
     if (!messageContents) return;
     // 추후 사용자의 닉네임을 가져와야한다.
     // 추후 질문의 내용을 발표자에게 전송해야한다.
     setQuestionList([...questionList, { title: "닉네임", contents: messageContents }]);
+
+    inputRef.value = "";
   };
 
   return (
@@ -88,4 +92,4 @@ const QuestionPromptLogContainer = ({ type, className }: LogContainerInterface) 
   );
 };
 
-export default QuestionPromptLogContainer;
+export default LogContainer;

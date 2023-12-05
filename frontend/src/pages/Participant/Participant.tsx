@@ -3,7 +3,7 @@ import Header from "@/components/Header/Header";
 import { useEffect, useRef } from "react";
 import { useSetRecoilState } from "recoil";
 import videoRefState from "../Test/components/stateVideoRef";
-import QuestionPromptLogContainer from "@/components/QuestionPromptLogContainer/QuestionPromptLogContainer";
+import LogContainer from "@/components/LogContainer/LogContainer";
 
 const Participant = () => {
   const setVideoRef = useSetRecoilState(videoRefState);
@@ -18,7 +18,7 @@ const Participant = () => {
       <Header type="participant" />
       <section className="relative">
         <video className="w-[100vw] h-[calc(100vh-5rem)]" autoPlay muted ref={videoRef}></video>
-        <QuestionPromptLogContainer type="question" className={"absolute top-2.5 right-2.5"} />
+        <LogContainer type="question" className={"absolute top-2.5 right-2.5"} />
       </section>
     </>
   );
