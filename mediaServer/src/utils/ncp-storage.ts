@@ -19,7 +19,7 @@ const S3 = new AWS.S3({
 const saveFile = async (file: any, filename: string) => {
   await S3.putObject({
     Bucket: bucketName,
-    Key: filename,
+    Key: `${filename}.mp4`,
     ACL: 'public-read',
     Body: fs.createReadStream(file)
   }).promise();
