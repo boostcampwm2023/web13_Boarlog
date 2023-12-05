@@ -12,8 +12,8 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
-import selectedMicrophoneState from "../../../stores/stateSelectedMicrophone";
-import micVolmeState from "../../../stores/stateMicVolme";
+import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
+import micVolmeState from "@/stores/stateMicVolme";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
