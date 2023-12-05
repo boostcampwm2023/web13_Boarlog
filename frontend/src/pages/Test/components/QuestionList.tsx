@@ -1,13 +1,11 @@
 import AddIcon from "@/assets/svgs/whiteboard/add.svg?react";
 
-import { useEffect, useRef, useState } from "react";
-import { useSetRecoilState } from "recoil";
+import { useRef } from "react";
+import { useSetRecoilState, useRecoilState, useRecoilValue } from "recoil";
 
 import activeToolState from "./stateActiveTool";
-import questionCountState from "./stateQuestionCount";
+import questionListState from "./stateQuestionList";
 import clickedQuestionContentsState from "./stateClickedQuestionContents";
-
-const QUESTIONS_URL = "/dummyQuestionData.json";
 
 const COLOR_SET = [
   { background: "bg-memo-red", border: "border-memo-border-red" },
@@ -25,9 +23,8 @@ const getColorSetByIndex = (index: number) => {
 
 const QuestionList = () => {
   const listRef = useRef<HTMLUListElement>(null);
-  const [questions, setQuestions] = useState<{ content: string }[]>([]);
+  const questions = useRecoilValue(questionListState);
   const setActiveTool = useSetRecoilState(activeToolState);
-  const setQuestionCount = useSetRecoilState(questionCountState);
   const setQuestionContents = useSetRecoilState(clickedQuestionContentsState);
 
   const handleAddButtonClicked = (index: number) => {
@@ -36,28 +33,6 @@ const QuestionList = () => {
     if (questionContents) setQuestionContents(questionContents);
     setActiveTool("stickyNote");
   };
-
-  // 이후에 소켓통신으로? 새로운 질문이 발생함을 처리한다면 이벤트를 감지할 때마다 재실행할 필요가 있습니다.
-  const getQuestionsFromServer = async (url: string) => {
-    try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("서버에서 데이터를 불러오는데 문제가 발생했습니다.");
-      }
-
-      const data = await response.json();
-
-      setQuestions(data);
-      setQuestionCount(data.length);
-    } catch (error) {
-      console.log("질문 리스트 데이터를 가져오는데 실패했습니다: ", error);
-    }
-  };
-
-  useEffect(() => {
-    getQuestionsFromServer(QUESTIONS_URL);
-  }, []);
 
   return (
     <section className="w-60 h-[41rem] border border-default rounded-xl absolute top-2.5 left-20 mb-6 bg-grayscale-white">
@@ -78,7 +53,7 @@ const QuestionList = () => {
                   <AddIcon />
                 </button>
               </div>
-              {question.content}
+              {question}
             </li>
           ))}
         </ul>

@@ -10,12 +10,9 @@ interface LogItemInterface {
   contents: string;
 }
 
-const LogItem = ({ key, title, contents }: LogItemInterface) => {
+const LogItem = ({ title, contents }: LogItemInterface) => {
   return (
-    <li
-      key={key}
-      className="h-21 p-4 border mt-4 first-of-type:mt-0 bg-grayscale-white border-grayscale-lightgray rounded-lg"
-    >
+    <li className="h-21 p-4 border mt-4 first-of-type:mt-0 bg-grayscale-white border-grayscale-lightgray rounded-lg">
       <p className="semibold-16">{title}</p>
       <p className="mt-2 medium-12 text-grayscale-darkgray">{contents}</p>
     </li>
@@ -34,17 +31,25 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
   const socket = useRecoilValue(participantSocketRefState);
 
   const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
-    const inputValue = target.value;
+    if (!messageInputRef.current) return;
+    const inputValue = messageInputRef.current.value;
     setIsInputEmpty(inputValue.replace(/\n|\s/g, "").length === 0);
   };
 
-  const handleSendButtonClicked = () => {
+  const handleInputEnter = ({ key }: React.KeyboardEvent<HTMLInputElement>) => {
+    if (key === "Enter") {
+      if (messageInputRef.current?.value.replace(/\n|\s/g, "").length === 0) return;
+
+      sendMessage();
+    }
+  };
+
+  const sendMessage = () => {
     if (!messageInputRef.current) return;
     const inputRef = messageInputRef.current;
     const messageContents = inputRef.value;
     if (!messageContents || !socket) return;
     // 추후 사용자의 닉네임을 가져와야한다.
-    // 추후 질문의 내용을 발표자에게 전송해야한다.
     setQuestionList([...questionList, { title: "닉네임", contents: messageContents }]);
 
     socket.emit("ask", {
@@ -54,6 +59,11 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
     });
 
     inputRef.value = "";
+    setIsInputEmpty(inputRef.value.replace(/\n|\s/g, "").length === 0);
+  };
+
+  const handleSendButtonClicked = () => {
+    sendMessage();
   };
 
   return (
@@ -65,7 +75,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
       </h2>
       <ul className="px-4 flex-grow overflow-y-auto	">
         {questionList.map(({ title, contents }, index) => {
-          return <LogItem key={`${index}`} title={title} contents={contents} />;
+          return <LogItem key={`k-${index}`} title={title} contents={contents} />;
         })}
       </ul>
       {type === "question" && (
@@ -81,6 +91,9 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
             ref={messageInputRef}
             onChange={(event) => {
               handleInputChange(event);
+            }}
+            onKeyDown={(event) => {
+              handleInputEnter(event);
             }}
           />
           <button

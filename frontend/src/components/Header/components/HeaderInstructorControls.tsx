@@ -51,7 +51,7 @@ const HeaderInstructorControls = () => {
   const prevInputMicVolumeRef = useRef<number>(0);
 
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
-  //const LOCAL_SERVER_URL = "http://localhost:3000";
+  const LOCAL_SERVER_URL = "http://localhost:3000";
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
 
@@ -118,7 +118,7 @@ const HeaderInstructorControls = () => {
     try {
       // 0. 소켓 연결
 
-      managerRef.current = new Manager(MEDIA_SERVER_URL);
+      managerRef.current = new Manager(LOCAL_SERVER_URL);
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
           accessToken: sampleAccessToken,
@@ -232,9 +232,7 @@ const HeaderInstructorControls = () => {
           }
         });
         setInstructorSocket(socketRef2.current);
-        socketRef2.current.on("asked", (data) => {
-          console.log(data);
-        });
+
         socketRef2.current.on("response", (data) => {
           console.log(data);
         });
