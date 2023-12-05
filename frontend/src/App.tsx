@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import "./global.css";
 import Home from "@/pages/Home/Home";
 import Login from "./pages/Login/Login";
@@ -12,6 +12,8 @@ import Example from "./pages/Example/Example";
 import ToastContainer from "./components/Toast/ToastContainer";
 import Start from "./pages/Start/Start";
 import MyPage from "./pages/MyPage/MyPage";
+import ErrorPage from "./pages/ErrorPage/ErrorPage";
+import LectureEnd from "./pages/LectureEnd/LectureEnd";
 
 const App = () => {
   return (
@@ -26,7 +28,10 @@ const App = () => {
           <Route path="/test" element={<Test />} />
           <Route path="/instructor" element={<Instructor />} />
           <Route path="/participant" element={<Participant />} />
+          <Route path="/lecture-end" element={<LectureEnd />} />
           <Route path="/example" element={<Example />} />
+          <Route path="/error" element={<ErrorPage />} />
+          <Route path="/*" element={<Navigate to="/error" />} />
         </Routes>
       </BrowserRouter>
     </RecoilRoot>
