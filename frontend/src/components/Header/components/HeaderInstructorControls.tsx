@@ -51,9 +51,7 @@ const HeaderInstructorControls = () => {
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
 
-  //const roomid = new URLSearchParams(useLocation().search).get("roomid");
-  //console.log("이거다", roomid);
-
+  const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
   const LOCAL_SERVER_URL = "http://localhost:3000";
   const sampleAccessToken =
@@ -208,7 +206,7 @@ const HeaderInstructorControls = () => {
       });
       socketRef.current.emit("presenterOffer", {
         socketId: socketRef.current.id,
-        roomId: `1`,
+        roomId: roomid,
         SDP: SDP
       });
       pcRef.current.setLocalDescription(SDP);
@@ -345,7 +343,7 @@ const HeaderInstructorControls = () => {
     console.log("submit");
     socketRef2.current.emit("edit", {
       type: "whiteBoard",
-      roomId: `1`,
+      roomId: roomid,
       content: data
     });
   };

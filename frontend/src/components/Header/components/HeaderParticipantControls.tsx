@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -47,6 +47,7 @@ const HeaderParticipantControls = () => {
   const navigate = useNavigate();
   const showToast = useToast();
 
+  const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
   const MEDIA_SERVER_URL = "https://www.boarlog.site";
   const LOCAL_SERVER_URL = "http://localhost:3000";
   const sampleAccessToken =
@@ -131,7 +132,7 @@ const HeaderParticipantControls = () => {
     if (!socketRef2.current) return;
     socketRef2.current.emit("leave", {
       type: "lecture",
-      roomId: `1`
+      roomId: roomid
     });
 
     if (localAudioRef.current) localAudioRef.current.srcObject = null;
@@ -180,7 +181,7 @@ const HeaderParticipantControls = () => {
       });
       socketRef.current.emit("studentOffer", {
         socketId: socketRef.current.id,
-        roomId: `1`,
+        roomId: roomid,
         SDP: SDP
       });
 
