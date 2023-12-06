@@ -107,7 +107,7 @@ const HeaderInstructorControls = () => {
     if (!socketRef2.current) return;
     socketRef2.current.emit("end", {
       type: "lecture",
-      roomId: `1`
+      roomId: roomid
     });
 
     setIsCloseModalOpen(false);
@@ -169,6 +169,7 @@ const HeaderInstructorControls = () => {
         console.log("ICE 연결 상태:", pcRef.current.iceConnectionState);
         if (pcRef.current.iceConnectionState === "connected") {
           isLectureStartRef.current = true;
+          startTime = Date.now();
           startTimer();
           showToast({ message: "강의가 시작되었습니다.", type: "success" });
 
@@ -285,9 +286,9 @@ const HeaderInstructorControls = () => {
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
   };
 
+  let startTime = Date.now();
   // 경과 시간을 표시하기 위한 부분입니다
   const startTimer = () => {
-    const startTime = Date.now();
     const updateElapsedTime = () => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsedTime);
@@ -350,14 +351,18 @@ const HeaderInstructorControls = () => {
   interface ICanvasData {
     canvasJSON: string;
     viewport: number[];
+    eventTime: number;
   }
   let canvasData: ICanvasData = {
     canvasJSON: "",
-    viewport: [1, 0, 0, 1, 0, 0]
+    viewport: [1, 0, 0, 1, 0, 0],
+    eventTime: 0
   };
 
   function saveCanvasData() {
     if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
+    console.log("경과시간 :", Date.now() - startTime, (Date.now() - startTime) / 1000);
+    //console.log(canvasData);
 
     const newJSONData = JSON.stringify(fabricCanvasRef);
     const newViewport = fabricCanvasRef.viewportTransform;
@@ -370,16 +375,10 @@ const HeaderInstructorControls = () => {
       console.log(JSON.stringify(canvasData.viewport), JSON.stringify(newViewport));
       canvasData.canvasJSON = newJSONData;
       canvasData.viewport = newViewport;
+      canvasData.eventTime = Date.now() - startTime;
       submitData(canvasData);
     }
   }
-  /*
-  const load = () => {
-    if (!fabricCanvasRef) return;
-    fabricCanvasRef.loadFromJSON(canvasData.canvasJSON, () => {});
-    fabricCanvasRef.setViewportTransform(canvasData.viewport);
-  };
-  */
 
   return (
     <>
