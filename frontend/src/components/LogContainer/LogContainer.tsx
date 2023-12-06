@@ -19,7 +19,7 @@ interface LogContainerInterface {
 
 const LogItem = ({ title, contents }: LogItemInterface) => {
   return (
-    <li className="h-21 p-4 border mt-4 first-of-type:mt-0 bg-grayscale-white border-grayscale-lightgray rounded-lg">
+    <li className="h-21 p-4 border mt-4 mb-2 first-of-type:mt-0 bg-grayscale-white border-grayscale-lightgray rounded-lg">
       <p className="semibold-16">{title}</p>
       <p className="mt-2 medium-12 text-grayscale-darkgray">{contents}</p>
     </li>
@@ -51,7 +51,6 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
   useEffect(() => {
     axios("./reviewLecture.json")
       .then(({ data }) => {
-        console.log(data);
         // @ts-ignore
         setScriptList(data);
       })
@@ -98,7 +97,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
 
   return (
     <section
-      className={`flex flex-col ${className} w-72 h-[calc(100vh-12rem)] pb-4 bg-grayscale-white border border-grayscale-lightgray rounded-xl`}
+      className={`flex flex-col pb-4 ${className} w-72 h-[calc(100vh-12rem)] bg-grayscale-white border border-grayscale-lightgray rounded-xl`}
     >
       <h2 className="mt-2 h-14 semibold-18 leading-10 p-4	flex items-center">
         {type === "question" ? "질문하기" : "강의 프롬프트"}
@@ -118,7 +117,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
         </ul>
       )}
       {type === "question" && (
-        <div className="flex justify-between p-4">
+        <div className="flex justify-between px-4 pt-4">
           <label htmlFor="question-input" className="a11y-hidden">
             질문 입력 창
           </label>
@@ -131,7 +130,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
             onChange={() => {
               handleInputChange();
             }}
-            onKeyDown={(event) => {
+            onKeyUp={(event) => {
               handleInputEnter(event);
             }}
           />
