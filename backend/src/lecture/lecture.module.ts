@@ -2,17 +2,19 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/user/user.schema';
 import { UserService } from 'src/user/user.service';
-import { EnterCode, EnterCodeSchema } from './lecture-code.schema';
+import { EnterCode, EnterCodeSchema } from './schema/lecture-code.schema';
 import { LectureController } from './lecture.controller';
-import { Lecture, LectureSchema } from './lecture.schema';
+import { Lecture, LectureSchema } from './schema/lecture.schema';
 import { LectureService } from './lecture.service';
+import { WhiteboardLog, WhiteboardLogSchema } from './schema/whiteboard-log.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Lecture.name, schema: LectureSchema },
       { name: EnterCode.name, schema: EnterCodeSchema },
-      { name: User.name, schema: UserSchema }
+      { name: User.name, schema: UserSchema },
+      { name: WhiteboardLog.name, schema: WhiteboardLogSchema }
     ])
   ],
   controllers: [LectureController],
