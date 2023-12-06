@@ -103,6 +103,8 @@ const HeaderParticipantControls = () => {
       if (!fabricCanvasRef) return;
       fabricCanvasRef.loadFromJSON(data.content.canvasJSON, () => {});
       fabricCanvasRef.setViewportTransform(data.content.viewport);
+      fabricCanvasRef.setWidth(data.content.width);
+      fabricCanvasRef.setHeight(data.content.height);
     });
 
     if (!pcRef.current) return;

@@ -33,7 +33,7 @@ const CanvasSection = () => {
 
     setCanvas(newCanvas);
 
-    newCanvas.backgroundColor = "white";
+    newCanvas.backgroundColor = "lightgray";
 
     // 휠을 이용해서 줌인/줌아웃
     newCanvas.on("mouse:wheel", (opt) => {

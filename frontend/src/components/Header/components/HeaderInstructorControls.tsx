@@ -352,31 +352,39 @@ const HeaderInstructorControls = () => {
     canvasJSON: string;
     viewport: number[];
     eventTime: number;
+    width: number;
+    height: number;
   }
   let canvasData: ICanvasData = {
     canvasJSON: "",
     viewport: [1, 0, 0, 1, 0, 0],
-    eventTime: 0
+    eventTime: 0,
+    width: 0,
+    height: 0
   };
 
   function saveCanvasData() {
     if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
-    console.log("경과시간 :", Date.now() - startTime, (Date.now() - startTime) / 1000);
     //console.log(canvasData);
 
     const newJSONData = JSON.stringify(fabricCanvasRef);
     const newViewport = fabricCanvasRef.viewportTransform;
+    const newWidth = fabricCanvasRef.getWidth();
+    const newHegiht = fabricCanvasRef.getHeight();
 
-    if (canvasData.canvasJSON !== newJSONData || JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport)) {
-      console.log(
-        canvasData.canvasJSON !== newJSONData,
-        JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport)
-      );
-      console.log(JSON.stringify(canvasData.viewport), JSON.stringify(newViewport));
+    const isCanvasDataChanged = canvasData.canvasJSON !== newJSONData;
+    const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport);
+    const isSizeChanged = canvasData.width !== newWidth || canvasData.height !== newHegiht;
+
+    if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
+      console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
       canvasData.canvasJSON = newJSONData;
       canvasData.viewport = newViewport;
       canvasData.eventTime = Date.now() - startTime;
+      canvasData.width = newWidth;
+      canvasData.height = newHegiht;
       submitData(canvasData);
+      console.log("경과시간 :", Date.now() - startTime, (Date.now() - startTime) / 1000);
     }
   }
 
