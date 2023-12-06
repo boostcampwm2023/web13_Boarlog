@@ -10,6 +10,7 @@ import videoRefState from "../Test/components/stateVideoRef";
 import LogToggleButton from "@/components/Button/LogToggleButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
 import Header from "@/components/Header/Header";
+import ProgressBar from "./components/ProgressBar";
 
 const Review = () => {
   const setVideoRef = useSetRecoilState(videoRefState);
@@ -32,6 +33,7 @@ const Review = () => {
         <LogToggleButton className="absolute top-2.5 right-2.5">
           {isQuestionLogOpen ? <CloseIcon /> : <ScriptIcon fill="black" />}
         </LogToggleButton>
+        <ProgressBar className="absolute bottom-2.5 left-1/2 -translate-x-1/2" />
       </section>
     </>
   );
