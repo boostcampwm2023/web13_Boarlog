@@ -1,14 +1,12 @@
-import Header from "@/components/Header/Header";
-
 import { useEffect, useRef } from "react";
-import { useSetRecoilState } from "recoil";
-
+import { useSetRecoilState, useRecoilValue } from "recoil";
 import { fabric } from "fabric";
+
+import Header from "@/components/Header/Header";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import QuestionLogButton from "./components/QuestionLogButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
 import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
-import { useRecoilValue } from "recoil";
 
 const Participant = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -26,11 +24,8 @@ const Participant = () => {
       selection: false
     });
     newCanvas.backgroundColor = "lightgray";
-
-    newCanvas.selection = false;
     newCanvas.defaultCursor = "default";
 
-    // "화이트보드를 불러오고 있습니다" 텍스트 생성
     var text = new fabric.Text("화이트보드를 불러오고 있습니다", {
       fontSize: 18,
       textAlign: "center",
@@ -38,32 +33,29 @@ const Participant = () => {
       originY: "center",
       left: canvasContainer.offsetWidth / 2,
       top: canvasContainer.offsetHeight / 2,
-      selectable: false // 선택 불가능하도록 설정
+      selectable: false
     });
-
-    // "add" rectangle onto canvas
     newCanvas.add(text);
 
     setCanvas(newCanvas);
 
-    // 언마운트 시 캔버스 정리, 이벤트 제거
+    // 언마운트 시 캔버스 정리
     return () => {
       newCanvas.dispose();
-      //window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   return (
     <>
       <Header type="participant" />
-      <div className="relative w-[100vw] h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
+      <section className="relative w-[100vw] h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
         <canvas ref={canvasRef} />
         <LogContainer
           type="question"
           className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
         />
         <QuestionLogButton className="absolute top-2.5 right-2.5" />
-      </div>
+      </section>
     </>
   );
 };
