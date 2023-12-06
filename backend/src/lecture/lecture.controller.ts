@@ -78,4 +78,11 @@ export class LectureController {
     await this.lectureService.saveWhiteBoardLog(enterCodeDocument.lecture_id, whiteboardEventDto);
     res.status(HttpStatus.CREATED).send();
   }
+
+  @Post('/:code/text')
+  @ApiParam({ name: 'code', type: 'string' })
+  saveLectureSubtitle(@Param('code') code: string, @Body() body: any, @Res() res: Response) {
+    this.lectureService.saveLectureSubtitle(code, body.segments);
+    res.status(HttpStatus.OK).send();
+  }
 }
