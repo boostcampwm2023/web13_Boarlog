@@ -62,7 +62,7 @@ export class LectureController {
     res.status(HttpStatus.OK).send(result);
   }
 
-  @Post('/:code')
+  @Post('/log/:code')
   @ApiQuery({ name: 'code', type: 'string' })
   @ApiResponse({ status: 201 })
   @ApiResponse({ status: 404, description: '해당 강의가 없습니다.' })
