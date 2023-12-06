@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
-import { fabric } from "fabric";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -94,6 +93,14 @@ const HeaderParticipantControls = () => {
       }
     });
     setParticipantSocket(socketRef2.current);
+    socketRef2.current.on("connect", () => {
+      console.log("소켓이 성공적으로 연결되었습니다.");
+      //showToast({ message: "소켓이 성공적으로 연결되었습니다.", type: "success" });
+    });
+    socketRef2.current.on("connect_error", (err) => {
+      console.error(err.message);
+      showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+    });
     socketRef2.current.on("ended", () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
     });
@@ -114,6 +121,7 @@ const HeaderParticipantControls = () => {
     };
 
     socketRef2.current.on("update", (data) => {
+      console.log("update", data);
       if (!fabricCanvasRef) return;
       const isCanvasDataChanged = canvasData.canvasJSON !== data.content.canvasJSON;
       const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(data.content.viewport);
@@ -160,7 +168,7 @@ const HeaderParticipantControls = () => {
         mediaStreamRef.current.addTrack(event.track);
         localAudioRef.current.srcObject = mediaStreamRef.current;
       } else if (event.track.kind === "video") {
-        //mediaStreamRef.current.addTrack(event.track);
+        // 비디오 트랙은 일단 무시합니다.
       }
     };
   };
@@ -288,7 +296,7 @@ const HeaderParticipantControls = () => {
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      //setMicVolume(normalizedVolume);
+      setMicVolume(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);

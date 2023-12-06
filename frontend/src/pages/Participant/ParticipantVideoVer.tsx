@@ -1,3 +1,5 @@
+// 완전하게 비디오 방식으로 전달하는 것을 포기하게 되면 삭제하겠습니다.
+
 import Header from "@/components/Header/Header";
 
 import { useEffect, useRef } from "react";

@@ -143,7 +143,6 @@ const HeaderInstructorControls = () => {
       // canvas의 내용을 캡쳐하여 스트림으로 생성
       if (!canvasRef.current) return;
       const canvasStream = canvasRef.current.captureStream();
-
       // canvas 스트림의 track을 updatedStream에 추가
       canvasStream.getTracks().forEach((track) => {
         if (!updatedStreamRef.current) return;
@@ -280,7 +279,7 @@ const HeaderInstructorControls = () => {
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      //setMicVolume(normalizedVolume);
+      setMicVolume(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
@@ -344,10 +343,6 @@ const HeaderInstructorControls = () => {
     });
   };
 
-  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
-  // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
-  // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
-
   interface ICanvasData {
     canvasJSON: string;
     viewport: number[];
@@ -362,10 +357,8 @@ const HeaderInstructorControls = () => {
     width: 0,
     height: 0
   };
-
   function saveCanvasData() {
     if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
-    //console.log(canvasData);
 
     const newJSONData = JSON.stringify(fabricCanvasRef);
     const newViewport = fabricCanvasRef.viewportTransform;
@@ -377,14 +370,12 @@ const HeaderInstructorControls = () => {
     const isSizeChanged = canvasData.width !== newWidth || canvasData.height !== newHegiht;
 
     if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
-      console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
       canvasData.canvasJSON = newJSONData;
       canvasData.viewport = newViewport;
       canvasData.eventTime = Date.now() - startTime;
       canvasData.width = newWidth;
       canvasData.height = newHegiht;
       submitData(canvasData);
-      console.log("경과시간 :", Date.now() - startTime, (Date.now() - startTime) / 1000);
     }
   }
 

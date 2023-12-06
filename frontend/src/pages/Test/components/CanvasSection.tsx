@@ -33,7 +33,7 @@ const CanvasSection = () => {
 
     setCanvas(newCanvas);
 
-    newCanvas.backgroundColor = "lightgray";
+    newCanvas.backgroundColor = "white";
 
     // 휠을 이용해서 줌인/줌아웃
     newCanvas.on("mouse:wheel", (opt) => {
@@ -88,7 +88,7 @@ const CanvasSection = () => {
   }, []);
 
   return (
-    <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
+    <div className="relative w-[100vw] h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
       <canvas ref={canvasRef} />
 
       <Toolbar />
