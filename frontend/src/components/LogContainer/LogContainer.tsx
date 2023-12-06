@@ -1,14 +1,20 @@
 import SendMessage from "@/assets/svgs/sendMessage.svg?react";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
-import { ChangeEvent, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { useLocation } from "react-router-dom";
+import axios from "axios";
 
 interface LogItemInterface {
   key?: string;
   title: string;
   contents: string;
+}
+
+interface LogContainerInterface {
+  type: "question" | "prompt";
+  className: string;
 }
 
 const LogItem = ({ title, contents }: LogItemInterface) => {
@@ -20,19 +26,41 @@ const LogItem = ({ title, contents }: LogItemInterface) => {
   );
 };
 
-interface LogContainerInterface {
-  type: "question" | "prompt";
-  className: string;
+function convertMsToTimeString(ms: string) {
+  let msNumber = parseInt(ms);
+  let seconds = Math.floor(msNumber / 1000);
+  let hours = Math.floor(seconds / 3600);
+  seconds = seconds % 3600;
+
+  let minutes = Math.floor(seconds / 60);
+  seconds = seconds % 60;
+
+  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 const LogContainer = ({ type, className }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
+  const [scriptList, setScriptList] = useState<Array<{ start: string; text: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const socket = useRecoilValue(participantSocketRefState);
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
 
-  const handleInputChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    axios("./reviewLecture.json")
+      .then(({ data }) => {
+        console.log(data);
+        // @ts-ignore
+        setScriptList(data);
+      })
+      .catch((error) => {
+        console.log("프롬프트에 표시할 스크립트 로딩 실패", error);
+      });
+  }, []);
+
+  const handleInputChange = () => {
     if (!messageInputRef.current) return;
     const inputValue = messageInputRef.current.value;
     setIsInputEmpty(inputValue.replace(/\n|\s/g, "").length === 0);
@@ -70,16 +98,25 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
 
   return (
     <section
-      className={`flex flex-col ${className} w-72 h-[calc(100vh-12rem)] bg-grayscale-white border border-grayscale-lightgray rounded-xl`}
+      className={`flex flex-col ${className} w-72 h-[calc(100vh-12rem)] pb-4 bg-grayscale-white border border-grayscale-lightgray rounded-xl`}
     >
       <h2 className="mt-2 h-14 semibold-18 leading-10 p-4	flex items-center">
         {type === "question" ? "질문하기" : "강의 프롬프트"}
       </h2>
-      <ul className="px-4 flex-grow overflow-y-auto	">
-        {questionList.map(({ title, contents }, index) => {
-          return <LogItem key={`k-${index}`} title={title} contents={contents} />;
-        })}
-      </ul>
+      {type === "question" && (
+        <ul className="px-4 flex-grow overflow-y-auto	">
+          {questionList.map(({ title, contents }, index) => {
+            return <LogItem key={`k-${index}`} title={title} contents={contents} />;
+          })}
+        </ul>
+      )}
+      {type === "prompt" && (
+        <ul className="px-4 flex-grow overflow-y-auto	">
+          {scriptList.map(({ start, text }, index) => {
+            return <LogItem key={`k-${index}`} title={convertMsToTimeString(start)} contents={text} />;
+          })}
+        </ul>
+      )}
       {type === "question" && (
         <div className="flex justify-between p-4">
           <label htmlFor="question-input" className="a11y-hidden">
@@ -91,8 +128,8 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
             className="w-52 medium-12 border border-boarlog rounded-lg px-3 py-2"
             placeholder="질문을 입력해 주세요."
             ref={messageInputRef}
-            onChange={(event) => {
-              handleInputChange(event);
+            onChange={() => {
+              handleInputChange();
             }}
             onKeyDown={(event) => {
               handleInputEnter(event);
