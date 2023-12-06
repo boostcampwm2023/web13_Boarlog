@@ -79,8 +79,8 @@ export class LectureService {
   }
 
   extractAPIData(data: any) {
-    return data.map((segment) => {
-      return { start: segment.start, text: segment.textEdited };
+    return data.map((segment: any) => {
+      return { start: String(segment.start), text: segment.textEdited };
     });
   }
 
