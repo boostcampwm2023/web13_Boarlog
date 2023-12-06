@@ -1,25 +1,36 @@
 import { fabric } from "fabric";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState, useRecoilState } from "recoil";
 import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
 import StickyNoteEditPanel from "./StickyNoteEditPanel";
 import QuestionList from "./QuestionList";
 
+import questionListState from "./stateQuestionList";
 import cavasInstanceState from "./stateCanvasInstance";
-import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 import isQuestionListOpenState from "./stateIsQuestionListOpen";
+import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
+import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
 import canvasRefState from "./stateCanvasRef";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const setCanvas = useSetRecoilState(cavasInstanceState);
+  const socket = useRecoilValue(instructorSocketRefState);
   const isEditPanelVisible = useRecoilValue(stickyNoteEditPanelVisibilityState);
   const isQuestionListOpen = useRecoilValue(isQuestionListOpenState);
+  const [questions, setQuestions] = useRecoilState(questionListState);
 
   const setCanvasRef = useSetRecoilState(canvasRefState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("asked", (data) => {
+      setQuestions([...questions, data.content]);
+    });
+  }, [socket, questions]);
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
