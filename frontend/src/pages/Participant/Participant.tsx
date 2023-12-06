@@ -7,20 +7,34 @@ import { fabric } from "fabric";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
 
 const Participant = () => {
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  //const canvasContainerRef = useRef<HTMLDivElement>(null);
   const setCanvas = useSetRecoilState(participantCavasInstanceState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (!canvasContainerRef.current || !canvasRef.current) return;
+    if (!canvasRef.current) return;
 
-    const canvasContainer = canvasContainerRef.current;
+    //const canvasContainer = canvasContainerRef.current;
     // 캔버스 생성
     const newCanvas = new fabric.Canvas(canvasRef.current, {
-      width: canvasContainer.offsetWidth,
-      height: canvasContainer.offsetHeight
+      width: 150,
+      height: 300
     });
     newCanvas.backgroundColor = "gray";
+
+    newCanvas.selection = false;
+    newCanvas.defaultCursor = "default";
+
+    /*
+    const handleResize = () => {
+      newCanvas.setDimensions({
+        width: canvasContainer.offsetWidth,
+        height: canvasContainer.offsetHeight
+      });
+      console.log("resize width", canvasContainer.offsetWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    */
 
     var rect = new fabric.Rect({
       left: 100,
@@ -40,15 +54,14 @@ const Participant = () => {
     // 언마운트 시 캔버스 정리, 이벤트 제거
     return () => {
       newCanvas.dispose();
+      //window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   return (
     <>
       <Header type="participant" />
-      <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
-        <canvas ref={canvasRef} />
-      </div>
+      <canvas ref={canvasRef} />
     </>
   );
 };

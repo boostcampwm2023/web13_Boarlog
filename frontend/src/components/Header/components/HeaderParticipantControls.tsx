@@ -97,14 +97,67 @@ const HeaderParticipantControls = () => {
     socketRef2.current.on("ended", () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
     });
+
+    interface ICanvasData {
+      canvasJSON: string;
+      viewport: number[];
+      eventTime: number;
+      width: number;
+      height: number;
+    }
+    let canvasData: ICanvasData = {
+      canvasJSON: "",
+      viewport: [1, 0, 0, 1, 0, 0],
+      eventTime: 0,
+      width: 0,
+      height: 0
+    };
+
     socketRef2.current.on("update", (data) => {
       console.log(data.content);
 
       if (!fabricCanvasRef) return;
-      fabricCanvasRef.loadFromJSON(data.content.canvasJSON, () => {});
-      fabricCanvasRef.setViewportTransform(data.content.viewport);
-      fabricCanvasRef.setWidth(data.content.width);
-      fabricCanvasRef.setHeight(data.content.height);
+
+      const isCanvasDataChanged = canvasData.canvasJSON !== data.content.canvasJSON;
+      const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(data.content.viewport);
+      const isSizeChanged = canvasData.width !== data.content.width || canvasData.height !== data.content.width;
+
+      if (isCanvasDataChanged) fabricCanvasRef.loadFromJSON(data.content.canvasJSON, () => {});
+      if (isViewportChanged) fabricCanvasRef.setViewportTransform(data.content.viewport);
+      if (isSizeChanged) {
+        const newHegiht = window.innerWidth * (data.content.height / data.content.width);
+        fabricCanvasRef.setDimensions({
+          width: window.innerWidth,
+          height: newHegiht
+        });
+        fabricCanvasRef.setDimensions(
+          {
+            width: data.content.width,
+            height: data.content.height
+          },
+          { backstoreOnly: true }
+        );
+      }
+
+      //console.log("차이 :", fabricCanvasRef.getWidth(), data.content.width);
+      //console.log("비율 :", data.content.height / data.content.width);
+
+      /*
+      fabricCanvasRef.setWidth(window.innerWidth);
+      fabricCanvasRef.setHeight(newHegiht);
+      fabricCanvasRef.setWidth(data.content.width, { backstoreOnly: true });
+      fabricCanvasRef.setHeight(data.content.height, { backstoreOnly: true });
+      */
+
+      /*
+      fabricCanvasRef.setDimensions(
+        {
+          width: data.content.width,
+          height: 100
+        },
+        { backstoreOnly: true }
+      );
+      */
     });
 
     if (!pcRef.current) return;
