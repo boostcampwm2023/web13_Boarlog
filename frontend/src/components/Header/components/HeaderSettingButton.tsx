@@ -6,7 +6,7 @@ import HeaderParticipantSettingModal from "./HeaderParticipantSettingModal";
 interface HeaderSettingButtonProps {
   isSettingClicked: boolean;
   setIsSettingClicked: React.Dispatch<React.SetStateAction<boolean>>;
-  type: "login" | "main" | "instructor" | "participant";
+  type: "login" | "main" | "instructor" | "participant" | "review";
 }
 
 const HeaderSettingButton = ({ isSettingClicked, setIsSettingClicked, type }: HeaderSettingButtonProps) => {
@@ -22,7 +22,7 @@ const HeaderSettingButton = ({ isSettingClicked, setIsSettingClicked, type }: He
       {type === "instructor" && (
         <HeaderInstructorSettingModal isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
       )}
-      {type === "participant" && (
+      {(type === "participant" || type === "review") && (
         <HeaderParticipantSettingModal isSettingClicked={isSettingClicked} setIsSettingClicked={setIsSettingClicked} />
       )}
     </>
