@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import { Subtitle } from './interfaces/Subtitle';
 import { Lecture } from './schema/lecture.schema';
 
 @Schema()
@@ -8,7 +9,7 @@ export class LectureSubtitle {
   lecture_id: Lecture;
 
   @Prop({ required: true })
-  subtitle: [{ start: string; text: string }];
+  subtitle: [Subtitle];
 }
 
 export const LectureSubtitleSchema = SchemaFactory.createForClass(LectureSubtitle);
