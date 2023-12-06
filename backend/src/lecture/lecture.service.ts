@@ -5,8 +5,10 @@ import { GenerateUtils } from 'src/utils/GenerateUtils';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
-import { EnterCode } from './lecture-code.schema';
-import { Lecture } from './lecture.schema';
+import { EnterCode } from './schema/lecture-code.schema';
+import { Lecture } from './schema/lecture.schema';
+import { WhiteboardLog } from './schema/whiteboard-log.schema';
+import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
 
 @Injectable()
 export class LectureService {
@@ -14,7 +16,9 @@ export class LectureService {
     @InjectModel(Lecture.name)
     private lectureModel: Model<Lecture>,
     @InjectModel(EnterCode.name)
-    private enterCodeModel: Model<EnterCode>
+    private enterCodeModel: Model<EnterCode>,
+    @InjectModel(WhiteboardLog.name)
+    private whiteboardLogModel: Model<WhiteboardLog>
   ) {}
 
   async createLecture(createLectureDto: CreateLectureDto, userId: string) {
@@ -41,7 +45,6 @@ export class LectureService {
         .findByIdAndUpdate(lecture.lecture_id, { $set: { is_end: true, audio_file: updateLectureDto.audio } })
         .exec()
     ]);
-    return;
   }
 
   async generateRoomCode() {
@@ -60,5 +63,15 @@ export class LectureService {
   async findLectureInfo(enterCode: EnterCode) {
     const result = await this.lectureModel.findById(enterCode.lecture_id).exec();
     return LectureInfoDto.of(result);
+  }
+
+  async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {
+    const whiteboardLog = new this.whiteboardLogModel({
+      canvasJSON: whiteboardEventDto.canvasJSON,
+      viewPort: whiteboardEventDto.viewPort,
+      event_date: whiteboardEventDto.eventDate,
+      lecture_id: lecture
+    });
+    return await whiteboardLog.save();
   }
 }

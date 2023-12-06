@@ -1,5 +1,6 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { audioConfig, videoConfig } from '../config/ffmpeg.config';
+import { uploadFileToObjectStorage } from '../utils/ncp-storage';
 import { PeerStreamInfo } from './PeerStreamInfo';
 
 export class FfmpegCommand {
@@ -22,10 +23,22 @@ export class FfmpegCommand {
       .on('start', () => {
         console.log(`${roomId} 강의실 영상 녹화 시작`);
       })
-      .on('end', () => {
+      .on('end', async () => {
         streamInfo.recordEnd = true;
         endRecording(roomId);
         console.log(`${roomId} 강의실 영상 녹화 종료`);
+
+        const url = await uploadFileToObjectStorage(recordFilePath, roomId);
+        console.log(`${url}에 파일 저장`);
+
+        fetch(process.env.SERVER_API_URL as string, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: roomId,
+            audio: url
+          })
+        });
       })
       .size(videoSize)
       .output(recordFilePath);

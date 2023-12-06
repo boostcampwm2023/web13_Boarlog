@@ -5,12 +5,16 @@ import { useSetRecoilState } from "recoil";
 
 import { fabric } from "fabric";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
+import QuestionLogButton from "./components/QuestionLogButton";
+import LogContainer from "@/components/LogContainer/LogContainer";
+import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
+import { useRecoilValue } from "recoil";
 
 const Participant = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const setCanvas = useSetRecoilState(participantCavasInstanceState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
+  const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
 
@@ -54,6 +58,11 @@ const Participant = () => {
       <Header type="participant" />
       <div className="relative w-[100vw] h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
         <canvas ref={canvasRef} />
+        <LogContainer
+          type="question"
+          className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
+        />
+        <QuestionLogButton className="absolute top-2.5 right-2.5" />
       </div>
     </>
   );

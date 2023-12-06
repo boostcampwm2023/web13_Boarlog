@@ -50,6 +50,7 @@ const HeaderParticipantControls = () => {
   const showToast = useToast();
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
+
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
 

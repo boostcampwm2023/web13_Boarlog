@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Lecture } from '../lecture.schema';
+import { Lecture } from '../schema/lecture.schema';
 
 export class LectureInfoDto {
   @ApiProperty({ example: '강의 제목' })
