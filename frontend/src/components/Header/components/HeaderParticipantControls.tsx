@@ -114,22 +114,33 @@ const HeaderParticipantControls = () => {
     };
 
     socketRef2.current.on("update", (data) => {
-      console.log(data.content);
-
       if (!fabricCanvasRef) return;
-
       const isCanvasDataChanged = canvasData.canvasJSON !== data.content.canvasJSON;
       const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(data.content.viewport);
       const isSizeChanged = canvasData.width !== data.content.width || canvasData.height !== data.content.width;
 
+      // 캔버스 데이터 업데이트
       if (isCanvasDataChanged) fabricCanvasRef.loadFromJSON(data.content.canvasJSON, () => {});
+      // 캔버스 뷰포트 업데이트
       if (isViewportChanged) fabricCanvasRef.setViewportTransform(data.content.viewport);
+      // 캔버스 크기 업데이트
       if (isSizeChanged) {
+        // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
+        const HEADER_HEIGHT = 80;
         const newHegiht = window.innerWidth * (data.content.height / data.content.width);
-        fabricCanvasRef.setDimensions({
-          width: window.innerWidth,
-          height: newHegiht
-        });
+        if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
+          const newWidth = (window.innerHeight - HEADER_HEIGHT) * (data.content.width / data.content.height);
+          fabricCanvasRef.setDimensions({
+            width: newWidth,
+            height: window.innerHeight - HEADER_HEIGHT
+          });
+        } else {
+          fabricCanvasRef.setDimensions({
+            width: window.innerWidth,
+            height: newHegiht
+          });
+        }
+        // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
         fabricCanvasRef.setDimensions(
           {
             width: data.content.width,
@@ -138,26 +149,6 @@ const HeaderParticipantControls = () => {
           { backstoreOnly: true }
         );
       }
-
-      //console.log("차이 :", fabricCanvasRef.getWidth(), data.content.width);
-      //console.log("비율 :", data.content.height / data.content.width);
-
-      /*
-      fabricCanvasRef.setWidth(window.innerWidth);
-      fabricCanvasRef.setHeight(newHegiht);
-      fabricCanvasRef.setWidth(data.content.width, { backstoreOnly: true });
-      fabricCanvasRef.setHeight(data.content.height, { backstoreOnly: true });
-      */
-
-      /*
-      fabricCanvasRef.setDimensions(
-        {
-          width: data.content.width,
-          height: 100
-        },
-        { backstoreOnly: true }
-      );
-      */
     });
 
     if (!pcRef.current) return;
@@ -169,20 +160,8 @@ const HeaderParticipantControls = () => {
         mediaStreamRef.current.addTrack(event.track);
         localAudioRef.current.srcObject = mediaStreamRef.current;
       } else if (event.track.kind === "video") {
-        mediaStreamRef.current.addTrack(event.track);
+        //mediaStreamRef.current.addTrack(event.track);
       }
-
-      if (!fabricCanvasRef) return;
-      var rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        fill: "red",
-        width: 20,
-        height: 20
-      });
-
-      // "add" rectangle onto canvas
-      fabricCanvasRef.add(rect);
     };
   };
 
