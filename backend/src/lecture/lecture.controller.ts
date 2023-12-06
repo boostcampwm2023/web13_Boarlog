@@ -81,8 +81,12 @@ export class LectureController {
 
   @Post('/:code/text')
   @ApiParam({ name: 'code', type: 'string' })
-  saveLectureSubtitle(@Param('code') code: string, @Body() body: any, @Res() res: Response) {
-    this.lectureService.saveLectureSubtitle(code, body.segments);
+  async saveLectureSubtitle(@Param('code') code: string, @Body() body: any, @Res() res: Response) {
+    const lecture = await this.lectureService.findLectureByCode(code);
+    if (!lecture) {
+      throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    this.lectureService.saveLectureSubtitle(lecture, body.segments);
     res.status(HttpStatus.OK).send();
   }
 }
