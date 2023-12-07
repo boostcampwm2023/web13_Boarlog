@@ -1,32 +1,28 @@
 import ffmpeg from 'fluent-ffmpeg';
-import { audioConfig, videoConfig } from '../config/ffmpeg.config';
-import { uploadFileToObjectStorage } from '../utils/ncp-storage';
+import { audioConfig } from '../config/ffmpeg.config';
 import { PeerStreamInfo } from './PeerStreamInfo';
+import { uploadFileToObjectStorage } from '../utils/ncp-storage';
 
 export class FfmpegCommand {
   private readonly _command: ffmpeg.FfmpegCommand;
 
   constructor(
-    videoTempFilePath: string,
     audioTempFilePath: string,
     recordFilePath: string,
-    videoSize: string,
     roomId: string,
     streamInfo: PeerStreamInfo,
     endRecording: (roomId: string) => void
   ) {
     this._command = ffmpeg()
-      .addInput(videoTempFilePath)
-      .addInputOptions(videoConfig(videoSize))
       .addInput(audioTempFilePath)
       .addInputOptions(audioConfig)
       .on('start', () => {
-        console.log(`${roomId} 강의실 영상 녹화 시작`);
+        console.log(`${roomId} 강의실 음성 녹화 시작`);
       })
       .on('end', async () => {
         streamInfo.recordEnd = true;
         endRecording(roomId);
-        console.log(`${roomId} 강의실 영상 녹화 종료`);
+        console.log(`${roomId} 강의실 음성 녹화 종료`);
 
         const url = await uploadFileToObjectStorage(recordFilePath, roomId);
         console.log(`${url}에 파일 저장`);
@@ -40,7 +36,6 @@ export class FfmpegCommand {
           })
         });
       })
-      .size(videoSize)
       .output(recordFilePath);
   }
 
