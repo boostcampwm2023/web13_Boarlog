@@ -109,7 +109,7 @@ const HeaderInstructorControls = () => {
     if (!socketRef2.current) return;
     socketRef2.current.emit("end", {
       type: "lecture",
-      roomId: `1`
+      roomId: roomid
     });
 
     setIsCloseModalOpen(false);
@@ -146,7 +146,6 @@ const HeaderInstructorControls = () => {
       // canvas의 내용을 캡쳐하여 스트림으로 생성
       if (!canvasRef.current) return;
       const canvasStream = canvasRef.current.captureStream();
-
       // canvas 스트림의 track을 updatedStream에 추가
       canvasStream.getTracks().forEach((track) => {
         if (!updatedStreamRef.current) return;
@@ -172,6 +171,7 @@ const HeaderInstructorControls = () => {
         console.log("ICE 연결 상태:", pcRef.current.iceConnectionState);
         if (pcRef.current.iceConnectionState === "connected") {
           isLectureStartRef.current = true;
+          startTime = Date.now();
           startTimer();
           showToast({ message: "강의가 시작되었습니다.", type: "success" });
 
@@ -275,9 +275,6 @@ const HeaderInstructorControls = () => {
       saveCanvasData();
       gainNode.gain.value = inputMicVolumeRef.current;
 
-      if (!fabricCanvasRef) return;
-      fabricCanvasRef.renderAll();
-
       analyser.getFloatTimeDomainData(pcmData);
       let sum = 0.0;
       for (const amplitude of pcmData) {
@@ -291,9 +288,9 @@ const HeaderInstructorControls = () => {
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
   };
 
+  let startTime = Date.now();
   // 경과 시간을 표시하기 위한 부분입니다
   const startTimer = () => {
-    const startTime = Date.now();
     const updateElapsedTime = () => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsedTime);
@@ -349,43 +346,41 @@ const HeaderInstructorControls = () => {
     });
   };
 
-  // JSON 형태로 화이트보드를 공유하기 위한 테스트 코드입니다.
-  // 배포 페이지에는 포함되면 안될 것 같아 임시로 주석처리합니다.
-  // socket으로 데이터 주고받기가 가능해지면 다시 살려서 구현하겠습니다.
-
   interface ICanvasData {
     canvasJSON: string;
     viewport: number[];
+    eventTime: number;
+    width: number;
+    height: number;
   }
   let canvasData: ICanvasData = {
     canvasJSON: "",
-    viewport: [1, 0, 0, 1, 0, 0]
+    viewport: [1, 0, 0, 1, 0, 0],
+    eventTime: 0,
+    width: 0,
+    height: 0
   };
-
   function saveCanvasData() {
     if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
 
     const newJSONData = JSON.stringify(fabricCanvasRef);
     const newViewport = fabricCanvasRef.viewportTransform;
+    const newWidth = fabricCanvasRef.getWidth();
+    const newHeight = fabricCanvasRef.getHeight();
 
-    if (canvasData.canvasJSON !== newJSONData || JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport)) {
-      console.log(
-        canvasData.canvasJSON !== newJSONData,
-        JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport)
-      );
-      console.log(JSON.stringify(canvasData.viewport), JSON.stringify(newViewport));
+    const isCanvasDataChanged = canvasData.canvasJSON !== newJSONData;
+    const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport);
+    const isSizeChanged = canvasData.width !== newWidth || canvasData.height !== newHegiht;
+
+    if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
       canvasData.canvasJSON = newJSONData;
       canvasData.viewport = newViewport;
+      canvasData.eventTime = Date.now() - startTime;
+      canvasData.width = newWidth;
+      canvasData.height = newHegiht;
       submitData(canvasData);
     }
   }
-  /*
-  const load = () => {
-    if (!fabricCanvasRef) return;
-    fabricCanvasRef.loadFromJSON(canvasData.canvasJSON, () => {});
-    fabricCanvasRef.setViewportTransform(canvasData.viewport);
-  };
-  */
 
   return (
     <>

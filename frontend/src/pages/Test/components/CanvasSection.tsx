@@ -99,7 +99,7 @@ const CanvasSection = () => {
   }, []);
 
   return (
-    <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
+    <div className="relative w-[100vw] h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
       <canvas ref={canvasRef} />
 
       <Toolbar />
