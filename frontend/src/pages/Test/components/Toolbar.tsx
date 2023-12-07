@@ -269,8 +269,8 @@ const Toolbar = () => {
         handleStickyNoteTool();
         break;
 
-      case "image":
-        break;
+      // case "image":
+      //   break;
 
       case "eraser":
         handleEraser();
@@ -315,7 +315,7 @@ const Toolbar = () => {
           title="Add Stikynote (포스트잇 추가)"
         />
         <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
-        <ToolButton
+        {/* <ToolButton
           icon={ImageIcon}
           onClick={() => {
             setActiveTool("image");
@@ -323,7 +323,7 @@ const Toolbar = () => {
           }}
           disabled={activeTool === "image"}
           title="Image Tool"
-        />
+        /> */}
         <ToolButton
           icon={EraserIcon}
           onClick={() => {
