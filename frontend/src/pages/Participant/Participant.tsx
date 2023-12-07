@@ -6,6 +6,7 @@ import Header from "@/components/Header/Header";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import QuestionLogButton from "./components/QuestionLogButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
+
 import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
 
 const Participant = () => {
@@ -54,7 +55,9 @@ const Participant = () => {
           type="question"
           className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
         />
-        <QuestionLogButton className="absolute top-2.5 right-2.5" />
+        <LogToggleButton className="absolute top-2.5 right-2.5">
+          {isQuestionLogOpen ? <CloseIcon /> : <QuestionIcon fill="black" />}
+        </LogToggleButton>
       </section>
     </>
   );

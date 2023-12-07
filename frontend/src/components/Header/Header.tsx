@@ -9,7 +9,7 @@ import HeaderSettingButton from "./components/HeaderSettingButton";
 import HeaderCodeCopyButton from "./components/HeaderCodeCopyButton";
 
 interface HeaderProps {
-  type: "login" | "main" | "instructor" | "participant";
+  type: "login" | "main" | "instructor" | "participant" | "review";
 }
 
 const Header = ({ type }: HeaderProps) => {
@@ -26,6 +26,7 @@ const Header = ({ type }: HeaderProps) => {
             <HeaderCodeCopyButton lectureCode="000000" />
           </>
         )}
+        {type === "review" && <HeaderLogo type="lecture" />}
       </div>
 
       <div className="flex items-center gap-4 semibold-20">
@@ -48,6 +49,17 @@ const Header = ({ type }: HeaderProps) => {
           </>
         )}
         {type === "participant" && (
+          <>
+            <HeaderParticipantControls />
+            <HeaderSettingButton
+              isSettingClicked={isSettingClicked}
+              setIsSettingClicked={setIsSettingClicked}
+              type={type}
+            />
+            <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
+          </>
+        )}
+        {type === "review" && (
           <>
             <HeaderParticipantControls />
             <HeaderSettingButton
