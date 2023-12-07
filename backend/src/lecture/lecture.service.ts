@@ -5,10 +5,11 @@ import { GenerateUtils } from 'src/utils/GenerateUtils';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
-import { EnterCode } from './schema/lecture-code.schema';
-import { Lecture } from './schema/lecture.schema';
 import { WhiteboardLog } from './schema/whiteboard-log.schema';
 import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
+import { LectureSubtitle } from './lecture-subtitle.schema';
+import { Lecture } from './schema/lecture.schema';
+import { EnterCode } from './schema/lecture-code.schema';
 
 @Injectable()
 export class LectureService {
@@ -18,7 +19,9 @@ export class LectureService {
     @InjectModel(EnterCode.name)
     private enterCodeModel: Model<EnterCode>,
     @InjectModel(WhiteboardLog.name)
-    private whiteboardLogModel: Model<WhiteboardLog>
+    private whiteboardLogModel: Model<WhiteboardLog>,
+    @InjectModel(LectureSubtitle.name)
+    private lectureSubtitleModel: Model<LectureSubtitle>
   ) {}
 
   async createLecture(createLectureDto: CreateLectureDto, userId: string) {
@@ -73,5 +76,19 @@ export class LectureService {
       lecture_id: lecture
     });
     return await whiteboardLog.save();
+  }
+
+  extractAPIData(data: any) {
+    return data.map((segment: any) => {
+      return { start: String(segment.start), text: segment.textEdited };
+    });
+  }
+
+  async saveLectureSubtitle(lecture: EnterCode, data: any) {
+    const subtitleInfo = this.extractAPIData(data);
+    return await new this.lectureSubtitleModel({
+      lecture_id: lecture,
+      subtitle: subtitleInfo
+    }).save();
   }
 }
