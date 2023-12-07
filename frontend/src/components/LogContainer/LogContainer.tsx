@@ -4,6 +4,7 @@ import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 import { useEffect, useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { useLocation } from "react-router-dom";
+import convertMsToTimeString from "@/utils/convertMsToTimeString";
 import axios from "axios";
 
 interface LogItemInterface {
@@ -25,20 +26,6 @@ const LogItem = ({ title, contents }: LogItemInterface) => {
     </li>
   );
 };
-
-function convertMsToTimeString(ms: string) {
-  let msNumber = parseInt(ms);
-  let seconds = Math.floor(msNumber / 1000);
-  let hours = Math.floor(seconds / 3600);
-  seconds = seconds % 3600;
-
-  let minutes = Math.floor(seconds / 60);
-  seconds = seconds % 60;
-
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
-    .toString()
-    .padStart(2, "0")}`;
-}
 
 const LogContainer = ({ type, className }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
