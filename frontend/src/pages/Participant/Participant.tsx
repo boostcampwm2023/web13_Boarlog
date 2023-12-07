@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useSetRecoilState, useRecoilValue } from "recoil";
 import { fabric } from "fabric";
+import CloseIcon from "@/assets/svgs/close.svg?react";
+import QuestionIcon from "@/assets/svgs/whiteboard/question.svg?react";
 
 import Header from "@/components/Header/Header";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
-import QuestionLogButton from "./components/QuestionLogButton";
+import LogToggleButton from "@/components/Button/LogToggleButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
 
 import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
