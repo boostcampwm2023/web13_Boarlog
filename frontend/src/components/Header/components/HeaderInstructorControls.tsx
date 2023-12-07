@@ -367,14 +367,14 @@ const HeaderInstructorControls = () => {
 
     const isCanvasDataChanged = canvasData.canvasJSON !== newJSONData;
     const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport);
-    const isSizeChanged = canvasData.width !== newWidth || canvasData.height !== newHegiht;
+    const isSizeChanged = canvasData.width !== newWidth || canvasData.height !== newHeight;
 
     if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
       canvasData.canvasJSON = newJSONData;
       canvasData.viewport = newViewport;
       canvasData.eventTime = Date.now() - startTime;
       canvasData.width = newWidth;
-      canvasData.height = newHegiht;
+      canvasData.height = newHeight;
       submitData(canvasData);
     }
   }
