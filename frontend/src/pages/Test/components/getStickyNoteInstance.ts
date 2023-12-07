@@ -37,7 +37,7 @@ export const getStickyNoteInstance = (
     strokeWidth: 1
   });
 
-  const stickyMemo = new fabric.Group([note, text]);
+  const stickyMemo = new fabric.Group([note, text], { hasControls: false });
 
   stickyMemo.set("name", "stickyMemo");
 

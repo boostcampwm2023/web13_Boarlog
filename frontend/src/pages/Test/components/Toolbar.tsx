@@ -1,7 +1,7 @@
 import MouseIcon from "@/assets/svgs/whiteboard/mouse.svg?react";
 import PenIcon from "@/assets/svgs/whiteboard/pen.svg?react";
 import StickyNoteIcon from "@/assets/svgs/whiteboard/stickyNote.svg?react";
-import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
+// import ImageIcon from "@/assets/svgs/whiteboard/image.svg?react";
 import EraserIcon from "@/assets/svgs/whiteboard/eraser.svg?react";
 import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursor from "@/assets/svgs/addStickyMemoCursor.svg";
@@ -269,8 +269,8 @@ const Toolbar = () => {
         handleStickyNoteTool();
         break;
 
-      case "image":
-        break;
+      // case "image":
+      //   break;
 
       case "eraser":
         handleEraser();
@@ -315,7 +315,7 @@ const Toolbar = () => {
           title="Add Stikynote (포스트잇 추가)"
         />
         <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
-        <ToolButton
+        {/* <ToolButton
           icon={ImageIcon}
           onClick={() => {
             setActiveTool("image");
@@ -323,7 +323,7 @@ const Toolbar = () => {
           }}
           disabled={activeTool === "image"}
           title="Image Tool"
-        />
+        /> */}
         <ToolButton
           icon={EraserIcon}
           onClick={() => {

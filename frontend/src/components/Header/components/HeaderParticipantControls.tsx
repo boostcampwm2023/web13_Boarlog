@@ -104,7 +104,6 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     });
     socketRef2.current.on("connect_error", (err) => {
       console.error(err.message);
-      showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
     });
     socketRef2.current.on("ended", () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });

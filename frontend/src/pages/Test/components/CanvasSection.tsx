@@ -65,7 +65,8 @@ const CanvasSection = () => {
     window.addEventListener("resize", handleResize);
 
     // delete 키를 이용해서 선택된 객체 삭제
-    const handleDelete = () => {
+    const handleDelete = ({ key, code }: { key: string; code: string }) => {
+      if (!(code === "Delete" || key === "Delete" || code === "Backspace" || key === "Backspace")) return;
       const activeObjects = newCanvas.getActiveObjects();
       if (activeObjects && activeObjects.length > 0) {
         // 선택된 모든 객체 삭제
@@ -75,11 +76,7 @@ const CanvasSection = () => {
         newCanvas.discardActiveObject(); // 선택 해제
       }
     };
-    window.addEventListener("keydown", (e) => {
-      if (e.code === "Delete" || e.key === "Delete") {
-        handleDelete();
-      }
-    });
+    window.addEventListener("keyup", handleDelete);
 
     // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
@@ -89,6 +86,7 @@ const CanvasSection = () => {
     return () => {
       newCanvas.dispose();
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("keyup", handleDelete);
     };
   }, []);
 
