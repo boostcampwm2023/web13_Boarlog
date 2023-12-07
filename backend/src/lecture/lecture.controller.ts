@@ -78,4 +78,15 @@ export class LectureController {
     await this.lectureService.saveWhiteBoardLog(enterCodeDocument.lecture_id, whiteboardEventDto);
     res.status(HttpStatus.CREATED).send();
   }
+
+  @Post('/:code/text')
+  @ApiParam({ name: 'code', type: 'string' })
+  async saveLectureSubtitle(@Param('code') code: string, @Body() body: any, @Res() res: Response) {
+    const lecture = await this.lectureService.findLectureByCode(code);
+    if (!lecture) {
+      throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    this.lectureService.saveLectureSubtitle(lecture, body.segments);
+    res.status(HttpStatus.OK).send();
+  }
 }
