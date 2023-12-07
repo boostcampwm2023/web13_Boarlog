@@ -1,3 +1,4 @@
+// 이번 주 일요일까지 파일 분리, 리팩토링 하겠습니다.
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
@@ -25,24 +26,20 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  //const [micVolume, setMicVolume] = useState<number>(0);
-
   const [didMount, setDidMount] = useState(false);
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
   const speakerVolume = useRecoilValue(speakerVolmeState);
+  const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
-  const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
+  const setParticipantSocket = useSetRecoilState(participantSocketRefState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
-
   const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
   const socketRef2 = useRef<Socket>();
-  const setParticipantSocket = useSetRecoilState(participantSocketRefState);
-
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
@@ -54,10 +51,8 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const showToast = useToast();
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
-
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
-
   const pc_config = {
     iceServers: [
       {
@@ -85,7 +80,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   }, [selectedSpeaker]);
 
   const enterLecture = async () => {
-    showToast({ message: "서버에 접속하는 중입니다.", type: "default" });
+    //showToast({ message: "서버에 접속하는 중입니다.", type: "default" });
     await initConnection();
     await createStudentOffer();
     await setServerAnswer();

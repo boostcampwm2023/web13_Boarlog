@@ -1,10 +1,10 @@
+// 이번 주 일요일까지 파일 분리, 리팩토링 하겠습니다.
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
-
 import PlayIcon from "@/assets/svgs/play.svg?react";
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
@@ -30,7 +30,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  //const [micVolume, setMicVolume] = useState<number>(0);
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeGainState);
@@ -55,7 +54,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
-
   const pc_config = {
     iceServers: [
       {
@@ -122,16 +120,13 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
-
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
-
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
           accessToken: sampleAccessToken,
           refreshToken: "sample"
         }
       });
-
       socketRef.current.on("connect_error", (err) => {
         console.error(err.message);
         showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
@@ -148,7 +143,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
       // RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection(pc_config);
-
       // 발표자의 오디오, 미디어(canvas) 트랙을 RTCPeerConnection에 추가
       if (updatedStreamRef.current) {
         updatedStreamRef.current.getTracks().forEach((track) => {
@@ -160,10 +154,12 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
         console.error("no stream");
       }
 
+      // 서버와 webRTC 연결이 성공했을 때의 동작
       pcRef.current.oniceconnectionstatechange = () => {
         if (!pcRef.current) return;
         console.log("ICE 연결 상태:", pcRef.current.iceConnectionState);
         if (pcRef.current.iceConnectionState === "connected") {
+          // 아래 내용 함수로 분리하겠습니다.
           isLectureStartRef.current = true;
           startTime = Date.now();
           startTimer();
@@ -177,7 +173,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
             }
           });
           setInstructorSocket(socketRef2.current);
-
           submitData(canvasData);
           socketRef2.current.on("asked", (data) => {
             console.log(data);
