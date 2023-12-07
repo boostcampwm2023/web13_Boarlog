@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Button from "@/components/Button/Button";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import CloseIcon from "@/assets/svgs/close.svg?react";
@@ -26,10 +27,20 @@ const JoinLectureBack = ({
   const navigate = useNavigate();
 
   const handleSearchButtonClicked = () => {
-    if (isLectureSearchClicked) navigate("/participant");
+    if (isLectureSearchClicked) navigate(`/participant/${codeInputs.join("")}`);
     else {
       if (codeInputs.join("").length !== 6) showToast({ message: "강의 코드를 올바르게 입력해주세요.", type: "alert" });
-      else handleLectureSearchClickedTrue();
+      else {
+        axios
+          .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${codeInputs.join("")}`)
+          .then((result) => {
+            console.log(result);
+            handleLectureSearchClickedTrue();
+          })
+          .catch((error) => {
+            showToast({ message: "강의 코드가 존재하지 않아요.", type: "alert" });
+          });
+      }
     }
   };
 
