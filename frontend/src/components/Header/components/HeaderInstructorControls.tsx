@@ -332,9 +332,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     }
   };
 
-  const submitData = (data: unknown) => {
+  const submitData = (data: ICanvasData) => {
     if (!socketRef2.current) return;
-    console.log("submit");
     socketRef2.current.emit("edit", {
       type: "whiteBoard",
       roomId: roomid,

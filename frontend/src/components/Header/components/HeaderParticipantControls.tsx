@@ -87,7 +87,6 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const enterLecture = async () => {
     showToast({ message: "서버에 접속하는 중입니다.", type: "default" });
     await initConnection();
-
     await createStudentOffer();
     await setServerAnswer();
 
@@ -101,7 +100,6 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     setParticipantSocket(socketRef2.current);
     socketRef2.current.on("connect", () => {
       console.log("소켓이 성공적으로 연결되었습니다.");
-      //showToast({ message: "소켓이 성공적으로 연결되었습니다.", type: "success" });
     });
     socketRef2.current.on("connect_error", (err) => {
       console.error(err.message);
@@ -111,13 +109,19 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
       leaveLecture();
     });
-
     socketRef2.current.on("update", (data) => {
       // 캔버스 데이터 업데이트
       randerCanvas(data.content);
     });
 
     if (!pcRef.current) return;
+    pcRef.current.oniceconnectionstatechange = () => {
+      if (!pcRef.current) return;
+      if (pcRef.current.iceConnectionState === "connected") {
+        showToast({ message: "강의가 시작되었습니다.", type: "success" });
+        showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
+      }
+    };
     pcRef.current.ontrack = (event) => {
       if (!mediaStreamRef.current || !localAudioRef.current) return;
       if (event.track.kind === "audio") {
@@ -241,7 +245,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       pcRef.current.setLocalDescription(SDP);
       getStudentCandidate();
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 
@@ -271,8 +275,6 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       };
       const timer = setInterval(updateElapsedTime, 1000);
       timerIdRef.current = timer;
-
-      console.log("serverAnswer", data.whiteboard);
       randerCanvas(data.whiteboard);
 
       pcRef.current.setRemoteDescription(data.SDP);
