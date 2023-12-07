@@ -14,7 +14,7 @@ import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
-import micVolmeState from "@/stores/stateMicVolme";
+import micVolmeGainState from "@/stores/stateMicVolumeGain";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
@@ -33,8 +33,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const [micVolume, setMicVolume] = useState<number>(0);
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
-  const inputMicVolume = useRecoilValue(micVolmeState);
-  const setInputMicVolumeState = useSetRecoilState(micVolmeState);
+  const inputMicVolume = useRecoilValue(micVolmeGainState);
+  const setInputMicVolumeState = useSetRecoilState(micVolmeGainState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
   const navigate = useNavigate();
   const showToast = useToast();
