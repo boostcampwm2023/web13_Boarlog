@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/components/Toast/useToast";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -9,10 +10,10 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
-import { useToast } from "@/components/Toast/useToast";
 
 import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
 import speakerVolmeState from "@/stores/stateSpeakerVolume";
+import micVolumeState from "@/stores/stateMicVolume";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
@@ -24,13 +25,14 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [micVolume, setMicVolume] = useState<number>(0);
+  //const [micVolume, setMicVolume] = useState<number>(0);
 
   const [didMount, setDidMount] = useState(false);
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
   const speakerVolume = useRecoilValue(speakerVolmeState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
+  const setMicVolumeState = useSetRecoilState(micVolumeState);
   const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
@@ -301,7 +303,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolume(normalizedVolume);
+      setMicVolumeState(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
@@ -328,7 +330,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
-        <VolumeMeter micVolume={micVolume} />
+        <VolumeMeter />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(elapsedTime / 60)
             .toString()

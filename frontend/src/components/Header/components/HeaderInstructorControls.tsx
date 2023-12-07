@@ -15,6 +15,7 @@ import { useToast } from "@/components/Toast/useToast";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolmeGainState from "@/stores/stateMicVolumeGain";
+import micVolumeState from "@/stores/stateMicVolume";
 import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
@@ -30,11 +31,12 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [micVolume, setMicVolume] = useState<number>(0);
+  //const [micVolume, setMicVolume] = useState<number>(0);
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeGainState);
   const setInputMicVolumeState = useSetRecoilState(micVolmeGainState);
+  const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
   const navigate = useNavigate();
   const showToast = useToast();
@@ -286,7 +288,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolume(normalizedVolume);
+      setMicVolumeState(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
@@ -389,7 +391,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
-        <VolumeMeter micVolume={micVolume} />
+        <VolumeMeter />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(elapsedTime / 60)
             .toString()

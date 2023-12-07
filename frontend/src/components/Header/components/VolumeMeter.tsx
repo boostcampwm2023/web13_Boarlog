@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import micVolumeState from "@/stores/stateMicVolume";
 
-const VolumeMeter = ({ micVolume }: { micVolume: number }) => {
+const VolumeMeter = () => {
   const volumeMeterRef = useRef<HTMLDivElement>(null);
+  const micVolume = useRecoilValue(micVolumeState);
 
   useEffect(() => {
     colorVolumeMeter(micVolume);

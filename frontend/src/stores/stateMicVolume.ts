@@ -1,8 +1,8 @@
 import { atom } from "recoil";
 
-const lectureCodeState = atom<number>({
-  key: "lectureCodeState",
-  default: 990705
+const micVolumeState = atom<number>({
+  key: "micVolumeState",
+  default: 0
 });
 
-export default lectureCodeState;
+export default micVolumeState;
