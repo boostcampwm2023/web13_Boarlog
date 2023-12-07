@@ -1,7 +1,7 @@
 import AddIcon from "@/assets/svgs/whiteboard/add.svg?react";
 
 import { useRef } from "react";
-import { useSetRecoilState, useRecoilState, useRecoilValue } from "recoil";
+import { useSetRecoilState, useRecoilValue } from "recoil";
 
 import activeToolState from "./stateActiveTool";
 import questionListState from "./stateQuestionList";
