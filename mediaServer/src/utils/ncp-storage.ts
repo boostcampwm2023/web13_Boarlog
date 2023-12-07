@@ -7,7 +7,7 @@ const bucketName = process.env.NCP_BUCKET_NAME as string;
 const uploadFileToObjectStorage = async (file: any, filename: string) => {
   await S3.putObject({
     Bucket: bucketName,
-    Key: `${filename}.mp4`,
+    Key: `${filename}.mp3`,
     ACL: 'public-read',
     Body: fs.createReadStream(file)
   }).promise();
