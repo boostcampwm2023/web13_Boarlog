@@ -11,11 +11,9 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
-import selectedSpeakerState from "../../../stores/stateSelectedSpeaker";
-import speakerVolmeState from "../../../stores/stateSpeakerVolume";
-
+import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
+import speakerVolmeState from "@/stores/stateSpeakerVolume";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
-
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 const HeaderParticipantControls = () => {
@@ -104,6 +102,7 @@ const HeaderParticipantControls = () => {
     });
     socketRef2.current.on("ended", () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
+      leaveLecture();
     });
 
     interface ICanvasData {
@@ -192,7 +191,7 @@ const HeaderParticipantControls = () => {
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsModalOpen(false);
-    navigate("/");
+    navigate("/lecture-end");
   };
 
   const initConnection = async () => {

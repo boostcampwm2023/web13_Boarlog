@@ -4,7 +4,9 @@ import { fabric } from "fabric";
 
 import Header from "@/components/Header/Header";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
-import QuestionLogButton from "./components/QuestionLogButton";
+import CloseIcon from "@/assets/svgs/close.svg?react";
+import QuestionIcon from "@/assets/svgs/whiteboard/question.svg?react";
+import LogToggleButton from "@/components/Button/LogToggleButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
 
 import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
@@ -49,8 +51,8 @@ const Participant = () => {
   return (
     <>
       <Header type="participant" />
-      <section className="relative w-[100vw] h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
-        <canvas ref={canvasRef} />
+      <section className="relative w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
+        <canvas className="-z-10" ref={canvasRef} />
         <LogContainer
           type="question"
           className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
