@@ -48,14 +48,14 @@ const Participant = () => {
   return (
     <>
       <Header type="participant" />
-      <section className="relative w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
+      <section className="relative -z-20 w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
         <canvas ref={canvasRef} />
-        <div className="absolute z-10 w-screen h-[calc(100vh-5rem)] top-0 bg-transparent"></div>
+        <div className="absolute w-screen h-[calc(100vh-5rem)] top-0 bg-transparent"></div>
         <LogContainer
           type="question"
-          className={`absolute top-2.5 right-2.5 z-20 ${isQuestionLogOpen ? "block" : "hidden"}`}
+          className={`absolute top-2.5 right-2.5 z-10 ${isQuestionLogOpen ? "block" : "hidden"}`}
         />
-        <QuestionLogButton className="absolute top-2.5 right-2.5 z-20" />
+        <QuestionLogButton className="absolute top-2.5 right-2.5 z-10" />
       </section>
     </>
   );
