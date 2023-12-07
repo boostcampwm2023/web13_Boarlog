@@ -5,6 +5,7 @@ import Login from "./pages/Login/Login";
 import Test from "./pages/Test/Test";
 import Instructor from "./pages/Instructor/Instructor";
 import Participant from "./pages/Participant/Participant";
+import Review from "./pages/Review/Review";
 
 import { RecoilRoot } from "recoil";
 import Example from "./pages/Example/Example";
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="/test" element={<Test />} />
           <Route path="/instructor" element={<Instructor />} />
           <Route path="/participant" element={<Participant />} />
+          <Route path="/review" element={<Review />} />
           <Route path="/lecture-end" element={<LectureEnd />} />
           <Route path="/example" element={<Example />} />
           <Route path="/error" element={<ErrorPage />} />
