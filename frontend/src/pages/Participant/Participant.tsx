@@ -48,7 +48,7 @@ const Participant = () => {
   return (
     <>
       <Header type="participant" />
-      <section className="relative w-[100vw] h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
+      <section className="relative w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
         <canvas ref={canvasRef} />
         <LogContainer
           type="question"

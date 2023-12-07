@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
 
@@ -31,6 +31,8 @@ const HeaderInstructorControls = () => {
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeState);
   const setInputMicVolumeState = useSetRecoilState(micVolmeState);
+  const setInstructorSocket = useSetRecoilState(instructorSocketState);
+  const navigate = useNavigate();
   const showToast = useToast();
 
   const canvasRef = useRecoilValue(canvasRefState);
@@ -38,22 +40,16 @@ const HeaderInstructorControls = () => {
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
-
   const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
   const socketRef2 = useRef<Socket>();
-
-  const setInstructorSocket = useSetRecoilState(instructorSocketState);
-
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const updatedStreamRef = useRef<MediaStream>();
   const inputMicVolumeRef = useRef<number>(0);
   const prevInputMicVolumeRef = useRef<number>(0);
 
-
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
-
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
 
@@ -114,6 +110,7 @@ const HeaderInstructorControls = () => {
 
     setIsCloseModalOpen(false);
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
+    navigate("/lecture-end");
   };
 
   const initConnection = async () => {
@@ -121,7 +118,7 @@ const HeaderInstructorControls = () => {
       // 0. 소켓 연결
 
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
-      
+
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
           accessToken: sampleAccessToken,
