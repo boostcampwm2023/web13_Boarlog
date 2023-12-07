@@ -63,12 +63,10 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
 
   useEffect(() => {
     setDidMount(true);
-
     const backToMain = () => {
-      console.log("popstate");
       leaveLecture();
       navigate("/");
-      window.removeEventListener("resize", backToMain);
+      window.removeEventListener("popstate", backToMain);
     };
     window.addEventListener("popstate", backToMain);
   }, []);
