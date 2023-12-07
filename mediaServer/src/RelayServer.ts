@@ -92,8 +92,10 @@ export class RelayServer {
 
         await RTCPC.setRemoteDescription(data.SDP);
         const startTime = this.roomsInfo.get(data.roomId)?.startTime;
+        const currentWhiteboardData = this.roomsInfo.get(data.roomId)?.currentWhiteboardData;
         const SDP = await RTCPC.createAnswer();
         this.io.of('/enter-room').to(email).emit(`serverAnswer`, {
+          whiteboard: currentWhiteboardData,
           startTime: startTime,
           SDP: SDP
         });
@@ -147,6 +149,7 @@ export class RelayServer {
         console.log('해당 발표자가 존재하지 않습니다.');
         return;
       }
+      roomInfo.currentWhiteboardData = data.content;
       this.io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content));
     });
 
