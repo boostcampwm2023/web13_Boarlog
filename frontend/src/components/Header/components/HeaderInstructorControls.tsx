@@ -189,6 +189,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
             }
           });
           setInstructorSocket(socketRef2.current);
+
+          submitData(canvasData);
           socketRef2.current.on("asked", (data) => {
             console.log(data);
           });

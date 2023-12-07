@@ -112,58 +112,9 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       leaveLecture();
     });
 
-    interface ICanvasData {
-      canvasJSON: string;
-      viewport: number[];
-      eventTime: number;
-      width: number;
-      height: number;
-    }
-    let canvasData: ICanvasData = {
-      canvasJSON: "",
-      viewport: [1, 0, 0, 1, 0, 0],
-      eventTime: 0,
-      width: 0,
-      height: 0
-    };
-
     socketRef2.current.on("update", (data) => {
       console.log("update", data);
-      if (!fabricCanvasRef) return;
-      const isCanvasDataChanged = canvasData.canvasJSON !== data.content.canvasJSON;
-      const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(data.content.viewport);
-      const isSizeChanged = canvasData.width !== data.content.width || canvasData.height !== data.content.width;
-
-      // 캔버스 데이터 업데이트
-      if (isCanvasDataChanged) fabricCanvasRef.loadFromJSON(data.content.canvasJSON, () => {});
-      // 캔버스 뷰포트 업데이트
-      if (isViewportChanged) fabricCanvasRef.setViewportTransform(data.content.viewport);
-      // 캔버스 크기 업데이트
-      if (isSizeChanged) {
-        // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
-        const HEADER_HEIGHT = 80;
-        const newHegiht = window.innerWidth * (data.content.height / data.content.width);
-        if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
-          const newWidth = (window.innerHeight - HEADER_HEIGHT) * (data.content.width / data.content.height);
-          fabricCanvasRef.setDimensions({
-            width: newWidth,
-            height: window.innerHeight - HEADER_HEIGHT
-          });
-        } else {
-          fabricCanvasRef.setDimensions({
-            width: window.innerWidth,
-            height: newHegiht
-          });
-        }
-        // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
-        fabricCanvasRef.setDimensions(
-          {
-            width: data.content.width,
-            height: data.content.height
-          },
-          { backstoreOnly: true }
-        );
-      }
+      randerCanvas(data.content);
     });
 
     if (!pcRef.current) return;
@@ -178,6 +129,59 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
         // 비디오 트랙은 일단 무시합니다.
       }
     };
+  };
+
+  interface ICanvasData {
+    canvasJSON: string;
+    viewport: number[];
+    eventTime: number;
+    width: number;
+    height: number;
+  }
+  let canvasData: ICanvasData = {
+    canvasJSON: "",
+    viewport: [1, 0, 0, 1, 0, 0],
+    eventTime: 0,
+    width: 0,
+    height: 0
+  };
+  //{ newData }: { newData: any }
+  const randerCanvas = (newData: ICanvasData) => {
+    if (!fabricCanvasRef) return;
+    const isCanvasDataChanged = canvasData.canvasJSON !== newData.canvasJSON;
+    const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newData.viewport);
+    const isSizeChanged = canvasData.width !== newData.width || canvasData.height !== newData.width;
+
+    // 캔버스 데이터 업데이트
+    if (isCanvasDataChanged) fabricCanvasRef.loadFromJSON(newData.canvasJSON, () => {});
+    // 캔버스 뷰포트 업데이트
+    if (isViewportChanged) fabricCanvasRef.setViewportTransform(newData.viewport);
+    // 캔버스 크기 업데이트
+    if (isSizeChanged) {
+      // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
+      const HEADER_HEIGHT = 80;
+      const newHegiht = window.innerWidth * (newData.height / newData.width);
+      if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
+        const newWidth = (window.innerHeight - HEADER_HEIGHT) * (newData.width / newData.height);
+        fabricCanvasRef.setDimensions({
+          width: newWidth,
+          height: window.innerHeight - HEADER_HEIGHT
+        });
+      } else {
+        fabricCanvasRef.setDimensions({
+          width: window.innerWidth,
+          height: newHegiht
+        });
+      }
+      // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
+      fabricCanvasRef.setDimensions(
+        {
+          width: newData.width,
+          height: newData.height
+        },
+        { backstoreOnly: true }
+      );
+    }
   };
 
   const leaveLecture = () => {
@@ -271,6 +275,9 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       };
       const timer = setInterval(updateElapsedTime, 1000);
       timerIdRef.current = timer;
+
+      console.log("serverAnswer", data.whiteboard);
+      randerCanvas(data.whiteboard);
 
       pcRef.current.setRemoteDescription(data.SDP);
     });

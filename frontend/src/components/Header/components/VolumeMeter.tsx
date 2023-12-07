@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 import micVolumeState from "@/stores/stateMicVolume";
 
 const VolumeMeter = () => {
