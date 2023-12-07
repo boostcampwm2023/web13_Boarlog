@@ -63,6 +63,12 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
 
   useEffect(() => {
     setDidMount(true);
+    const backToMain = () => {
+      leaveLecture();
+      navigate("/");
+      window.removeEventListener("popstate", backToMain);
+    };
+    window.addEventListener("popstate", backToMain);
   }, []);
   useEffect(() => {
     if (didMount) {
@@ -102,6 +108,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     socketRef2.current.on("ended", () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
       leaveLecture();
+      navigate("/lecture-end");
     });
     socketRef2.current.on("update", (data) => {
       // 캔버스 데이터 업데이트
@@ -192,11 +199,11 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
+    if (socketRef2.current) socketRef2.current.disconnect(); // 소켓 연결 해제
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsModalOpen(false);
-    navigate("/lecture-end");
   };
 
   const initConnection = async () => {
@@ -355,7 +362,10 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
         confirmText="강의 나가기"
         cancelButtonStyle="black"
         confirmButtonStyle="red"
-        confirmClick={leaveLecture}
+        confirmClick={() => {
+          leaveLecture();
+          navigate("/");
+        }}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       />
