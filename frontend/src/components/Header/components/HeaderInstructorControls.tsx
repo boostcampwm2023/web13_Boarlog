@@ -54,7 +54,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const prevInputMicVolumeRef = useRef<number>(0);
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
-  setLectureCode(roomid);
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
 
@@ -71,6 +70,9 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     ]
   };
 
+  useEffect(() => {
+    setLectureCode(roomid);
+  }, []);
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
   }, [inputMicVolume]);
