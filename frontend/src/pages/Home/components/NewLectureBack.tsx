@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import axios from "axios";
 import Button from "@/components/Button/Button";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import CloseIcon from "@/assets/svgs/close.svg?react";
@@ -10,6 +12,23 @@ interface NewLectureBackProps {
 
 const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
   const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+
+  const handleCreateButtonClicked = () => {
+    axios
+      .post(`${import.meta.env.VITE_API_SERVER_URL}/lecture`, {
+        title,
+        description,
+        email: "example@gmail.com"
+      })
+      .then((result) => {
+        navigate(`/instructor?roomid=${result.data.code}`);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   return (
     <div className="w-full h-full flex flex-col absolute bg-grayscale-white overflow-hidden border-default rounded-xl rotate-180 z-[1] shadow-xl">
@@ -29,6 +48,8 @@ const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
             className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
             placeholder="강의 제목을 입력해주세요"
             maxLength={50}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
@@ -39,10 +60,12 @@ const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
             className="rounded-xl border-black w-full flex-grow medium-12 p-3 resize-none focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
             placeholder="강의 설명을 입력해주세요"
             maxLength={200}
+            value={description} // 상태 바인딩
+            onChange={(e) => setDescription(e.target.value)} // 입력 변경에 따라 상태 업데이트
           />
         </div>
 
-        <Button type="full" buttonStyle="blue" onClick={() => navigate("/instructor")}>
+        <Button type="full" buttonStyle="blue" onClick={handleCreateButtonClicked}>
           <NewLectureIcon className="fill-grayscale-white" />
           강의 생성하기
         </Button>
