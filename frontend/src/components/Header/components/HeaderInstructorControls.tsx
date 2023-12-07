@@ -366,7 +366,7 @@ const HeaderInstructorControls = () => {
     const newJSONData = JSON.stringify(fabricCanvasRef);
     const newViewport = fabricCanvasRef.viewportTransform;
     const newWidth = fabricCanvasRef.getWidth();
-    const newHegiht = fabricCanvasRef.getHeight();
+    const newHeight = fabricCanvasRef.getHeight();
 
     const isCanvasDataChanged = canvasData.canvasJSON !== newJSONData;
     const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport);
