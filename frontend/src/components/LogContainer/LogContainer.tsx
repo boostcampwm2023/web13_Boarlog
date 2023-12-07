@@ -38,7 +38,6 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
 
   if (type === "prompt") {
     useEffect(() => {
-      console.log("p");
       axios("./reviewLecture.json")
         .then(({ data }) => {
           setScriptList(data);
