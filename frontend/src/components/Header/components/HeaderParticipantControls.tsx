@@ -106,7 +106,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     });
     socketRef2.current.on("update", (data) => {
       // 캔버스 데이터 업데이트
-      randerCanvas(data.content);
+      renderCanvas(data.content);
     });
 
     if (!pcRef.current) return;
@@ -141,7 +141,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     height: 0
   };
   //{ newData }: { newData: any }
-  const randerCanvas = (newData: ICanvasData) => {
+  const renderCanvas = (newData: ICanvasData) => {
     if (!fabricCanvasRef) return;
     const isCanvasDataChanged = canvasData.canvasJSON !== newData.canvasJSON;
     const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newData.viewport);
@@ -270,7 +270,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       };
       const timer = setInterval(updateElapsedTime, 1000);
       timerIdRef.current = timer;
-      randerCanvas(data.whiteboard);
+      renderCanvas(data.whiteboard);
 
       pcRef.current.setRemoteDescription(data.SDP);
     });
