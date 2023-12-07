@@ -23,8 +23,7 @@ const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
         email: "example@gmail.com"
       })
       .then((result) => {
-        console.log(result);
-        // navigate(`/instructor/111111`);
+        navigate(`/instructor?roomid=${result.data.code}`);
       })
       .catch((error) => {
         console.log(error);

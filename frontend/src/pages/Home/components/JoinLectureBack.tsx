@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import axios from "axios";
 import Button from "@/components/Button/Button";
 import SmallButton from "@/components/SmallButton/SmallButton";
@@ -25,19 +26,22 @@ const JoinLectureBack = ({
 }: JoinLectureBackProps) => {
   const showToast = useToast();
   const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
   const handleSearchButtonClicked = () => {
-    if (isLectureSearchClicked) navigate(`/participant/${codeInputs.join("")}`);
+    if (isLectureSearchClicked) navigate(`/participant?roomid=${codeInputs.join("")}`);
     else {
       if (codeInputs.join("").length !== 6) showToast({ message: "강의 코드를 올바르게 입력해주세요.", type: "alert" });
       else {
         axios
           .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${codeInputs.join("")}`)
           .then((result) => {
-            console.log(result);
+            setTitle(result.data.title);
+            setDescription(result.data.description);
             handleLectureSearchClickedTrue();
           })
-          .catch((error) => {
+          .catch(() => {
             showToast({ message: "강의 코드가 존재하지 않아요.", type: "alert" });
           });
       }
@@ -63,12 +67,12 @@ const JoinLectureBack = ({
 
             <div className="flex flex-col gap-2">
               <h4 className="semibold-18 break-keep">강의 제목</h4>
-              <p className="medium-16 text-grayscale-darkgray break-keep">여기에 강의 제목이 표시됩니다.</p>
+              <p className="medium-16 text-grayscale-darkgray break-keep">{title}</p>
             </div>
 
             <div className="flex flex-col flex-grow gap-2">
               <h4 className="semibold-18 break-keep">강의 설명</h4>
-              <p className="medium-16 flex-grow text-grayscale-darkgray break-keep">여기에 강의 설명이 표시됩니다.</p>
+              <p className="medium-16 flex-grow text-grayscale-darkgray break-keep">{description}</p>
             </div>
           </>
         ) : (
