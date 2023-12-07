@@ -2,6 +2,14 @@ import { RTCPeerConnection } from 'wrtc';
 import { Socket } from 'socket.io';
 import { ClientInfo } from './ClientInfo';
 
+interface ICanvasData {
+  canvasJSON: string;
+  viewport: number[];
+  eventTime: number;
+  width: number;
+  height: number;
+}
+
 export class RoomInfo {
   private readonly _roomId: string;
   private _presenterSocket: Socket | null;
@@ -10,6 +18,7 @@ export class RoomInfo {
   private readonly _studentInfoList: Set<ClientInfo>;
   private readonly _startTime: Date;
   private _stream: MediaStream | null;
+  private _currentWhiteboardData: ICanvasData | null;
 
   constructor(roomId: string, email: string, RTCPC: RTCPeerConnection) {
     this._roomId = roomId;
@@ -19,6 +28,7 @@ export class RoomInfo {
     this._studentInfoList = new Set();
     this._startTime = new Date();
     this._stream = null;
+    this._currentWhiteboardData = null;
   }
 
   get presenterEmail(): string {
@@ -43,6 +53,14 @@ export class RoomInfo {
 
   get stream(): MediaStream | null {
     return this._stream;
+  }
+
+  get currentWhiteboardData(): ICanvasData | null {
+    return this._currentWhiteboardData;
+  }
+
+  set currentWhiteboardData(data: ICanvasData) {
+    this._currentWhiteboardData = data;
   }
 
   endLecture = () => {
