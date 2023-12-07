@@ -13,7 +13,9 @@ import { useToast } from "@/components/Toast/useToast";
 
 import selectedSpeakerState from "../../../stores/stateSelectedSpeaker";
 import speakerVolmeState from "../../../stores/stateSpeakerVolume";
-import videoRefState from "@/pages/Test/components/stateVideoRef";
+
+import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
+
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 const HeaderParticipantControls = () => {
@@ -27,7 +29,7 @@ const HeaderParticipantControls = () => {
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
   const speakerVolume = useRecoilValue(speakerVolmeState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
-  const videoRef = useRecoilValue(videoRefState);
+  const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -92,35 +94,82 @@ const HeaderParticipantControls = () => {
       }
     });
     setParticipantSocket(socketRef2.current);
+    socketRef2.current.on("connect", () => {
+      console.log("소켓이 성공적으로 연결되었습니다.");
+      //showToast({ message: "소켓이 성공적으로 연결되었습니다.", type: "success" });
+    });
+    socketRef2.current.on("connect_error", (err) => {
+      console.error(err.message);
+      showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+    });
     socketRef2.current.on("ended", () => {
       showToast({ message: "강의가 종료되었습니다.", type: "alert" });
     });
+
+    interface ICanvasData {
+      canvasJSON: string;
+      viewport: number[];
+      eventTime: number;
+      width: number;
+      height: number;
+    }
+    let canvasData: ICanvasData = {
+      canvasJSON: "",
+      viewport: [1, 0, 0, 1, 0, 0],
+      eventTime: 0,
+      width: 0,
+      height: 0
+    };
+
     socketRef2.current.on("update", (data) => {
-      console.log(data);
+      console.log("update", data);
+      if (!fabricCanvasRef) return;
+      const isCanvasDataChanged = canvasData.canvasJSON !== data.content.canvasJSON;
+      const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(data.content.viewport);
+      const isSizeChanged = canvasData.width !== data.content.width || canvasData.height !== data.content.width;
+
+      // 캔버스 데이터 업데이트
+      if (isCanvasDataChanged) fabricCanvasRef.loadFromJSON(data.content.canvasJSON, () => {});
+      // 캔버스 뷰포트 업데이트
+      if (isViewportChanged) fabricCanvasRef.setViewportTransform(data.content.viewport);
+      // 캔버스 크기 업데이트
+      if (isSizeChanged) {
+        // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
+        const HEADER_HEIGHT = 80;
+        const newHegiht = window.innerWidth * (data.content.height / data.content.width);
+        if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
+          const newWidth = (window.innerHeight - HEADER_HEIGHT) * (data.content.width / data.content.height);
+          fabricCanvasRef.setDimensions({
+            width: newWidth,
+            height: window.innerHeight - HEADER_HEIGHT
+          });
+        } else {
+          fabricCanvasRef.setDimensions({
+            width: window.innerWidth,
+            height: newHegiht
+          });
+        }
+        // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
+        fabricCanvasRef.setDimensions(
+          {
+            width: data.content.width,
+            height: data.content.height
+          },
+          { backstoreOnly: true }
+        );
+      }
     });
 
     if (!pcRef.current) return;
     pcRef.current.ontrack = (event) => {
       console.log(event.track);
 
-      if (!mediaStreamRef.current || !localAudioRef.current || !videoRef.current) return;
+      if (!mediaStreamRef.current || !localAudioRef.current) return;
       if (event.track.kind === "audio") {
         mediaStreamRef.current.addTrack(event.track);
         localAudioRef.current.srcObject = mediaStreamRef.current;
       } else if (event.track.kind === "video") {
-        mediaStreamRef.current.addTrack(event.track);
-        videoRef.current.srcObject = mediaStreamRef.current;
-        videoRef.current.addEventListener("loadstart", () => {
-          console.log("loadstart");
-        });
-        videoRef.current.addEventListener("progress", () => {
-          console.log("progress");
-        });
-        videoRef.current.addEventListener("loadedmetadata", () => {
-          console.log("loadedmetadata");
-          showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다.", type: "alert" });
-        });
-        videoRef.current.play();
+        // 비디오 트랙은 일단 무시합니다.
       }
     };
   };
@@ -135,7 +184,6 @@ const HeaderParticipantControls = () => {
     });
 
     if (localAudioRef.current) localAudioRef.current.srcObject = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
 
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
