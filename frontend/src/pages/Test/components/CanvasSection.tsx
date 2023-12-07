@@ -79,7 +79,7 @@ const CanvasSection = () => {
         newCanvas.discardActiveObject(); // 선택 해제
       }
     };
-    window.addEventListener("keydown", handleDelete);
+    window.addEventListener("keyup", handleDelete);
 
     // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
