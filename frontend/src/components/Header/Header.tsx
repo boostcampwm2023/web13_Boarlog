@@ -15,6 +15,7 @@ interface HeaderProps {
 const Header = ({ type }: HeaderProps) => {
   const [isProfileClicked, setIsProfileClicked] = useState(false);
   const [isSettingClicked, setIsSettingClicked] = useState(false);
+  const [lectureCode, setLectureCode] = useState("000000");
 
   return (
     <header className="flex w-100 h-20 items-center justify-between px-6 py-4 bg-grayscale-white border-header box-border z-10 sticky top-0">
@@ -23,7 +24,7 @@ const Header = ({ type }: HeaderProps) => {
         {(type === "instructor" || type === "participant") && (
           <>
             <HeaderLogo type="lecture" />
-            <HeaderCodeCopyButton lectureCode="000000" />
+            <HeaderCodeCopyButton lectureCode={lectureCode} />
           </>
         )}
         {type === "review" && <HeaderLogo type="lecture" />}
@@ -39,7 +40,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "instructor" && (
           <>
-            <HeaderInstructorControls />
+            <HeaderInstructorControls setLectureCode={setLectureCode} />
             <HeaderSettingButton
               isSettingClicked={isSettingClicked}
               setIsSettingClicked={setIsSettingClicked}
@@ -50,7 +51,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "participant" && (
           <>
-            <HeaderParticipantControls />
+            <HeaderParticipantControls setLectureCode={setLectureCode} />
             <HeaderSettingButton
               isSettingClicked={isSettingClicked}
               setIsSettingClicked={setIsSettingClicked}
@@ -61,7 +62,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "review" && (
           <>
-            <HeaderParticipantControls />
+            <HeaderParticipantControls setLectureCode={setLectureCode} />
             <HeaderSettingButton
               isSettingClicked={isSettingClicked}
               setIsSettingClicked={setIsSettingClicked}

@@ -19,7 +19,11 @@ import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
 
-const HeaderInstructorControls = () => {
+interface HeaderInstructorControlsProps {
+  setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsProps) => {
   const isLectureStartRef = useRef<boolean>(false);
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -50,6 +54,7 @@ const HeaderInstructorControls = () => {
   const prevInputMicVolumeRef = useRef<number>(0);
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
+  setLectureCode(roomid);
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
 

@@ -16,7 +16,11 @@ import speakerVolmeState from "@/stores/stateSpeakerVolume";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
-const HeaderParticipantControls = () => {
+interface HeaderParticipantControlsProps {
+  setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControlsProps) => {
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
@@ -48,6 +52,7 @@ const HeaderParticipantControls = () => {
   const showToast = useToast();
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
+  setLectureCode(roomid);
 
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
