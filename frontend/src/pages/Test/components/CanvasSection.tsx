@@ -25,7 +25,7 @@ const CanvasSection = () => {
   useEffect(() => {
     if (!socket) return;
     socket.on("asked", (data) => {
-      setQuestions([...questions, data.content]);
+      setQuestions([data.content, ...questions]);
     });
   }, [socket, questions]);
 

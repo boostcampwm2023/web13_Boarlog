@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 const IndicatorBubble = ({ count }: { count: number }) => {
   return (
     <>
-      <div className="animate-ping absolute -top-2 -right-2 rounded-xl w-5 h-5  bg-alert-100"></div>
+      <div className="animate-ping absolute -top-2 -right-2 rounded-xl w-5 h-5 z-10  bg-alert-100"></div>
       <div className="absolute -top-2 -right-2 flex justify-center items-center rounded-xl w-5 h-5  bg-alert-100 medium-12 text-grayscale-white">
         {count}
       </div>

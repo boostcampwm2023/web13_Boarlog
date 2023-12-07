@@ -18,7 +18,7 @@ const ProgressBar = ({ className }: { className: string }) => {
         {isPlaying ? <PlayIcon /> : <PauseIcon />}
       </button>
       <div className="relative grow h-1  bg-grayscale-lightgray">
-        <div className="absolute top-0 left-0 h-1 w-[50%] bg-boarlog-100"></div>
+        <div className="absolute top-0 left-0 h-1 w-1/2 bg-boarlog-100"></div>
       </div>
       <span className="medium-12">00:00:00</span>
     </div>

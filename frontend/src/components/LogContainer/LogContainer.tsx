@@ -4,6 +4,7 @@ import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 import { useEffect, useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { useLocation } from "react-router-dom";
+import convertMsToTimeString from "@/utils/convertMsToTimeString";
 import axios from "axios";
 
 interface LogItemInterface {
@@ -26,38 +27,31 @@ const LogItem = ({ title, contents }: LogItemInterface) => {
   );
 };
 
-function convertMsToTimeString(ms: string) {
-  let msNumber = parseInt(ms);
-  let seconds = Math.floor(msNumber / 1000);
-  let hours = Math.floor(seconds / 3600);
-  seconds = seconds % 3600;
-
-  let minutes = Math.floor(seconds / 60);
-  seconds = seconds % 60;
-
-  return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
-    .toString()
-    .padStart(2, "0")}`;
-}
-
 const LogContainer = ({ type, className }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
   const [scriptList, setScriptList] = useState<Array<{ start: string; text: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
+  const logContainerRef = useRef<HTMLUListElement | null>(null);
   const socket = useRecoilValue(participantSocketRefState);
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
 
-  useEffect(() => {
-    axios("./reviewLecture.json")
-      .then(({ data }) => {
-        // @ts-ignore
-        setScriptList(data);
-      })
-      .catch((error) => {
-        console.log("프롬프트에 표시할 스크립트 로딩 실패", error);
-      });
-  }, []);
+  if (type === "prompt") {
+    useEffect(() => {
+      axios("./reviewLecture.json")
+        .then(({ data }) => {
+          setScriptList(data);
+        })
+        .catch((error) => {
+          console.log("프롬프트에 표시할 스크립트 로딩 실패", error);
+        });
+    }, []);
+  } else {
+    useEffect(() => {
+      if (!logContainerRef.current) return;
+      logContainerRef.current.scrollTop = logContainerRef.current?.scrollHeight;
+    }, [questionList]);
+  }
 
   const handleInputChange = () => {
     if (!messageInputRef.current) return;
@@ -103,7 +97,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
         {type === "question" ? "질문하기" : "강의 프롬프트"}
       </h2>
       {type === "question" && (
-        <ul className="px-4 flex-grow overflow-y-auto	">
+        <ul className="px-4 flex-grow overflow-y-auto	" ref={logContainerRef}>
           {questionList.map(({ title, contents }, index) => {
             return <LogItem key={`k-${index}`} title={title} contents={contents} />;
           })}
