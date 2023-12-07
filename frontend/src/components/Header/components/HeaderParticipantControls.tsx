@@ -113,20 +113,16 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     });
 
     socketRef2.current.on("update", (data) => {
-      console.log("update", data);
+      // 캔버스 데이터 업데이트
       randerCanvas(data.content);
     });
 
     if (!pcRef.current) return;
     pcRef.current.ontrack = (event) => {
-      console.log(event.track);
-
       if (!mediaStreamRef.current || !localAudioRef.current) return;
       if (event.track.kind === "audio") {
         mediaStreamRef.current.addTrack(event.track);
         localAudioRef.current.srcObject = mediaStreamRef.current;
-      } else if (event.track.kind === "video") {
-        // 비디오 트랙은 일단 무시합니다.
       }
     };
   };

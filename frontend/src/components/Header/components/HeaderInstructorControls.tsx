@@ -16,7 +16,6 @@ import { useToast } from "@/components/Toast/useToast";
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolmeGainState from "@/stores/stateMicVolumeGain";
 import micVolumeState from "@/stores/stateMicVolume";
-import canvasRefState from "@/pages/Test/components/stateCanvasRef";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
 
@@ -35,14 +34,12 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolmeGainState);
+  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
   const setInputMicVolumeState = useSetRecoilState(micVolmeGainState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
   const navigate = useNavigate();
   const showToast = useToast();
-
-  const canvasRef = useRecoilValue(canvasRefState);
-  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -148,15 +145,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       mediaStreamRef.current = stream;
 
       await setupAudioAnalysis(stream);
-
-      // canvas의 내용을 캡쳐하여 스트림으로 생성
-      if (!canvasRef.current) return;
-      const canvasStream = canvasRef.current.captureStream();
-      // canvas 스트림의 track을 updatedStream에 추가
-      canvasStream.getTracks().forEach((track) => {
-        if (!updatedStreamRef.current) return;
-        updatedStreamRef.current.addTrack(track);
-      });
 
       // RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection(pc_config);
