@@ -12,8 +12,6 @@ import isQuestionListOpenState from "./stateIsQuestionListOpen";
 import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
-import canvasRefState from "./stateCanvasRef";
-
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const setCanvas = useSetRecoilState(cavasInstanceState);
@@ -22,7 +20,6 @@ const CanvasSection = () => {
   const isQuestionListOpen = useRecoilValue(isQuestionListOpenState);
   const [questions, setQuestions] = useRecoilState(questionListState);
 
-  const setCanvasRef = useSetRecoilState(canvasRefState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -87,9 +84,6 @@ const CanvasSection = () => {
     // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
     newCanvas.isDrawingMode = true;
-
-    // fabric.js 캔버스가 연결된 canvas를 헤더에서 사용 가능하게 ref로 전달
-    setCanvasRef({ current: canvasRef.current });
 
     // 언마운트 시 캔버스 정리, 이벤트 제거
     return () => {

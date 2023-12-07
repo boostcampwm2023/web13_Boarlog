@@ -9,12 +9,15 @@ interface UseToastProps {
 }
 
 export const useToast = () => {
-  const [toastList, setToastList] = useRecoilState(toastListState);
+  const [_, setToastList] = useRecoilState(toastListState);
 
   const showToast = ({ message, type }: UseToastProps) => {
     const newToast: ToastMessage = { id: Date.now(), message, type };
-    setToastList([...toastList, newToast]);
 
+    // 함수형 업데이트를 사용하여 toastList 상태를 변경
+    setToastList((oldToastList) => [...oldToastList, newToast]);
+
+    // 특정 시간 후에 toast를 제거
     setTimeout(() => {
       setToastList((currentList) => currentList.filter((toast) => toast.id !== newToast.id));
     }, TOAST_AVAILABLE_TIME);

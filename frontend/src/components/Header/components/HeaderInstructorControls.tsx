@@ -1,10 +1,10 @@
+// 이번 주 일요일까지 파일 분리, 리팩토링 하겠습니다.
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import VolumeMeter from "./VolumeMeter";
-
 import PlayIcon from "@/assets/svgs/play.svg?react";
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
@@ -14,29 +14,31 @@ import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
-import micVolmeState from "@/stores/stateMicVolme";
-import canvasRefState from "@/pages/Test/components/stateCanvasRef";
+import micVolumeGainState from "@/stores/stateMicVolumeGain";
+import micVolumeState from "@/stores/stateMicVolume";
 import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
 
-const HeaderInstructorControls = () => {
+interface HeaderInstructorControlsProps {
+  setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsProps) => {
   const isLectureStartRef = useRef<boolean>(false);
 
   const [isMicOn, setIsMicOn] = useState(true);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [micVolume, setMicVolume] = useState<number>(0);
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
-  const inputMicVolume = useRecoilValue(micVolmeState);
-  const setInputMicVolumeState = useSetRecoilState(micVolmeState);
+  const inputMicVolume = useRecoilValue(micVolumeGainState);
+  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+  const setInputMicVolumeState = useSetRecoilState(micVolumeGainState);
+  const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
   const navigate = useNavigate();
   const showToast = useToast();
-
-  const canvasRef = useRecoilValue(canvasRefState);
-  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
@@ -52,7 +54,6 @@ const HeaderInstructorControls = () => {
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
   const sampleAccessToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
-
   const pc_config = {
     iceServers: [
       {
@@ -66,6 +67,9 @@ const HeaderInstructorControls = () => {
     ]
   };
 
+  useEffect(() => {
+    setLectureCode(roomid);
+  }, []);
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
   }, [inputMicVolume]);
@@ -116,16 +120,13 @@ const HeaderInstructorControls = () => {
   const initConnection = async () => {
     try {
       // 0. 소켓 연결
-
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
-
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
           accessToken: sampleAccessToken,
           refreshToken: "sample"
         }
       });
-
       socketRef.current.on("connect_error", (err) => {
         console.error(err.message);
         showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
@@ -140,18 +141,8 @@ const HeaderInstructorControls = () => {
 
       await setupAudioAnalysis(stream);
 
-      // canvas의 내용을 캡쳐하여 스트림으로 생성
-      if (!canvasRef.current) return;
-      const canvasStream = canvasRef.current.captureStream();
-      // canvas 스트림의 track을 updatedStream에 추가
-      canvasStream.getTracks().forEach((track) => {
-        if (!updatedStreamRef.current) return;
-        updatedStreamRef.current.addTrack(track);
-      });
-
       // RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection(pc_config);
-
       // 발표자의 오디오, 미디어(canvas) 트랙을 RTCPeerConnection에 추가
       if (updatedStreamRef.current) {
         updatedStreamRef.current.getTracks().forEach((track) => {
@@ -163,10 +154,12 @@ const HeaderInstructorControls = () => {
         console.error("no stream");
       }
 
+      // 서버와 webRTC 연결이 성공했을 때의 동작
       pcRef.current.oniceconnectionstatechange = () => {
         if (!pcRef.current) return;
         console.log("ICE 연결 상태:", pcRef.current.iceConnectionState);
         if (pcRef.current.iceConnectionState === "connected") {
+          // 아래 내용 함수로 분리하겠습니다.
           isLectureStartRef.current = true;
           startTime = Date.now();
           startTimer();
@@ -180,6 +173,7 @@ const HeaderInstructorControls = () => {
             }
           });
           setInstructorSocket(socketRef2.current);
+          submitData(canvasData);
           socketRef2.current.on("asked", (data) => {
             console.log(data);
           });
@@ -279,7 +273,7 @@ const HeaderInstructorControls = () => {
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolume(normalizedVolume);
+      setMicVolumeState(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
@@ -333,9 +327,8 @@ const HeaderInstructorControls = () => {
     }
   };
 
-  const submitData = (data: unknown) => {
+  const submitData = (data: ICanvasData) => {
     if (!socketRef2.current) return;
-    console.log("submit");
     socketRef2.current.emit("edit", {
       type: "whiteBoard",
       roomId: roomid,
@@ -382,7 +375,7 @@ const HeaderInstructorControls = () => {
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
-        <VolumeMeter micVolume={micVolume} />
+        <VolumeMeter />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(elapsedTime / 60)
             .toString()

@@ -1,5 +1,5 @@
-import PlayIcon from "@/assets/svgs/play.svg?react";
-import PauseIcon from "@/assets/svgs/pause.svg?react";
+import PlayIcon from "@/assets/svgs/progressPlay.svg?react";
+import PauseIcon from "@/assets/svgs/progressPause.svg?react";
 import { useState } from "react";
 
 const ProgressBar = ({ className }: { className: string }) => {
