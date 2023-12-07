@@ -27,7 +27,7 @@ const App = () => {
           <Route path="/start" element={<Start />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/test" element={<Test />} />
-          <Route path="/instructor" element={<Instructor />} />
+          {!Modernizr.touchevents && <Route path="/instructor" element={<Instructor />} />}
           <Route path="/participant" element={<Participant />} />
           <Route path="/review" element={<Review />} />
           <Route path="/lecture-end" element={<LectureEnd />} />
