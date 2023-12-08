@@ -11,6 +11,7 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
+import { ICanvasData, loadCanvasData } from "./fabricCanvasUtil";
 
 import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
 import speakerVolmeState from "@/stores/stateSpeakerVolume";
@@ -106,57 +107,12 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
   };
 
-  interface ICanvasData {
-    canvasJSON: string;
-    viewport: number[];
-    eventTime: number;
-    width: number;
-    height: number;
-  }
   let canvasData: ICanvasData = {
     canvasJSON: "",
     viewport: [1, 0, 0, 1, 0, 0],
     eventTime: 0,
     width: 0,
     height: 0
-  };
-
-  const renderCanvas = (newData: ICanvasData) => {
-    if (!fabricCanvasRef) return;
-    const isCanvasDataChanged = canvasData.canvasJSON !== newData.canvasJSON;
-    const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newData.viewport);
-    const isSizeChanged = canvasData.width !== newData.width || canvasData.height !== newData.width;
-
-    // 캔버스 데이터 업데이트
-    if (isCanvasDataChanged) fabricCanvasRef.loadFromJSON(newData.canvasJSON, () => {});
-    // 캔버스 뷰포트 업데이트
-    if (isViewportChanged) fabricCanvasRef.setViewportTransform(newData.viewport);
-    // 캔버스 크기 업데이트
-    if (isSizeChanged) {
-      // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
-      const HEADER_HEIGHT = 80;
-      const newHegiht = window.innerWidth * (newData.height / newData.width);
-      if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
-        const newWidth = (window.innerHeight - HEADER_HEIGHT) * (newData.width / newData.height);
-        fabricCanvasRef.setDimensions({
-          width: newWidth,
-          height: window.innerHeight - HEADER_HEIGHT
-        });
-      } else {
-        fabricCanvasRef.setDimensions({
-          width: window.innerWidth,
-          height: newHegiht
-        });
-      }
-      // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
-      fabricCanvasRef.setDimensions(
-        {
-          width: newData.width,
-          height: newData.height
-        },
-        { backstoreOnly: true }
-      );
-    }
   };
 
   const leaveLecture = () => {
@@ -244,7 +200,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
-    renderCanvas(data.whiteboard);
+    loadCanvasData(fabricCanvasRef!, canvasData, data.whiteboard);
     pcRef.current.setRemoteDescription(data.SDP);
   };
   const handleServerCandidate = (data: any) => {
@@ -271,9 +227,8 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       }
     });
     setParticipantSocket(socketRef2.current);
-    socketRef2.current.on("connect", () => console.log("소켓이 성공적으로 연결되었습니다."));
     socketRef2.current.on("ended", () => handleLectureEnd());
-    socketRef2.current.on("update", (data) => renderCanvas(data.content));
+    socketRef2.current.on("update", (data) => loadCanvasData(fabricCanvasRef!, canvasData, data.content));
   };
 
   const startAnalyse = () => {

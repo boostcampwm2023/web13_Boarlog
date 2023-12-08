@@ -12,6 +12,7 @@ import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
+import { ICanvasData, saveCanvasData } from "./fabricCanvasUtil";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolumeGainState from "@/stores/stateMicVolumeGain";
@@ -256,7 +257,11 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     const pcmData = new Float32Array(analyser.fftSize);
 
     const onFrame = () => {
-      saveCanvasData();
+      if (!fabricCanvasRef) return;
+      saveCanvasData(fabricCanvasRef, canvasData, startTime).then(() => {
+        submitData(canvasData);
+      });
+
       gainNode.gain.value = inputMicVolumeRef.current;
 
       analyser.getFloatTimeDomainData(pcmData);
@@ -320,6 +325,14 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     }
   };
 
+  let canvasData: ICanvasData = {
+    canvasJSON: "",
+    viewport: [1, 0, 0, 1, 0, 0],
+    eventTime: 0,
+    width: 0,
+    height: 0
+  };
+
   const submitData = (data: ICanvasData) => {
     if (!socketRef2.current) return;
     socketRef2.current.emit("edit", {
@@ -328,42 +341,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       content: data
     });
   };
-
-  interface ICanvasData {
-    canvasJSON: string;
-    viewport: number[];
-    eventTime: number;
-    width: number;
-    height: number;
-  }
-  let canvasData: ICanvasData = {
-    canvasJSON: "",
-    viewport: [1, 0, 0, 1, 0, 0],
-    eventTime: 0,
-    width: 0,
-    height: 0
-  };
-  function saveCanvasData() {
-    if (!fabricCanvasRef || !fabricCanvasRef.viewportTransform) return;
-
-    const newJSONData = JSON.stringify(fabricCanvasRef);
-    const newViewport = fabricCanvasRef.viewportTransform;
-    const newWidth = fabricCanvasRef.getWidth();
-    const newHeight = fabricCanvasRef.getHeight();
-
-    const isCanvasDataChanged = canvasData.canvasJSON !== newJSONData;
-    const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newViewport);
-    const isSizeChanged = canvasData.width !== newWidth || canvasData.height !== newHeight;
-
-    if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
-      canvasData.canvasJSON = newJSONData;
-      canvasData.viewport = newViewport;
-      canvasData.eventTime = Date.now() - startTime;
-      canvasData.width = newWidth;
-      canvasData.height = newHeight;
-      submitData(canvasData);
-    }
-  }
 
   return (
     <>
