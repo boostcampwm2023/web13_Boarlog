@@ -13,8 +13,8 @@ export class AuthController {
 
   @Post('/signup')
   @ApiBody({ type: SignUpDto })
-  signUp(@Body() signUpDto: SignUpDto) {
-    const user = this.authService.findUser(signUpDto.email);
+  async signUp(@Body() signUpDto: SignUpDto) {
+    const user = await this.authService.findUser(signUpDto.email);
     if (user) {
       throw new HttpException('이미 가입되어 있는 사용자입니다.', HttpStatus.CONFLICT);
     }

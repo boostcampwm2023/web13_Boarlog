@@ -7,16 +7,19 @@ import { User } from 'src/user/user.schema';
 import { SignUpDto } from './dto/auth.signup.dto';
 import { UserInfoDto } from './dto/userInfo.dto';
 import { SignInDto } from './dto/auth.signin.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private configService: ConfigService
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<User> {
-    signUpDto.password = await bcrypt.hash(signUpDto.password, 10);
+    const saltOrRounds = parseInt(this.configService.get<string>('SALT_OR_ROUNDS'));
+    signUpDto.password = await bcrypt.hash(signUpDto.password, saltOrRounds);
     const user = new this.userModel(signUpDto);
     return await user.save();
   }
