@@ -106,18 +106,18 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     isLectureStartRef.current = false;
     setElapsedTime(0);
 
+    if (!socketRef2.current) return;
+    socketRef2.current.emit("end", {
+      type: "lecture",
+      roomId: roomid
+    });
+
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
     if (socketRef2.current) socketRef2.current.disconnect(); // 소켓 연결 해제
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
-
-    if (!socketRef2.current) return;
-    socketRef2.current.emit("end", {
-      type: "lecture",
-      roomId: roomid
-    });
 
     setIsCloseModalOpen(false);
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
