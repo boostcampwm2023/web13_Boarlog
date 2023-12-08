@@ -90,12 +90,9 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       showToast({ message: "음성 입력장치(마이크)를 먼저 선택해 주세요.", type: "alert" });
       return;
     }
-
     setIsStartModalOpen(false);
-
     await initConnection();
     await createPresenterOffer();
-    await listenForServerAnswer();
   };
 
   const stopLecture = () => {
@@ -134,10 +131,9 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
           refreshToken: "sample"
         }
       });
-      socketRef.current.on("connect_error", (err) => {
-        console.error(err.message);
-        showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
-      });
+      socketRef.current.on("connect_error", (err) => handleServerError(err));
+      socketRef.current.on(`serverAnswer`, (data) => handleServerAnswer(data));
+      socketRef.current.on(`serverCandidate`, (data) => handleServerCandidate(data));
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
@@ -150,11 +146,10 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
       // RTCPeerConnection 생성
       pcRef.current = new RTCPeerConnection(pc_config);
-      // 발표자의 오디오, 미디어(canvas) 트랙을 RTCPeerConnection에 추가
+      // 발표자의 오디오 트랙을 RTCPeerConnection에 추가
       if (updatedStreamRef.current) {
         updatedStreamRef.current.getTracks().forEach((track) => {
-          if (!updatedStreamRef.current) return;
-          if (!pcRef.current) return;
+          if (!updatedStreamRef.current || !pcRef.current) return;
           pcRef.current.addTrack(track, updatedStreamRef.current);
         });
       } else {
@@ -163,31 +158,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
       // 서버와 webRTC 연결이 성공했을 때의 동작
       pcRef.current.oniceconnectionstatechange = () => {
-        if (!pcRef.current) return;
-        console.log("ICE 연결 상태:", pcRef.current.iceConnectionState);
-        if (pcRef.current.iceConnectionState === "connected") {
-          // 아래 내용 함수로 분리하겠습니다.
-          isLectureStartRef.current = true;
-          startTime = Date.now();
-          startTimer();
-          showToast({ message: "강의가 시작되었습니다.", type: "success" });
-
-          if (!managerRef.current) return;
-          socketRef2.current = managerRef.current.socket("/lecture", {
-            auth: {
-              accessToken: sampleAccessToken,
-              refreshToken: "sample"
-            }
-          });
-          setInstructorSocket(socketRef2.current);
-          submitData(canvasData);
-          socketRef2.current.on("asked", (data) => {
-            console.log(data);
-          });
-          socketRef2.current.on("response", (data) => {
-            console.log(data);
-          });
-          console.log("연결 성공!");
+        if (pcRef.current?.iceConnectionState === "connected") {
+          handleConnected();
         }
       };
     } catch (error) {
@@ -219,8 +191,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     // 5. 발표자의 candidate 수집
     if (!pcRef.current) return;
     pcRef.current.onicecandidate = (e) => {
-      if (e.candidate) {
-        if (!socketRef.current) return;
+      if (e.candidate && socketRef.current) {
         socketRef.current.emit("clientCandidate", {
           candidate: e.candidate,
           presenterSocketId: socketRef.current.id
@@ -229,20 +200,35 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     };
   }
 
-  async function listenForServerAnswer() {
-    // 6. 서버로부터 answer 받음
-    if (!socketRef.current) return;
-    socketRef.current.on(`serverAnswer`, (data) => {
-      if (!pcRef.current) return;
-      console.log("6. remoteDescription 설정완료");
-      pcRef.current.setRemoteDescription(data.SDP);
+  const handleServerAnswer = (data: any) => {
+    if (!pcRef.current) return;
+    console.log("6. remoteDescription 설정완료");
+    pcRef.current.setRemoteDescription(data.SDP);
+  };
+  const handleServerCandidate = (data: any) => {
+    if (!pcRef.current) return;
+    console.log("7. 서버로부터 candidate 받음");
+    pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+  };
+  const handleConnected = () => {
+    isLectureStartRef.current = true;
+    startTime = Date.now();
+    startTimer();
+    showToast({ message: "강의가 시작되었습니다.", type: "success" });
+    if (!managerRef.current) return;
+    socketRef2.current = managerRef.current.socket("/lecture", {
+      auth: {
+        accessToken: sampleAccessToken,
+        refreshToken: "sample"
+      }
     });
-    socketRef.current.on(`serverCandidate`, (data) => {
-      if (!pcRef.current) return;
-      console.log("7. 서버로부터 candidate 받음");
-      pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
-    });
-  }
+    setInstructorSocket(socketRef2.current);
+    submitData(canvasData);
+  };
+  const handleServerError = (err: any) => {
+    console.error(err.message);
+    showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
 
   // 사용자에게 입력받은 MediaStream을 분석/변환하여 updatedStream으로 바꿔주는 함수
   const setupAudioAnalysis = (stream: MediaStream) => {

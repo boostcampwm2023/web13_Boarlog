@@ -86,42 +86,16 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   }, [selectedSpeaker]);
 
   const enterLecture = async () => {
-    //showToast({ message: "서버에 접속하는 중입니다.", type: "default" });
     await initConnection();
     await createStudentOffer();
-    await setServerAnswer();
 
+    // 서버와 webRTC 연결이 성공했을 때의 동작
     if (!pcRef.current) return;
     pcRef.current.oniceconnectionstatechange = () => {
       if (!pcRef.current) return;
       if (pcRef.current.iceConnectionState === "connected") {
-        showToast({ message: "강의가 시작되었습니다.", type: "success" });
-        showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
+        handleConnected();
       }
-
-      if (!managerRef.current) return;
-      socketRef2.current = managerRef.current.socket("/lecture", {
-        auth: {
-          accessToken: sampleAccessToken,
-          refreshToken: "sample"
-        }
-      });
-      setParticipantSocket(socketRef2.current);
-      socketRef2.current.on("connect", () => {
-        console.log("소켓이 성공적으로 연결되었습니다.");
-      });
-      socketRef2.current.on("connect_error", (err) => {
-        console.error(err.message);
-      });
-      socketRef2.current.on("ended", () => {
-        showToast({ message: "강의가 종료되었습니다.", type: "alert" });
-        leaveLecture();
-        navigate("/lecture-end");
-      });
-      socketRef2.current.on("update", (data) => {
-        // 캔버스 데이터 업데이트
-        renderCanvas(data.content);
-      });
     };
     pcRef.current.ontrack = (event) => {
       if (!mediaStreamRef.current || !localAudioRef.current) return;
@@ -146,7 +120,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     width: 0,
     height: 0
   };
-  //{ newData }: { newData: any }
+
   const renderCanvas = (newData: ICanvasData) => {
     if (!fabricCanvasRef) return;
     const isCanvasDataChanged = canvasData.canvasJSON !== newData.canvasJSON;
@@ -195,7 +169,6 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     });
 
     if (localAudioRef.current) localAudioRef.current.srcObject = null;
-
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
@@ -209,22 +182,22 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const initConnection = async () => {
     try {
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
+      // guest 판별 로직 추가 예정
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
           accessToken: sampleAccessToken,
           refreshToken: "test"
         }
       });
-      socketRef.current.on("connect_error", (err) => {
-        console.error(err.message);
-        showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
-      });
+
+      if (!socketRef.current) return;
+      socketRef.current.on(`serverAnswer`, (data) => handleServerAnswer(data));
+      socketRef.current.on(`serverCandidate`, (data) => handleServerCandidate(data));
+      socketRef.current.on("connect_error", (err) => handleServerError(err));
 
       pcRef.current = new RTCPeerConnection(pc_config);
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
-
-      console.log("initConnection");
     } catch (e) {
       console.error("연결 에러", e);
     }
@@ -253,8 +226,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   function getStudentCandidate() {
     if (!pcRef.current) return;
     pcRef.current.onicecandidate = (e) => {
-      if (e.candidate) {
-        if (!socketRef.current) return;
+      if (e.candidate && socketRef.current) {
         socketRef.current.emit("clientCandidate", {
           candidate: e.candidate,
           studentSocketId: socketRef.current.id
@@ -263,28 +235,46 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
   }
 
-  async function setServerAnswer() {
-    if (!socketRef.current) return;
-    socketRef.current.on(`serverAnswer`, (data) => {
-      if (!pcRef.current) return;
-
-      const startTime = new Date(data.startTime).getTime();
-
-      const updateElapsedTime = () => {
-        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-        setElapsedTime(elapsedTime);
-      };
-      const timer = setInterval(updateElapsedTime, 1000);
-      timerIdRef.current = timer;
-      renderCanvas(data.whiteboard);
-
-      pcRef.current.setRemoteDescription(data.SDP);
+  const handleServerAnswer = (data: any) => {
+    if (!pcRef.current) return;
+    const startTime = new Date(data.startTime).getTime();
+    const updateElapsedTime = () => {
+      const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      setElapsedTime(elapsedTime);
+    };
+    const timer = setInterval(updateElapsedTime, 1000);
+    timerIdRef.current = timer;
+    renderCanvas(data.whiteboard);
+    pcRef.current.setRemoteDescription(data.SDP);
+  };
+  const handleServerCandidate = (data: any) => {
+    if (!pcRef.current) return;
+    pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+  };
+  const handleServerError = (err: any) => {
+    console.error(err.message);
+    showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
+  const handleLectureEnd = () => {
+    showToast({ message: "강의가 종료되었습니다.", type: "alert" });
+    leaveLecture();
+    navigate("/lecture-end");
+  };
+  const handleConnected = () => {
+    showToast({ message: "강의가 시작되었습니다.", type: "success" });
+    showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
+    if (!managerRef.current) return;
+    socketRef2.current = managerRef.current.socket("/lecture", {
+      auth: {
+        accessToken: sampleAccessToken,
+        refreshToken: "sample"
+      }
     });
-    socketRef.current.on(`serverCandidate`, (data) => {
-      if (!pcRef.current) return;
-      pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
-    });
-  }
+    setParticipantSocket(socketRef2.current);
+    socketRef2.current.on("connect", () => console.log("소켓이 성공적으로 연결되었습니다."));
+    socketRef2.current.on("ended", () => handleLectureEnd());
+    socketRef2.current.on("update", (data) => renderCanvas(data.content));
+  };
 
   const startAnalyse = () => {
     if (!mediaStreamRef.current) return;
