@@ -4,7 +4,7 @@ import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 import { useEffect, useRef, useState } from "react";
 import { useRecoilValue } from "recoil";
 import { useLocation } from "react-router-dom";
-import convertMsToTimeString from "@/utils/convertMsToTimeString";
+import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 import axios from "axios";
 
 interface LogItemInterface {

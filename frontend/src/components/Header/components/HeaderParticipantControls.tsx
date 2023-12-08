@@ -1,4 +1,3 @@
-// 이번 주 일요일까지 파일 분리, 리팩토링 하겠습니다.
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
@@ -13,6 +12,7 @@ import Modal from "@/components/Modal/Modal";
 
 import { useToast } from "@/components/Toast/useToast";
 import { ICanvasData, loadCanvasData } from "./fabricCanvasUtil";
+import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
@@ -67,8 +67,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   useEffect(() => {
     setDidMount(true);
     const backToMain = () => {
-      leaveLecture();
-      navigate("/");
+      leaveLecture({ isLectureEnd: false });
       window.removeEventListener("popstate", backToMain);
     };
     window.addEventListener("popstate", backToMain);
@@ -117,9 +116,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     height: 0
   };
 
-  const leaveLecture = () => {
-    setElapsedTime(0);
-
+  const leaveLecture = ({ isLectureEnd }: { isLectureEnd: boolean }) => {
     if (!socketRef2.current) return;
     socketRef2.current.emit("leave", {
       type: "lecture",
@@ -135,6 +132,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsModalOpen(false);
+    isLectureEnd ? navigate("/lecture-end") : navigate("/");
   };
 
   const initConnection = async () => {
@@ -193,46 +191,6 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
   }
 
-  const handleServerAnswer = (data: any) => {
-    if (!pcRef.current) return;
-    const startTime = new Date(data.startTime).getTime();
-    const updateElapsedTime = () => {
-      const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-      setElapsedTime(elapsedTime);
-    };
-    const timer = setInterval(updateElapsedTime, 1000);
-    timerIdRef.current = timer;
-    loadCanvasData(fabricCanvasRef!, canvasData, data.whiteboard);
-    pcRef.current.setRemoteDescription(data.SDP);
-  };
-  const handleServerCandidate = (data: any) => {
-    if (!pcRef.current) return;
-    pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
-  };
-  const handleServerError = (err: any) => {
-    console.error(err.message);
-    showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
-  };
-  const handleLectureEnd = () => {
-    showToast({ message: "강의가 종료되었습니다.", type: "alert" });
-    leaveLecture();
-    navigate("/lecture-end");
-  };
-  const handleConnected = () => {
-    showToast({ message: "강의가 시작되었습니다.", type: "success" });
-    showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
-    if (!managerRef.current) return;
-    socketRef2.current = managerRef.current.socket("/lecture", {
-      auth: {
-        accessToken: sampleAccessToken,
-        refreshToken: "sample"
-      }
-    });
-    setParticipantSocket(socketRef2.current);
-    socketRef2.current.on("ended", () => handleLectureEnd());
-    socketRef2.current.on("update", (data) => loadCanvasData(fabricCanvasRef!, canvasData, data.content));
-  };
-
   const startAnalyse = () => {
     if (!mediaStreamRef.current) return;
     audioContextRef.current = new AudioContext();
@@ -271,16 +229,50 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     }
   };
 
+  const handleServerAnswer = (data: any) => {
+    if (!pcRef.current) return;
+    const startTime = new Date(data.startTime).getTime();
+    const updateElapsedTime = () => {
+      const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+      setElapsedTime(elapsedTime);
+    };
+    const timer = setInterval(updateElapsedTime, 1000);
+    timerIdRef.current = timer;
+    loadCanvasData(fabricCanvasRef!, canvasData, data.whiteboard);
+    pcRef.current.setRemoteDescription(data.SDP);
+  };
+  const handleServerCandidate = (data: any) => {
+    if (!pcRef.current) return;
+    pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+  };
+  const handleServerError = (err: any) => {
+    console.error(err.message);
+    showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
+  const handleLectureEnd = () => {
+    showToast({ message: "강의가 종료되었습니다.", type: "alert" });
+    leaveLecture({ isLectureEnd: true });
+  };
+  const handleConnected = () => {
+    showToast({ message: "강의가 시작되었습니다.", type: "success" });
+    showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
+    if (!managerRef.current) return;
+    socketRef2.current = managerRef.current.socket("/lecture", {
+      auth: {
+        accessToken: sampleAccessToken,
+        refreshToken: "sample"
+      }
+    });
+    setParticipantSocket(socketRef2.current);
+    socketRef2.current.on("ended", () => handleLectureEnd());
+    socketRef2.current.on("update", (data) => loadCanvasData(fabricCanvasRef!, canvasData, data.content));
+  };
+
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
         <VolumeMeter />
-        <p className="semibold-20 text-boarlog-100">
-          {Math.floor(elapsedTime / 60)
-            .toString()
-            .padStart(2, "0")}
-          :{(elapsedTime % 60).toString().padStart(2, "0")}
-        </p>
+        <p className="semibold-20 text-boarlog-100">{convertMsTohhmm(elapsedTime)}</p>
       </div>
 
       <SmallButton className={`text-grayscale-white bg-alert-100`} onClick={() => setIsModalOpen(true)}>
@@ -301,8 +293,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
         cancelButtonStyle="black"
         confirmButtonStyle="red"
         confirmClick={() => {
-          leaveLecture();
-          navigate("/");
+          leaveLecture({ isLectureEnd: false });
         }}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}

@@ -1,4 +1,3 @@
-// 이번 주 일요일까지 파일 분리, 리팩토링 하겠습니다.
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
@@ -14,6 +13,7 @@ import Modal from "@/components/Modal/Modal";
 
 import { useToast } from "@/components/Toast/useToast";
 import { ICanvasData, saveCanvasData } from "./fabricCanvasUtil";
+import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
@@ -72,12 +72,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   useEffect(() => {
     setLectureCode(roomid);
-    const backToMain = () => {
-      stopLecture();
-      navigate("/");
-      window.removeEventListener("popstate", backToMain);
-    };
-    window.addEventListener("popstate", backToMain);
+    window.addEventListener("popstate", handlePopstate);
   }, []);
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
@@ -203,36 +198,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     };
   }
 
-  const handleServerAnswer = (data: any) => {
-    if (!pcRef.current) return;
-    console.log("6. remoteDescription 설정완료");
-    pcRef.current.setRemoteDescription(data.SDP);
-  };
-  const handleServerCandidate = (data: any) => {
-    if (!pcRef.current) return;
-    console.log("7. 서버로부터 candidate 받음");
-    pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
-  };
-  const handleConnected = () => {
-    isLectureStartRef.current = true;
-    startTime = Date.now();
-    startTimer();
-    showToast({ message: "강의가 시작되었습니다.", type: "success" });
-    if (!managerRef.current) return;
-    socketRef2.current = managerRef.current.socket("/lecture", {
-      auth: {
-        accessToken: sampleAccessToken,
-        refreshToken: "sample"
-      }
-    });
-    setInstructorSocket(socketRef2.current);
-    submitData(canvasData);
-  };
-  const handleServerError = (err: any) => {
-    console.error(err.message);
-    showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
-  };
-
   // 사용자에게 입력받은 MediaStream을 분석/변환하여 updatedStream으로 바꿔주는 함수
   const setupAudioAnalysis = (stream: MediaStream) => {
     // Web Audio API에서 오디오를 다루기 위한 기본 객체 AudioContext 생성
@@ -285,17 +250,13 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: selectedMicrophone }
       });
-
       if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 기존 미디어 트랙 중지
       mediaStreamRef.current = stream;
 
       await setupAudioAnalysis(stream);
 
       if (!updatedStreamRef.current || !pcRef.current) return;
-
       const newAudioTrack = updatedStreamRef.current.getAudioTracks()[0];
-      // 기존트랙: pcRef.current.getSenders()[0].track
-      // 새트랙: updatedStreamRef.current.getAudioTracks()[0]
       pcRef.current.getSenders()[0].replaceTrack(newAudioTrack);
     } catch (error) {
       console.error("오디오 replace 작업 실패", error);
@@ -332,16 +293,46 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     });
   };
 
+  const handleServerAnswer = (data: any) => {
+    if (!pcRef.current) return;
+    console.log("6. remoteDescription 설정완료");
+    pcRef.current.setRemoteDescription(data.SDP);
+  };
+  const handleServerCandidate = (data: any) => {
+    if (!pcRef.current) return;
+    console.log("7. 서버로부터 candidate 받음");
+    pcRef.current.addIceCandidate(new RTCIceCandidate(data.candidate));
+  };
+  const handleConnected = () => {
+    isLectureStartRef.current = true;
+    startTime = Date.now();
+    startTimer();
+    showToast({ message: "강의가 시작되었습니다.", type: "success" });
+    if (!managerRef.current) return;
+    socketRef2.current = managerRef.current.socket("/lecture", {
+      auth: {
+        accessToken: sampleAccessToken,
+        refreshToken: "sample"
+      }
+    });
+    setInstructorSocket(socketRef2.current);
+    submitData(canvasData);
+  };
+  const handleServerError = (err: any) => {
+    console.error(err.message);
+    showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
+  const handlePopstate = () => {
+    stopLecture();
+    navigate("/");
+    window.removeEventListener("popstate", handlePopstate);
+  };
+
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
         <VolumeMeter />
-        <p className="semibold-20 text-boarlog-100">
-          {Math.floor(elapsedTime / 60)
-            .toString()
-            .padStart(2, "0")}
-          :{(elapsedTime % 60).toString().padStart(2, "0")}
-        </p>
+        <p className="semibold-20 text-boarlog-100">{convertMsTohhmm(elapsedTime)}</p>
       </div>
 
       <SmallButton
