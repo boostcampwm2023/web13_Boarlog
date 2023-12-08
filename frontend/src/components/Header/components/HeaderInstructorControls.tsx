@@ -11,8 +11,10 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
+
 import { useToast } from "@/components/Toast/useToast";
 import { ICanvasData, saveCanvasData } from "./fabricCanvasUtil";
+import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolumeGainState from "@/stores/stateMicVolumeGain";
@@ -254,24 +256,12 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     // 업데이트된 미디어 스트림을 앞으로 참조하도록 설정
     updatedStreamRef.current = mediaStreamDestination.stream;
 
-    const pcmData = new Float32Array(analyser.fftSize);
-
     const onFrame = () => {
-      if (!fabricCanvasRef) return;
-      saveCanvasData(fabricCanvasRef, canvasData, startTime).then(() => {
+      saveCanvasData(fabricCanvasRef!, canvasData, startTime).then(() => {
         submitData(canvasData);
       });
-
       gainNode.gain.value = inputMicVolumeRef.current;
-
-      analyser.getFloatTimeDomainData(pcmData);
-      let sum = 0.0;
-      for (const amplitude of pcmData) {
-        sum += amplitude * amplitude;
-      }
-      const rms = Math.sqrt(sum / pcmData.length);
-      const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolumeState(normalizedVolume);
+      setMicVolumeState(calcNormalizedVolume(analyser));
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);

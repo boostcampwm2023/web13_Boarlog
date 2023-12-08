@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useToast } from "@/components/Toast/useToast";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -11,7 +10,10 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
+
+import { useToast } from "@/components/Toast/useToast";
 import { ICanvasData, loadCanvasData } from "./fabricCanvasUtil";
+import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
 import speakerVolmeState from "@/stores/stateSpeakerVolume";
@@ -243,18 +245,9 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     gainNode.connect(analyser);
     gainNode.connect(destination);
 
-    const pcmData = new Float32Array(analyser.fftSize);
-
     const onFrame = () => {
       gainNode.gain.value = speakerVolumeRef.current;
-      analyser.getFloatTimeDomainData(pcmData);
-      let sum = 0.0;
-      for (const amplitude of pcmData) {
-        sum += amplitude * amplitude;
-      }
-      const rms = Math.sqrt(sum / pcmData.length);
-      const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolumeState(normalizedVolume);
+      setMicVolumeState(calcNormalizedVolume(analyser));
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
