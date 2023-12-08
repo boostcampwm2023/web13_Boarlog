@@ -42,7 +42,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
-  const socketRef2 = useRef<Socket>();
+  const lectureSocketRef = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
@@ -117,8 +117,8 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   };
 
   const leaveLecture = ({ isLectureEnd }: { isLectureEnd: boolean }) => {
-    if (!socketRef2.current) return;
-    socketRef2.current.emit("leave", {
+    if (!lectureSocketRef.current) return;
+    lectureSocketRef.current.emit("leave", {
       type: "lecture",
       roomId: roomid
     });
@@ -127,7 +127,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
-    if (socketRef2.current) socketRef2.current.disconnect(); // 소켓 연결 해제
+    if (lectureSocketRef.current) lectureSocketRef.current.disconnect(); // 소켓 연결 해제
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
@@ -257,15 +257,15 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     showToast({ message: "강의가 시작되었습니다.", type: "success" });
     showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
     if (!managerRef.current) return;
-    socketRef2.current = managerRef.current.socket("/lecture", {
+    lectureSocketRef.current = managerRef.current.socket("/lecture", {
       auth: {
         accessToken: sampleAccessToken,
         refreshToken: "sample"
       }
     });
-    setParticipantSocket(socketRef2.current);
-    socketRef2.current.on("ended", () => handleLectureEnd());
-    socketRef2.current.on("update", (data) => loadCanvasData(fabricCanvasRef!, canvasData, data.content));
+    setParticipantSocket(lectureSocketRef.current);
+    lectureSocketRef.current.on("ended", () => handleLectureEnd());
+    lectureSocketRef.current.on("update", (data) => loadCanvasData(fabricCanvasRef!, canvasData, data.content));
   };
 
   return (
