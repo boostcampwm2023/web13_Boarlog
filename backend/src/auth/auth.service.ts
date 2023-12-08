@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/user/user.schema';
+import { SignUpDto } from './dto/auth.signup.dto';
 import { UserInfoDto } from './dto/userInfo.dto';
+import { SignInDto } from './dto/auth.signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,9 +15,20 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async signUp(userInfo: UserInfoDto): Promise<User> {
-    const user = new this.userModel(userInfo);
+  async signUp(signUpDto: SignUpDto): Promise<User> {
+    signUpDto.password = await bcrypt.hash(signUpDto.password, 10);
+    const user = new this.userModel(signUpDto);
     return await user.save();
+  }
+
+  async signIn(signInDto: SignInDto): Promise<string> {
+    const user = await this.findUser(signInDto.email);
+    const validatedPassword = await bcrypt.compare(signInDto.password, user.password);
+    if (!user || !validatedPassword) {
+      throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    const userInfo = new UserInfoDto({ username: user.username, email: user.email });
+    return await this.generateCookie(userInfo);
   }
 
   async findUser(email: string): Promise<User> {
@@ -22,7 +36,7 @@ export class AuthService {
   }
 
   async generateCookie(userInfo: UserInfoDto) {
-    const token = await this.jwtService.signAsync(userInfo);
-    return `Authentication=${token}; HttpOnly; Path=/; Max-Age=3600`;
+    const token = await this.jwtService.signAsync({ username: userInfo.username, email: userInfo.email });
+    return token;
   }
 }
