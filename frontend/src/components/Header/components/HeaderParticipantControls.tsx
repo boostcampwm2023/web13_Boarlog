@@ -91,30 +91,6 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     await createStudentOffer();
     await setServerAnswer();
 
-    if (!managerRef.current) return;
-    socketRef2.current = managerRef.current.socket("/lecture", {
-      auth: {
-        accessToken: sampleAccessToken,
-        refreshToken: "sample"
-      }
-    });
-    setParticipantSocket(socketRef2.current);
-    socketRef2.current.on("connect", () => {
-      console.log("소켓이 성공적으로 연결되었습니다.");
-    });
-    socketRef2.current.on("connect_error", (err) => {
-      console.error(err.message);
-    });
-    socketRef2.current.on("ended", () => {
-      showToast({ message: "강의가 종료되었습니다.", type: "alert" });
-      leaveLecture();
-      navigate("/lecture-end");
-    });
-    socketRef2.current.on("update", (data) => {
-      // 캔버스 데이터 업데이트
-      renderCanvas(data.content);
-    });
-
     if (!pcRef.current) return;
     pcRef.current.oniceconnectionstatechange = () => {
       if (!pcRef.current) return;
@@ -122,6 +98,30 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
         showToast({ message: "강의가 시작되었습니다.", type: "success" });
         showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
       }
+
+      if (!managerRef.current) return;
+      socketRef2.current = managerRef.current.socket("/lecture", {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: "sample"
+        }
+      });
+      setParticipantSocket(socketRef2.current);
+      socketRef2.current.on("connect", () => {
+        console.log("소켓이 성공적으로 연결되었습니다.");
+      });
+      socketRef2.current.on("connect_error", (err) => {
+        console.error(err.message);
+      });
+      socketRef2.current.on("ended", () => {
+        showToast({ message: "강의가 종료되었습니다.", type: "alert" });
+        leaveLecture();
+        navigate("/lecture-end");
+      });
+      socketRef2.current.on("update", (data) => {
+        // 캔버스 데이터 업데이트
+        renderCanvas(data.content);
+      });
     };
     pcRef.current.ontrack = (event) => {
       if (!mediaStreamRef.current || !localAudioRef.current) return;
