@@ -12,7 +12,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
 import { useToast } from "@/components/Toast/useToast";
-import { ICanvasData, saveCanvasData } from "./fabricCanvasUtil";
+import { ICanvasData, saveCanvasData } from "../../../utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
@@ -100,6 +100,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     }
     isLectureStartRef.current = false;
     setElapsedTime(0);
+
+    console.log(replayFileArray);
 
     if (!lectureSocketRef.current) return;
     lectureSocketRef.current.emit("end", {
@@ -283,6 +285,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     width: 0,
     height: 0
   };
+  let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
     if (!lectureSocketRef.current) return;
@@ -291,6 +294,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       roomId: roomid,
       content: data
     });
+    replayFileArray.push({ ...data });
+    console.log(replayFileArray);
   };
 
   const handleServerAnswer = (data: any) => {

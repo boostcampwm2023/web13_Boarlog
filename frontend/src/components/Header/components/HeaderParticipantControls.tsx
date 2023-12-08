@@ -11,7 +11,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
 import { useToast } from "@/components/Toast/useToast";
-import { ICanvasData, loadCanvasData } from "./fabricCanvasUtil";
+import { ICanvasData, loadCanvasData } from "@/utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
