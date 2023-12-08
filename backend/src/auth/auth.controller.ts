@@ -4,7 +4,7 @@ import { ApiBody, ApiCookieAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CustomAuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
-import { UserInfoDto } from './dto/userInfo.dto';
+import { SignUpDto } from './dto/auth.signup.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -12,9 +12,9 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/signup')
-  @ApiBody({ type: UserInfoDto })
-  signUp(@Body() userInfo: UserInfoDto) {
-    return this.authService.signUp(userInfo);
+  @ApiBody({ type: SignUpDto })
+  signUp(@Body() signUpDto: SignUpDto) {
+    return this.authService.signUp(signUpDto);
   }
 
   @Get('/signin')
