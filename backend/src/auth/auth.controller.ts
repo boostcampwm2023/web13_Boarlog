@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CustomAuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
@@ -13,6 +13,8 @@ export class AuthController {
 
   @Post('/signup')
   @ApiBody({ type: SignUpDto })
+  @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 409, description: '이미 가입되어 있는 사용자입니다.' })
   async signUp(@Body() signUpDto: SignUpDto) {
     const user = await this.authService.findUser(signUpDto.email);
     if (user) {
@@ -23,6 +25,8 @@ export class AuthController {
 
   @Post('/signin')
   @ApiBody({ type: SignInDto })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 404, description: '해당 사용자가 없습니다.' })
   async signIn(@Body() signInDto: SignInDto, @Res() res: Response) {
     const user = this.authService.findUser(signInDto.email);
     if (!user) {

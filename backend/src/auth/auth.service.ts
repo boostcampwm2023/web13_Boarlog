@@ -17,11 +17,11 @@ export class AuthService {
     private configService: ConfigService
   ) {}
 
-  async signUp(signUpDto: SignUpDto): Promise<User> {
+  async signUp(signUpDto: SignUpDto) {
     const saltOrRounds = parseInt(this.configService.get<string>('SALT_OR_ROUNDS'));
     signUpDto.password = await bcrypt.hash(signUpDto.password, saltOrRounds);
-    const user = new this.userModel(signUpDto);
-    return await user.save();
+    const user = await new this.userModel(signUpDto).save();
+    return { username: user.username, email: user.email };
   }
 
   async signIn(signInDto: SignInDto): Promise<string> {
