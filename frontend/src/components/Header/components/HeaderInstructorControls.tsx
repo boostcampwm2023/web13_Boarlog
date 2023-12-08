@@ -222,8 +222,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     updatedStreamRef.current = mediaStreamDestination.stream;
 
     const onFrame = () => {
-      saveCanvasData(fabricCanvasRef!, canvasData, startTime).then(() => {
-        submitData(canvasData);
+      saveCanvasData(fabricCanvasRef!, canvasData, startTime).then((isChanged) => {
+        if (isChanged) submitData(canvasData);
       });
       gainNode.gain.value = inputMicVolumeRef.current;
       setMicVolumeState(calcNormalizedVolume(analyser));

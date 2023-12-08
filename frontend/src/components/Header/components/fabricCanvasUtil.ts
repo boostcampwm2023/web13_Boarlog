@@ -24,6 +24,9 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
     currentData.eventTime = Date.now() - startTime;
     currentData.width = newWidth;
     currentData.height = newHeight;
+    return true;
+  } else {
+    return false;
   }
 };
 export const loadCanvasData = (fabricCanvas: fabric.Canvas, currentData: ICanvasData, newData: ICanvasData) => {
