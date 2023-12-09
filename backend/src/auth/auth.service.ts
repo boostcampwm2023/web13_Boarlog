@@ -1,4 +1,3 @@
-import * as bcrypt from 'bcrypt';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
@@ -7,6 +6,7 @@ import { User } from 'src/user/user.schema';
 import { SignUpDto } from './dto/auth.signup.dto';
 import { SignInDto } from './dto/auth.signin.dto';
 import { ConfigService } from '@nestjs/config';
+import { decryptPassword, encryptPassword } from 'src/utils/GenerateUtils';
 
 @Injectable()
 export class AuthService {
@@ -17,15 +17,14 @@ export class AuthService {
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
-    const saltOrRounds = parseInt(this.configService.get<string>('SALT_OR_ROUNDS'));
-    signUpDto.password = await bcrypt.hash(signUpDto.password, saltOrRounds);
+    signUpDto.password = await encryptPassword(signUpDto.password);
     const user = await new this.userModel(signUpDto).save();
     return { username: user.username, email: user.email };
   }
 
   async signIn(signInDto: SignInDto): Promise<string> {
     const user = await this.findUserByEmail(signInDto.email);
-    const validatedPassword = await bcrypt.compare(signInDto.password, user.password);
+    const validatedPassword = await decryptPassword(signInDto.password, user.password);
     if (!user || !validatedPassword) {
       throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
     }
