@@ -13,7 +13,7 @@ import Header from "@/components/Header/Header";
 import ProgressBar from "./components/ProgressBar";
 
 // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
-const TOTAL_MS_TIME_OF_REVIEW = 60000;
+const TOTAL_MS_TIME_OF_REVIEW = 200000;
 
 const Review = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -1,16 +1,21 @@
 import SendMessage from "@/assets/svgs/sendMessage.svg?react";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
-import { useEffect, useRef, useState } from "react";
-import { useRecoilValue } from "recoil";
+import { CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { useLocation } from "react-router-dom";
 import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 import axios from "axios";
+import progressMsTimeState from "@/stores/stateProgressMsTime";
+import convertTimeStringToMS from "@/utils/converTimeStringToMS";
 
 interface LogItemInterface {
   key?: string;
   title: string;
   contents: string;
+  className?: string;
+  onClick?: any;
+  style?: CSSProperties;
 }
 
 interface LogContainerInterface {
@@ -18,9 +23,13 @@ interface LogContainerInterface {
   className: string;
 }
 
-const LogItem = ({ title, contents }: LogItemInterface) => {
+const LogItem = ({ title, contents, className, onClick, style }: LogItemInterface) => {
   return (
-    <li className="h-21 p-4 border mt-4 mb-2 first-of-type:mt-0 bg-grayscale-white border-grayscale-lightgray rounded-lg">
+    <li
+      className={`${className} h-21 p-4 border mt-4 mb-2 first-of-type:mt-0 bg-grayscale-white border-grayscale-lightgray rounded-lg`}
+      style={style}
+      onClick={onClick}
+    >
       <p className="semibold-16">{title}</p>
       <p className="mt-2 medium-12 text-grayscale-darkgray">{contents}</p>
     </li>
@@ -33,7 +42,10 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
   const [scriptList, setScriptList] = useState<Array<{ start: string; text: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const logContainerRef = useRef<HTMLUListElement | null>(null);
+  const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const socket = useRecoilValue(participantSocketRefState);
+  const [hilightedItemIndex, setHilightedItemIndex] = useState(0);
+
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
 
   if (type === "prompt") {
@@ -46,6 +58,20 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
           console.log("프롬프트에 표시할 스크립트 로딩 실패", error);
         });
     }, []);
+
+    useLayoutEffect(() => {
+      let currentIndexOfPrompt =
+        scriptList.findIndex((value) => {
+          const startTime = Math.floor(+value.start / 1000) * 1000;
+
+          return startTime > progressMsTime;
+        }) - 1;
+      const lastStartTime = +scriptList[scriptList.length - 1]?.start;
+      if (Math.floor(lastStartTime / 1000) * 1000 <= progressMsTime) {
+        currentIndexOfPrompt = scriptList.length - 1;
+      } else if (currentIndexOfPrompt < 0) setHilightedItemIndex(0);
+      setHilightedItemIndex(currentIndexOfPrompt);
+    }, [progressMsTime]);
   } else {
     useEffect(() => {
       if (!logContainerRef.current) return;
@@ -75,7 +101,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
     // 추후 사용자의 닉네임을 가져와야한다.
     setQuestionList([...questionList, { title: "닉네임", contents: messageContents }]);
 
-    socket.emit("ask", {
+    socket?.emit("ask", {
       type: "question",
       roomId: roomid,
       content: messageContents
@@ -104,9 +130,23 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
         </ul>
       )}
       {type === "prompt" && (
-        <ul className="px-4 flex-grow overflow-y-auto	">
+        <ul className="px-4 flex-grow overflow-y-auto	" ref={logContainerRef}>
           {scriptList.map(({ start, text }, index) => {
-            return <LogItem key={`k-${index}`} title={convertMsToTimeString(start)} contents={text} />;
+            return (
+              <LogItem
+                key={`k-${index}`}
+                title={convertMsToTimeString(start)}
+                contents={text}
+                className={`cursor-point`}
+                style={{ borderColor: hilightedItemIndex === index ? "#4f4ffb" : "#e6e6e6" }}
+                onClick={(event: MouseEvent) => {
+                  const currentTarget = event.currentTarget as HTMLLIElement;
+                  if (!currentTarget.children[0].textContent) return;
+                  convertTimeStringToMS(currentTarget.children[0].textContent);
+                  setProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
+                }}
+              />
+            );
           })}
         </ul>
       )}

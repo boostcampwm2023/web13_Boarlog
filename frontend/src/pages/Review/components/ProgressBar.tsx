@@ -44,12 +44,21 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
         const dateNow = new Date().getTime();
         const diffTime = dateNow - lastUpdatedTime.current;
         setProgressMsTime((progressMsTime) => progressMsTime + diffTime);
+
         lastUpdatedTime.current = dateNow;
       }, UPDATE_INTERVAL_MS);
     } else {
       clearInterval(timerRef.current);
     }
   }, [isPlaying]);
+
+  useEffect(() => {
+    if (progressMsTime >= totalTime) {
+      setProgressMsTime(totalTime);
+      setIsPlaying(false);
+      clearInterval(timerRef.current);
+    }
+  }, [progressMsTime]);
 
   return (
     <div
@@ -61,8 +70,9 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
         onClick={() => {
           setIsPlaying(!isPlaying);
         }}
+        disabled={progressMsTime >= totalTime ? true : false}
       >
-        {isPlaying ? <PauseIcon /> : <PlayIcon />}
+        {isPlaying ? <PauseIcon /> : <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />}
       </button>
       <div
         className="flex h-4 grow items-center"
