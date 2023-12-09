@@ -98,7 +98,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
           })
           .then(() => {
             showToast({ message: "회원가입에 성공했어요.", type: "success" });
-            setIsSignIn(false);
+            setIsSignIn(true);
           })
           .catch((error) => {
             if (error.response.status === 409) showToast({ message: "이미 가입한 적이 있어요.", type: "alert" });
