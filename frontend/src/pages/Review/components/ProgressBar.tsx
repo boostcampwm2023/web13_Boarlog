@@ -2,7 +2,7 @@ import PlayIcon from "@/assets/svgs/progressPlay.svg?react";
 import PauseIcon from "@/assets/svgs/progressPause.svg?react";
 
 import { useRecoilState } from "recoil";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 
 import progressMsTimeState from "@/stores/stateProgressMsTime";
@@ -25,6 +25,9 @@ const getPercentOfProgress = (progressTime: number, totalTime: number) => {
 const ProgressBar = ({ className, totalTime }: { className: string; totalTime: number }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
+  const timerRef = useRef<any>();
+  const lastUpdatedTime = useRef<any>();
+  const UPDATE_INTERVAL_MS = 150;
 
   const handleProgressBarMouseDown = (event: React.MouseEvent) => {
     const { left, width } = event.currentTarget.getBoundingClientRect();
@@ -34,8 +37,19 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
   };
 
   useEffect(() => {
-    console.log(progressMsTime);
-  }, [progressMsTime]);
+    if (isPlaying) {
+      lastUpdatedTime.current = new Date().getTime();
+
+      timerRef.current = setInterval(() => {
+        const dateNow = new Date().getTime();
+        const diffTime = dateNow - lastUpdatedTime.current;
+        setProgressMsTime((progressMsTime) => progressMsTime + diffTime);
+        lastUpdatedTime.current = dateNow;
+      }, UPDATE_INTERVAL_MS);
+    } else {
+      clearInterval(timerRef.current);
+    }
+  }, [isPlaying]);
 
   return (
     <div
@@ -51,15 +65,17 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
         {isPlaying ? <PauseIcon /> : <PlayIcon />}
       </button>
       <div
-        className="relative grow h-[6px]   bg-grayscale-lightgray"
+        className="flex h-4 grow items-center"
         onMouseDown={(event) => {
           handleProgressBarMouseDown(event);
         }}
       >
-        <div
-          className={`absolute top-0 left-0 h-[6px] w-[0%] bg-boarlog-100`}
-          style={{ width: `${getPercentOfProgress(progressMsTime, totalTime)}` }}
-        ></div>
+        <div className="relative grow h-[6px]   bg-grayscale-lightgray">
+          <div
+            className={`absolute top-0 left-0 h-[6px] w-[0%] bg-boarlog-100`}
+            style={{ width: `${getPercentOfProgress(progressMsTime, totalTime)}` }}
+          ></div>
+        </div>
       </div>
       <span className="medium-12">{convertMsToTimeString(progressMsTime)}</span>
     </div>
