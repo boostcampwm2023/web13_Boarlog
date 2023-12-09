@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { UserService } from './user.service';
-import { UserInfoDto } from '../auth/dto/userInfo.dto';
+import { UserInfoDto } from './dto/userInfo.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { UserUpdateDto } from './dto/update-user.dto';
