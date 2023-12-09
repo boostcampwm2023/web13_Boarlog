@@ -13,7 +13,7 @@ export class User {
   email: string;
 
   @Prop()
-  profile: string;
+  password: string;
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lecture' }] })
   lecture_id: Lecture[];
