@@ -25,7 +25,7 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
 
-  const handleProgressBarMouseUp = (event: React.MouseEvent) => {
+  const handleProgressBarMouseDown = (event: React.MouseEvent) => {
     const { left, width } = event.currentTarget.getBoundingClientRect();
     const mouseClickedX = event.clientX;
     const percent = (mouseClickedX - left) / width;
@@ -51,8 +51,8 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
       </button>
       <div
         className="relative grow h-[6px]   bg-grayscale-lightgray"
-        onMouseUp={(event) => {
-          handleProgressBarMouseUp(event);
+        onMouseDown={(event) => {
+          handleProgressBarMouseDown(event);
         }}
       >
         <div
