@@ -1,10 +1,11 @@
 import PlayIcon from "@/assets/svgs/progressPlay.svg?react";
 import PauseIcon from "@/assets/svgs/progressPause.svg?react";
 
+import { useRecoilState } from "recoil";
 import { useEffect, useState } from "react";
+import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 
 import progressMsTimeState from "@/stores/stateProgressMsTime";
-import { useRecoilState } from "recoil";
 
 const getPercentOfProgress = (progressTime: number, totalTime: number) => {
   const percent = (progressTime / totalTime) * 100;
@@ -60,7 +61,7 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
           style={{ width: `${getPercentOfProgress(progressMsTime, totalTime)}` }}
         ></div>
       </div>
-      <span className="medium-12">00:00:00</span>
+      <span className="medium-12">{convertMsToTimeString(progressMsTime)}</span>
     </div>
   );
 };
