@@ -12,7 +12,7 @@ import {
   Res,
   UseGuards
 } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { CreateLectureDto } from './dto/create-lecture.dto';
@@ -49,6 +49,7 @@ export class LectureController {
 
   @UseGuards(CustomAuthGuard)
   @Patch('/:code')
+  @ApiHeader({ name: 'Authorization' })
   @ApiParam({ name: 'code', type: 'string' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404 })

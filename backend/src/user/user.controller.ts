@@ -2,16 +2,17 @@ import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGu
 import { Response } from 'express';
 import { UserService } from './user.service';
 import { UserInfoDto } from './dto/userInfo.dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { UserUpdateDto } from './dto/update-user.dto';
 
 @ApiTags('profile')
 @Controller('/profile')
+@ApiHeader({ name: 'Authorization' })
+@UseGuards(CustomAuthGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(CustomAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Get user profile' })
   async profile(@Req() req: any, @Res() res: Response) {
@@ -25,7 +26,6 @@ export class UserController {
     res.status(HttpStatus.OK).send(new UserInfoDto(userInfo));
   }
 
-  @UseGuards(CustomAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Change username' })
   @ApiBody({
