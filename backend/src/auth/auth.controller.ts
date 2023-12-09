@@ -16,7 +16,7 @@ export class AuthController {
   @ApiResponse({ status: 201 })
   @ApiResponse({ status: 409, description: '이미 가입되어 있는 사용자입니다.' })
   async signUp(@Body() signUpDto: SignUpDto) {
-    const user = await this.authService.findUser(signUpDto.email);
+    const user = await this.authService.findUserByEmail(signUpDto.email);
     if (user) {
       throw new HttpException('이미 가입되어 있는 사용자입니다.', HttpStatus.CONFLICT);
     }
@@ -28,7 +28,7 @@ export class AuthController {
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404, description: '해당 사용자가 없습니다.' })
   async signIn(@Body() signInDto: SignInDto, @Res() res: Response) {
-    const user = this.authService.findUser(signInDto.email);
+    const user = this.authService.findUserByEmail(signInDto.email);
     if (!user) {
       throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
     }

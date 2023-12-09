@@ -24,7 +24,7 @@ export class AuthService {
   }
 
   async signIn(signInDto: SignInDto): Promise<string> {
-    const user = await this.findUser(signInDto.email);
+    const user = await this.findUserByEmail(signInDto.email);
     const validatedPassword = await bcrypt.compare(signInDto.password, user.password);
     if (!user || !validatedPassword) {
       throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
@@ -33,7 +33,7 @@ export class AuthService {
     return await this.generateCookie({ username: user.username, email: user.email });
   }
 
-  async findUser(email: string): Promise<User> {
+  async findUserByEmail(email: string): Promise<User> {
     return await this.userModel.findOne({ email: email });
   }
 
