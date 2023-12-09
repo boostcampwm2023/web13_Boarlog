@@ -5,8 +5,29 @@ import Button from "@/components/Button/Button";
 import LogoOriginal from "@/assets/imgs/logoOriginal.png";
 import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
 
-const UserAuthSection = () => {
+interface UserAuthSectionProps {
+  isSignIn: boolean;
+  setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
   const navigate = useNavigate();
+
+  const handleLeftButtonClicked = () => {
+    if (isSignIn) {
+      console.log("singin logic");
+    } else {
+      setIsSignIn(true);
+    }
+  };
+
+  const handleRightButtonClicked = () => {
+    if (isSignIn) {
+      setIsSignIn(false);
+    } else {
+      console.log("singup logic");
+    }
+  };
 
   return (
     <div className="flex flex-col relative py-20 sm:py-32 items-center justify-center w-full overflow-x-hidden overflow-y-visible">
@@ -18,9 +39,9 @@ const UserAuthSection = () => {
           <h1 className="semibold-64">Boarlog</h1>
           <h2 className="semibold-20 text-grayscale-darkgray">기록으로 남기는 실시간 강의</h2>
         </div>
-
+        {isSignIn ? <></> : <></>}
         <div className="flex flex-col gap-4 w-full">
-          <h3 className="semibold-32">로그인</h3>
+          <h3 className="semibold-32">{isSignIn ? "로그인" : "회원가입"}</h3>
           <div className="flex flex-col gap-2 w-full">
             <p className="semibold-18">이메일</p>
             <input
@@ -30,6 +51,17 @@ const UserAuthSection = () => {
               maxLength={50}
             />
           </div>
+          {!isSignIn && (
+            <div className="flex flex-col gap-2 w-full">
+              <p className="semibold-18">닉네임</p>
+              <input
+                type="text"
+                className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
+                placeholder="닉네임을 입력해주세요"
+                maxLength={50}
+              />
+            </div>
+          )}
           <div className="flex flex-col gap-2 w-full">
             <p className="semibold-18">비밀번호</p>
             <input
@@ -39,16 +71,45 @@ const UserAuthSection = () => {
               maxLength={50}
             />
           </div>
+          {!isSignIn && (
+            <div className="flex flex-col gap-2 w-full">
+              <p className="semibold-18">비밀번호 확인</p>
+              <input
+                type="text"
+                className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
+                placeholder="비밀번호을 다시 입력해주세요"
+                maxLength={50}
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col w-full gap-4 sm:flex-row">
-          <Button type="grow" buttonStyle="black" onClick={() => navigate("/start")}>
-            <EnterIcon className="fill-grayscale-white" />
-            시작하기
+          <Button type="grow" buttonStyle="black" onClick={handleLeftButtonClicked}>
+            {isSignIn ? (
+              <>
+                <EnterIcon className="fill-grayscale-white" />
+                시작하기
+              </>
+            ) : (
+              <>
+                <EnterIcon className="fill-grayscale-white" />
+                뒤로가기
+              </>
+            )}
           </Button>
-          <Button type="grow" buttonStyle="black" onClick={() => navigate("/start")}>
-            <UserIcon className="fill-grayscale-white" />
-            회원가입
+          <Button type="grow" buttonStyle="black" onClick={handleRightButtonClicked}>
+            {isSignIn ? (
+              <>
+                <EnterIcon className="fill-grayscale-white" />
+                회원가입
+              </>
+            ) : (
+              <>
+                <EnterIcon className="fill-grayscale-white" />
+                가입하기
+              </>
+            )}
           </Button>
         </div>
       </section>
