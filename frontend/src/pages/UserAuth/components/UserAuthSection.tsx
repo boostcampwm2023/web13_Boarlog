@@ -3,7 +3,7 @@ import logoBig from "@/assets/imgs/logoBig.png";
 import GoogleIcon from "@/assets/svgs/google.svg?react";
 import Button from "@/components/Button/Button";
 
-const LoginSection = () => {
+const UserAuthSection = () => {
   const navigate = useNavigate();
 
   return (
@@ -28,4 +28,4 @@ const LoginSection = () => {
   );
 };
 
-export default LoginSection;
+export default UserAuthSection;
