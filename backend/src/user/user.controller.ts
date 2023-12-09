@@ -2,9 +2,9 @@ import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGu
 import { Response } from 'express';
 import { UserService } from './user.service';
 import { UserInfoDto } from '../auth/dto/userInfo.dto';
-import { UserUpdateDto } from './dto/user.update.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomAuthGuard } from 'src/auth/auth.guard';
+import { UserUpdateDto } from './dto/update-user.dto';
 
 @ApiTags('profile')
 @Controller('/profile')
