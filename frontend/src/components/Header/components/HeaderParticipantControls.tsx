@@ -238,7 +238,12 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
-    loadCanvasData(fabricCanvasRef!, canvasData, data.whiteboard);
+    loadCanvasData({
+      fabricCanvas: fabricCanvasRef!,
+      currentData: canvasData,
+      newData: data.whiteboard
+    });
+    canvasData = data.whiteboard;
     pcRef.current.setRemoteDescription(data.SDP);
   };
   const handleServerCandidate = (data: any) => {
@@ -248,6 +253,14 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const handleServerError = (err: any) => {
     console.error(err.message);
     showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
+  const handleWhiteboardUpdate = (data: any) => {
+    loadCanvasData({
+      fabricCanvas: fabricCanvasRef!,
+      currentData: canvasData,
+      newData: data.content
+    });
+    canvasData = data.content;
   };
   const handleLectureEnd = () => {
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
@@ -265,7 +278,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     });
     setParticipantSocket(lectureSocketRef.current);
     lectureSocketRef.current.on("ended", () => handleLectureEnd());
-    lectureSocketRef.current.on("update", (data) => loadCanvasData(fabricCanvasRef!, canvasData, data.content));
+    lectureSocketRef.current.on("update", (data) => handleWhiteboardUpdate(data));
   };
 
   return (

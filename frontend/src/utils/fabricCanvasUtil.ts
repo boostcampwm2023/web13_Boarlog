@@ -30,10 +30,20 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
     return false;
   }
 };
-export const loadCanvasData = (fabricCanvas: fabric.Canvas, currentData: ICanvasData, newData: ICanvasData) => {
+export const loadCanvasData = ({
+  fabricCanvas,
+  currentData,
+  newData
+}: {
+  fabricCanvas: fabric.Canvas;
+  currentData: ICanvasData;
+  newData: ICanvasData;
+}) => {
   const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
+
+  console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
 
   // 캔버스 데이터 업데이트
   if (isCanvasDataChanged) fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});

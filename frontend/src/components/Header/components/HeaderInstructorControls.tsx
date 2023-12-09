@@ -288,6 +288,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
+    console.log("submitData", data);
     if (!lectureSocketRef.current) return;
     lectureSocketRef.current.emit("edit", {
       type: "whiteBoard",

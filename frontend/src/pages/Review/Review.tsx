@@ -80,30 +80,40 @@ const Review = () => {
 
   const load = () => {
     console.log(loadedData![0]);
-    loadCanvasData(fabricCanvasRef.current!, canvasData, loadedData![3]);
+    loadCanvasData({
+      fabricCanvas: fabricCanvasRef.current!,
+      currentData: canvasData,
+      newData: loadedData![3]
+    });
   };
 
   const play = () => {
+    if (!loadedData) return;
     startTime = Date.now();
+    countRef.current = 1;
+    const LECTURE_TOTAL_PRAMES = loadedData.length;
+
+    loadCanvasData({
+      fabricCanvas: fabricCanvasRef.current!,
+      currentData: canvasData,
+      newData: loadedData[0]
+    });
     const onFrame = () => {
       const 데이터시간 = loadedData![countRef.current].eventTime;
       const 지난시간 = Date.now() - startTime;
-      console.log(countRef.current, 데이터시간, 지난시간);
+      console.log(LECTURE_TOTAL_PRAMES, countRef.current, 데이터시간, 지난시간);
       if (지난시간 > 데이터시간) {
-        loadCanvasData(
-          fabricCanvasRef.current!,
-          loadedData![countRef.current === 0 ? countRef.current : countRef.current - 1],
-          loadedData![countRef.current]
-        );
+        loadCanvasData({
+          fabricCanvas: fabricCanvasRef.current!,
+          currentData: loadedData![countRef.current - 1],
+          newData: loadedData![countRef.current]
+        });
         countRef.current += 1;
-        //canvasData = loadedData![countRef.current];
       }
-      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+      if (countRef.current < LECTURE_TOTAL_PRAMES) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+      else console.log("다시보기 끝");
     };
-
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-
-    //console.log(loadedData![3]);
   };
 
   return (
