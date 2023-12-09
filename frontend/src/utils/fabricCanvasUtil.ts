@@ -33,13 +33,14 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
 export const loadCanvasData = (fabricCanvas: fabric.Canvas, currentData: ICanvasData, newData: ICanvasData) => {
   const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
-  const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.width;
+  const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
 
   // 캔버스 데이터 업데이트
   if (isCanvasDataChanged) fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
   // 캔버스 뷰포트 업데이트
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);
   // 캔버스 크기 업데이트
+
   if (isSizeChanged) {
     // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
     const HEADER_HEIGHT = 80;

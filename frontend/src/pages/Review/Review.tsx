@@ -90,7 +90,11 @@ const Review = () => {
       const 지난시간 = Date.now() - startTime;
       console.log(countRef.current, 데이터시간, 지난시간);
       if (지난시간 > 데이터시간) {
-        loadCanvasData(fabricCanvasRef.current!, canvasData, loadedData![countRef.current]);
+        loadCanvasData(
+          fabricCanvasRef.current!,
+          loadedData![countRef.current === 0 ? countRef.current : countRef.current - 1],
+          loadedData![countRef.current]
+        );
         countRef.current += 1;
         //canvasData = loadedData![countRef.current];
       }
