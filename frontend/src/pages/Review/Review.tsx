@@ -27,7 +27,10 @@ const Review = () => {
   let countRef = useRef<number>(0);
 
   let loadedData: ICanvasData[] | null = null;
+
   let startTime = Date.now();
+  let playedTime = 0;
+
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
 
   let canvasData: ICanvasData = {
@@ -64,7 +67,7 @@ const Review = () => {
 
     fabricCanvasRef.current = newCanvas;
 
-    axios("./30secondTest.json")
+    axios("./dummyCanvasData.json")
       .then(({ data }) => {
         loadedData = data;
       })
@@ -78,42 +81,40 @@ const Review = () => {
     };
   }, []);
 
-  const load = () => {
-    console.log(loadedData![0]);
-    loadCanvasData({
-      fabricCanvas: fabricCanvasRef.current!,
-      currentData: canvasData,
-      newData: loadedData![3]
-    });
+  const onFrame = () => {
+    const LECTURE_TOTAL_PRAMES = loadedData!.length;
+    const 데이터시간 = loadedData![countRef.current].eventTime;
+    const 지난시간 = Date.now() - startTime;
+    //console.log(LECTURE_TOTAL_PRAMES, countRef.current, 데이터시간, 지난시간);
+    if (지난시간 > 데이터시간) {
+      loadCanvasData({
+        fabricCanvas: fabricCanvasRef.current!,
+        currentData: loadedData![countRef.current - 1],
+        newData: loadedData![countRef.current]
+      });
+      countRef.current += 1;
+    }
+    if (countRef.current < LECTURE_TOTAL_PRAMES) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    else console.log("다시보기 끝");
   };
-
   const play = () => {
     if (!loadedData) return;
-    startTime = Date.now();
-    countRef.current = 1;
-    const LECTURE_TOTAL_PRAMES = loadedData.length;
+    startTime = Date.now() - playedTime;
 
-    loadCanvasData({
-      fabricCanvas: fabricCanvasRef.current!,
-      currentData: canvasData,
-      newData: loadedData[0]
-    });
-    const onFrame = () => {
-      const 데이터시간 = loadedData![countRef.current].eventTime;
-      const 지난시간 = Date.now() - startTime;
-      console.log(LECTURE_TOTAL_PRAMES, countRef.current, 데이터시간, 지난시간);
-      if (지난시간 > 데이터시간) {
-        loadCanvasData({
-          fabricCanvas: fabricCanvasRef.current!,
-          currentData: loadedData![countRef.current - 1],
-          newData: loadedData![countRef.current]
-        });
-        countRef.current += 1;
-      }
-      if (countRef.current < LECTURE_TOTAL_PRAMES) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-      else console.log("다시보기 끝");
-    };
+    if (countRef.current === 0) {
+      countRef.current = 1;
+      loadCanvasData({
+        fabricCanvas: fabricCanvasRef.current!,
+        currentData: canvasData,
+        newData: loadedData[0]
+      });
+    }
+
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+  };
+  const pause = () => {
+    playedTime = Date.now() - startTime;
+    if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
   };
 
   return (
@@ -129,11 +130,17 @@ const Review = () => {
           {isQuestionLogOpen ? <CloseIcon /> : <ScriptIcon fill="black" />}
         </LogToggleButton>
         <ProgressBar className="absolute bottom-2.5 left-1/2 -translate-x-1/2" />
-        <SmallButton className={`absolute text-grayscale-white bg-boarlog-100 bottom-5 left-1/2`} onClick={load}>
-          3
-        </SmallButton>
-        <SmallButton className={`absolute text-grayscale-white bg-boarlog-100 bottom-0 left-1/2`} onClick={play}>
+        <SmallButton
+          className={`absolute text-grayscale-white bg-boarlog-100 bottom-[70px] left-[200px]`}
+          onClick={play}
+        >
           재생
+        </SmallButton>
+        <SmallButton
+          className={`absolute text-grayscale-white bg-boarlog-100 bottom-[70px] left-[250px]`}
+          onClick={pause}
+        >
+          일시정지
         </SmallButton>
       </section>
     </>

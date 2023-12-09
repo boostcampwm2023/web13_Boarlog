@@ -223,6 +223,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     // 업데이트된 미디어 스트림을 앞으로 참조하도록 설정
     updatedStreamRef.current = mediaStreamDestination.stream;
 
+    startTime = Date.now();
     const onFrame = () => {
       saveCanvasData(fabricCanvasRef!, canvasData, startTime).then((isChanged) => {
         if (isChanged) submitData(canvasData);
@@ -288,7 +289,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
-    console.log("submitData", data);
     if (!lectureSocketRef.current) return;
     lectureSocketRef.current.emit("edit", {
       type: "whiteBoard",
