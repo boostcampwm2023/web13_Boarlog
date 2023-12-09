@@ -12,27 +12,40 @@
   <video id="localVideo" playsinline autoplay muted></video>
   <canvas></canvas>
   <div>
-    <button id="startButton">시작</button>
-    <button id="callButton">방 생성</button>
-    <button id="hangupButton">방 나가기</button>
+    <button id="startButton">미디어 서버 연결하기</button>
+    <button id="endButton">방 나가기</button>
   </div>
 </div>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "socket.io-client": "https://cdn.socket.io/4.7.2/socket.io.esm.min.js"
+    }
+  }
+</script>
+
 <script type="module">
-  const socket = io('http://110.165.16.37:3000/create-room');
+  import { Manager } from "socket.io-client";
+
+  // const socket = io('http://110.165.16.37:3000/create-room');
+  // FIXME: TEST를 위해 임의로 만든 access token
+  const sampleAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA'
+  const manager = new Manager('http://localhost:3000');
+  const socket = manager.socket('/create-room', {
+    auth: {
+      accessToken: sampleAccessToken,
+      refreshToken: 'sample'
+    }
+  });
 
   const startButton = document.getElementById('startButton');
-  const callButton = document.getElementById('callButton');
-  const hangupButton = document.getElementById('hangupButton');
-  callButton.disabled = true;
-  hangupButton.disabled = true;
+  const endButton = document.getElementById('endButton');
+  startButton.disabled = false;
+  endButton.disabled = true;
 
   const canvas = document.querySelector('canvas');
   const localVideo = document.getElementById('localVideo');
 
-  let localStream = undefined;
-  let presenterRTCPC;
-  let tmp = []
   const pc_config = {
     iceServers: [
       {
@@ -48,6 +61,9 @@
       // }
     ],
   };
+  let localStream = undefined;
+  let presenterRTCPC = new RTCPeerConnection();
+  let socket2 = null;
 
   const start = async () => {
     try {
@@ -58,7 +74,7 @@
       });
       localStream = stream;
       localVideo.srcObject = stream;
-      callButton.disabled = false;
+      endButton.disabled = false;
       presenterRTCPC = new RTCPeerConnection(pc_config);
 
       if (localStream) {
@@ -68,12 +84,20 @@
       } else {
         console.log('no stream')
       }
+      await setStream();
+      socket2 = manager.socket('/lecture', {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: 'sample'
+        }
+      })
+      socket2.on('ended', (data) => {
+        console.log(data);
+      })
     } catch (e) {
       console.log(e)
     }
   }
-
-  start().then(setStream)
 
   async function setStream() {
     try {
@@ -104,7 +128,7 @@
 
       socket.emit('presenterOffer', {
         socketId: socket.id,
-        roomId: 1,    // FIXME: 테스트를 위한 roomId 고정
+        roomId: '1',
         SDP: SDP
       });
 
@@ -124,7 +148,19 @@
     });
   }
 
+  function end() {
+    socket2.emit('end', {
+      type: 'lecture',
+      roomId: '1'
+    })
+    presenterRTCPC.close();
+    presenterRTCPC = null;
+    startButton.disabled = false;
+    endButton.disabled = true;
+  }
+
   startButton.onclick = start;
+  endButton.onclick = end;
 </script>
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="../commons/js/streamVisualizer.js"></script>

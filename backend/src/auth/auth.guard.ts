@@ -12,7 +12,7 @@ export class CustomAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     try {
-      const token = request.cookies.Authentication;
+      const token = request.headers.authorization;
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get<string>('JWT_SECRET_KEY')
       });

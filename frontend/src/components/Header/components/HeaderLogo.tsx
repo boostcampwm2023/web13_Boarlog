@@ -10,7 +10,7 @@ const HeaderLogo = ({ type }: LogoButtonProps) => {
 
   const handleLogoClicked = () => {
     if (type === "login") navigate("/login");
-    else navigate("/");
+    else if (type === "normal") navigate("/");
   };
 
   return (

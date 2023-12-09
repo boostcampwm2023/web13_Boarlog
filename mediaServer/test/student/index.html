@@ -13,16 +13,34 @@
   <div>
     <button id="startButton">시작</button>
     <button id="callButton">방 생성</button>
-    <button id="hangupButton">방 나가기</button>
+    <button id="endButton">방 나가기</button>
   </div>
 </div>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "socket.io-client": "https://cdn.socket.io/4.7.2/socket.io.esm.min.js"
+    }
+  }
+</script>
+
 <script type="module">
-  const socket = io('http://110.165.16.37:3000/enter-room');
+  import { Manager } from "socket.io-client";
+
+  // const socket = io('http://110.165.16.37:3000/enter-room');
+  // FIXME: TEST를 위해 임의로 만든 access token
+  const sampleAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA'
+  const manager = new Manager('http://localhost:3000');
+  const socket = manager.socket('/enter-room', {
+    auth: {
+      accessToken: sampleAccessToken,
+      refreshToken: 'test'
+    }
+  });
 
   const startButton = document.getElementById('startButton');
   const callButton = document.getElementById('callButton');
-  const hangupButton = document.getElementById('hangupButton');
+  const hangupButton = document.getElementById('endButton');
   callButton.disabled = true;
   hangupButton.disabled = true;
 
@@ -31,7 +49,7 @@
 
   let localStream = undefined;
   let presenterRTCPC;
-  let tmp = []
+  let socket2 = null;
   const pc_config = {
     iceServers: [
       {
@@ -70,6 +88,15 @@
 
       await createStudentOffer();
       await setServerAnswer();
+      socket2 = manager.socket('/lecture', {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: 'test'
+        }
+      });
+      socket2.on('ended', (data) => {
+        console.log(data);
+      });
     } catch (e) {
       console.log(e);
     }
@@ -94,7 +121,7 @@
       });
       socket.emit('studentOffer', {
         socketId: socket.id,
-        roomId: 1,    // FIXME: 테스트를 위한 roomId 고정
+        roomId: '1',
         SDP: SDP
       });
 

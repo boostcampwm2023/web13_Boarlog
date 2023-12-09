@@ -1,25 +1,33 @@
 import { fabric } from "fabric";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState, useRecoilState } from "recoil";
 import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
 import StickyNoteEditPanel from "./StickyNoteEditPanel";
 import QuestionList from "./QuestionList";
 
+import questionListState from "./stateQuestionList";
 import cavasInstanceState from "./stateCanvasInstance";
-import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 import isQuestionListOpenState from "./stateIsQuestionListOpen";
-
-import canvasRefState from "./stateCanvasRef";
+import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
+import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const setCanvas = useSetRecoilState(cavasInstanceState);
+  const socket = useRecoilValue(instructorSocketRefState);
   const isEditPanelVisible = useRecoilValue(stickyNoteEditPanelVisibilityState);
   const isQuestionListOpen = useRecoilValue(isQuestionListOpenState);
+  const [questions, setQuestions] = useRecoilState(questionListState);
 
-  const setCanvasRef = useSetRecoilState(canvasRefState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("asked", (data) => {
+      setQuestions([data.content, ...questions]);
+    });
+  }, [socket, questions]);
 
   useEffect(() => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -57,7 +65,8 @@ const CanvasSection = () => {
     window.addEventListener("resize", handleResize);
 
     // delete 키를 이용해서 선택된 객체 삭제
-    const handleDelete = () => {
+    const handleDelete = ({ key, code }: { key: string; code: string }) => {
+      if (!(code === "Delete" || key === "Delete" || code === "Backspace" || key === "Backspace")) return;
       const activeObjects = newCanvas.getActiveObjects();
       if (activeObjects && activeObjects.length > 0) {
         // 선택된 모든 객체 삭제
@@ -67,28 +76,22 @@ const CanvasSection = () => {
         newCanvas.discardActiveObject(); // 선택 해제
       }
     };
-    window.addEventListener("keydown", (e) => {
-      if (e.code === "Delete" || e.key === "Delete") {
-        handleDelete();
-      }
-    });
+    window.addEventListener("keyup", handleDelete);
 
     // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
     newCanvas.isDrawingMode = true;
 
-    // fabric.js 캔버스가 연결된 canvas를 헤더에서 사용 가능하게 ref로 전달
-    setCanvasRef({ current: canvasRef.current });
-
     // 언마운트 시 캔버스 정리, 이벤트 제거
     return () => {
       newCanvas.dispose();
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("keyup", handleDelete);
     };
   }, []);
 
   return (
-    <div className="relative w-[100vw] h-[calc(100vh-6rem)]" ref={canvasContainerRef}>
+    <div className="relative w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
       <canvas ref={canvasRef} />
 
       <Toolbar />

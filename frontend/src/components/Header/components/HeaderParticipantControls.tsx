@@ -1,7 +1,9 @@
+// 이번 주 일요일까지 파일 분리, 리팩토링 하겠습니다.
 import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { io, Socket } from "socket.io-client";
-import { useNavigate } from "react-router-dom";
+import { Socket, Manager } from "socket.io-client";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/components/Toast/useToast";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -9,28 +11,35 @@ import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
-import { useToast } from "@/components/Toast/useToast";
 
-import selectedSpeakerState from "./stateSelectedSpeaker";
-import speakerVolmeState from "./stateSpeakerVolume";
-import videoRefState from "@/pages/Test/components/stateVideoRef";
+import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
+import speakerVolmeState from "@/stores/stateSpeakerVolume";
+import micVolumeState from "@/stores/stateMicVolume";
+import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
+import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
-const HeaderParticipantControls = () => {
+interface HeaderParticipantControlsProps {
+  setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControlsProps) => {
   const [isSpeakerOn, setisSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
-  const [micVolume, setMicVolume] = useState<number>(0);
-
   const [didMount, setDidMount] = useState(false);
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
   const speakerVolume = useRecoilValue(speakerVolmeState);
+  const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
   const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
-  const videoRef = useRecoilValue(videoRefState);
+  const setMicVolumeState = useSetRecoilState(micVolumeState);
+  const setParticipantSocket = useSetRecoilState(participantSocketRefState);
 
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
+  const managerRef = useRef<Manager>();
   const socketRef = useRef<Socket>();
+  const socketRef2 = useRef<Socket>();
   const pcRef = useRef<RTCPeerConnection>();
   const mediaStreamRef = useRef<MediaStream>();
   const localAudioRef = useRef<HTMLAudioElement>(null);
@@ -41,7 +50,9 @@ const HeaderParticipantControls = () => {
   const navigate = useNavigate();
   const showToast = useToast();
 
-  const MEDIA_SERVER_URL = "https://www.boarlog.site/enter-room";
+  const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
+  const sampleAccessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
   const pc_config = {
     iceServers: [
       {
@@ -52,10 +63,17 @@ const HeaderParticipantControls = () => {
 
   useEffect(() => {
     setDidMount(true);
+    const backToMain = () => {
+      leaveLecture();
+      navigate("/");
+      window.removeEventListener("popstate", backToMain);
+    };
+    window.addEventListener("popstate", backToMain);
   }, []);
   useEffect(() => {
     if (didMount) {
       enterLecture();
+      setLectureCode(roomid);
     }
   }, [didMount]);
 
@@ -68,53 +86,140 @@ const HeaderParticipantControls = () => {
   }, [selectedSpeaker]);
 
   const enterLecture = async () => {
+    //showToast({ message: "서버에 접속하는 중입니다.", type: "default" });
     await initConnection();
-
     await createStudentOffer();
     await setServerAnswer();
 
     if (!pcRef.current) return;
-    pcRef.current.ontrack = (event) => {
-      console.log(event.track);
+    pcRef.current.oniceconnectionstatechange = () => {
+      if (!pcRef.current) return;
+      if (pcRef.current.iceConnectionState === "connected") {
+        showToast({ message: "강의가 시작되었습니다.", type: "success" });
+        showToast({ message: "우측 상단 음소거 버튼을 눌러 음소거를 해제 할 수 있습니다.", type: "alert" });
+      }
 
-      if (!mediaStreamRef.current || !localAudioRef.current || !videoRef.current) return;
+      if (!managerRef.current) return;
+      socketRef2.current = managerRef.current.socket("/lecture", {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: "sample"
+        }
+      });
+      setParticipantSocket(socketRef2.current);
+      socketRef2.current.on("connect", () => {
+        console.log("소켓이 성공적으로 연결되었습니다.");
+      });
+      socketRef2.current.on("connect_error", (err) => {
+        console.error(err.message);
+      });
+      socketRef2.current.on("ended", () => {
+        showToast({ message: "강의가 종료되었습니다.", type: "alert" });
+        leaveLecture();
+        navigate("/lecture-end");
+      });
+      socketRef2.current.on("update", (data) => {
+        // 캔버스 데이터 업데이트
+        renderCanvas(data.content);
+      });
+    };
+    pcRef.current.ontrack = (event) => {
+      if (!mediaStreamRef.current || !localAudioRef.current) return;
       if (event.track.kind === "audio") {
         mediaStreamRef.current.addTrack(event.track);
         localAudioRef.current.srcObject = mediaStreamRef.current;
-      } else if (event.track.kind === "video") {
-        mediaStreamRef.current.addTrack(event.track);
-        videoRef.current.srcObject = mediaStreamRef.current;
-        videoRef.current.addEventListener("loadstart", () => {
-          console.log("loadstart");
-        });
-        videoRef.current.addEventListener("progress", () => {
-          console.log("progress");
-        });
-        videoRef.current.addEventListener("loadedmetadata", () => {
-          console.log("loadedmetadata");
-        });
-        videoRef.current.play();
       }
     };
-    showToast({ message: "음소거 해제 후 소리를 들을 수 있습니다.", type: "alert" });
+  };
+
+  interface ICanvasData {
+    canvasJSON: string;
+    viewport: number[];
+    eventTime: number;
+    width: number;
+    height: number;
+  }
+  let canvasData: ICanvasData = {
+    canvasJSON: "",
+    viewport: [1, 0, 0, 1, 0, 0],
+    eventTime: 0,
+    width: 0,
+    height: 0
+  };
+  //{ newData }: { newData: any }
+  const renderCanvas = (newData: ICanvasData) => {
+    if (!fabricCanvasRef) return;
+    const isCanvasDataChanged = canvasData.canvasJSON !== newData.canvasJSON;
+    const isViewportChanged = JSON.stringify(canvasData.viewport) !== JSON.stringify(newData.viewport);
+    const isSizeChanged = canvasData.width !== newData.width || canvasData.height !== newData.width;
+
+    // 캔버스 데이터 업데이트
+    if (isCanvasDataChanged) fabricCanvasRef.loadFromJSON(newData.canvasJSON, () => {});
+    // 캔버스 뷰포트 업데이트
+    if (isViewportChanged) fabricCanvasRef.setViewportTransform(newData.viewport);
+    // 캔버스 크기 업데이트
+    if (isSizeChanged) {
+      // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
+      const HEADER_HEIGHT = 80;
+      const newHegiht = window.innerWidth * (newData.height / newData.width);
+      if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
+        const newWidth = (window.innerHeight - HEADER_HEIGHT) * (newData.width / newData.height);
+        fabricCanvasRef.setDimensions({
+          width: newWidth,
+          height: window.innerHeight - HEADER_HEIGHT
+        });
+      } else {
+        fabricCanvasRef.setDimensions({
+          width: window.innerWidth,
+          height: newHegiht
+        });
+      }
+      // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
+      fabricCanvasRef.setDimensions(
+        {
+          width: newData.width,
+          height: newData.height
+        },
+        { backstoreOnly: true }
+      );
+    }
   };
 
   const leaveLecture = () => {
     setElapsedTime(0);
 
+    if (!socketRef2.current) return;
+    socketRef2.current.emit("leave", {
+      type: "lecture",
+      roomId: roomid
+    });
+
+    if (localAudioRef.current) localAudioRef.current.srcObject = null;
+
     if (timerIdRef.current) clearInterval(timerIdRef.current); // 경과 시간 표시 타이머 중지
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current); // 마이크 볼륨 측정 중지
     if (socketRef.current) socketRef.current.disconnect(); // 소켓 연결 해제
+    if (socketRef2.current) socketRef2.current.disconnect(); // 소켓 연결 해제
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
     setIsModalOpen(false);
-    navigate("/");
   };
 
   const initConnection = async () => {
     try {
-      socketRef.current = io(MEDIA_SERVER_URL);
+      managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
+      socketRef.current = managerRef.current.socket("/enter-room", {
+        auth: {
+          accessToken: sampleAccessToken,
+          refreshToken: "test"
+        }
+      });
+      socketRef.current.on("connect_error", (err) => {
+        console.error(err.message);
+        showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+      });
+
       pcRef.current = new RTCPeerConnection(pc_config);
       const stream = new MediaStream();
       mediaStreamRef.current = stream;
@@ -134,14 +239,14 @@ const HeaderParticipantControls = () => {
       });
       socketRef.current.emit("studentOffer", {
         socketId: socketRef.current.id,
-        roomId: 1,
+        roomId: roomid,
         SDP: SDP
       });
 
       pcRef.current.setLocalDescription(SDP);
       getStudentCandidate();
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 
@@ -162,6 +267,17 @@ const HeaderParticipantControls = () => {
     if (!socketRef.current) return;
     socketRef.current.on(`serverAnswer`, (data) => {
       if (!pcRef.current) return;
+
+      const startTime = new Date(data.startTime).getTime();
+
+      const updateElapsedTime = () => {
+        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+        setElapsedTime(elapsedTime);
+      };
+      const timer = setInterval(updateElapsedTime, 1000);
+      timerIdRef.current = timer;
+      renderCanvas(data.whiteboard);
+
       pcRef.current.setRemoteDescription(data.SDP);
     });
     socketRef.current.on(`serverCandidate`, (data) => {
@@ -193,7 +309,7 @@ const HeaderParticipantControls = () => {
       }
       const rms = Math.sqrt(sum / pcmData.length);
       const normalizedVolume = Math.min(1, rms / 0.5);
-      setMicVolume(normalizedVolume);
+      setMicVolumeState(normalizedVolume);
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
@@ -220,7 +336,7 @@ const HeaderParticipantControls = () => {
   return (
     <>
       <div className="gap-2 hidden sm:flex home:fixed home:left-1/2 home:-translate-x-1/2">
-        <VolumeMeter micVolume={micVolume} />
+        <VolumeMeter />
         <p className="semibold-20 text-boarlog-100">
           {Math.floor(elapsedTime / 60)
             .toString()
@@ -246,7 +362,10 @@ const HeaderParticipantControls = () => {
         confirmText="강의 나가기"
         cancelButtonStyle="black"
         confirmButtonStyle="red"
-        confirmClick={leaveLecture}
+        confirmClick={() => {
+          leaveLecture();
+          navigate("/");
+        }}
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       />

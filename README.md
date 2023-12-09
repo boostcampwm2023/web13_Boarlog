@@ -1,7 +1,15 @@
 
-<img src="https://github.com/boostcampwm2023/web13_Boarlog/assets/54176384/2e33bb1f-cdcd-42df-bbc0-c9a52ab54b61" alt="boarlog logo" width='200px'/>
+![Group 9798](https://github.com/boostcampwm2023/web13_Boarlog/assets/79556112/f81c9aa9-51cf-4c48-84af-d10575fa8d26)
+
 
 <br/>
+
+<p align="center">
+<a href="https://boarlog.netlify.app">
+<img src="https://github.com/boostcampwm2023/web13_Boarlog/assets/79556112/b51a0131-4112-4f86-909d-acbeb7a6c5c2"/>
+</a>
+</p>
+
 <br/>
 
 
@@ -18,14 +26,15 @@
 
 <br/>
 
-## 임시 배포 링크
+## 기술 스택
 
-- 화이트보드
-    - https://boarlog.netlify.app/test
-- 마이크
-    - https://boarlog.netlify.app/mictest
-- UI
-    - https://boarlog.netlify.app/example
+### Front-End
+
+- `JavaScript` `HTML5` `CSS3` `React` `Socket.io` `Fabric.js` `React Router` `TailwindCSS` `Modernizr`
+
+### Back-End
+
+- `NestJS` `MongoDB` `Docker`
 
 ## 팀 소개: TEAM_528
 
@@ -98,5 +107,5 @@ const teamName = camperIdArray.reduce((team, camperId) => {
 - [위키](https://github.com/boostcampwm2023/web13_TEAM_528/wiki)
 - [노션](https://weak-sugar-603.notion.site/TEAM_528-7780e03d7e9847b89fdf9f926036987b?pvs=4)
 - [백로그](https://www.notion.so/d1fb2080ff934e859d50c5cd3620e223)
-- [데모 링크](https://boarlog.netlify.app/test)
+- [데모 링크](https://boarlog.netlify.app)
 
