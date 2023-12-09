@@ -5,7 +5,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/user/user.schema';
 import { SignUpDto } from './dto/auth.signup.dto';
-import { UserInfoDto } from './dto/userInfo.dto';
 import { SignInDto } from './dto/auth.signin.dto';
 import { ConfigService } from '@nestjs/config';
 
@@ -30,15 +29,15 @@ export class AuthService {
     if (!user || !validatedPassword) {
       throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
     }
-    const userInfo = new UserInfoDto({ username: user.username, email: user.email });
-    return await this.generateCookie(userInfo);
+
+    return await this.generateCookie({ username: user.username, email: user.email });
   }
 
   async findUser(email: string): Promise<User> {
     return await this.userModel.findOne({ email: email });
   }
 
-  async generateCookie(userInfo: UserInfoDto) {
+  async generateCookie(userInfo: any) {
     const token = await this.jwtService.signAsync({ username: userInfo.username, email: userInfo.email });
     return token;
   }
