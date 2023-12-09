@@ -25,6 +25,7 @@ export class UserController {
     res.status(HttpStatus.OK).send(new UserInfoDto(userInfo));
   }
 
+  @UseGuards(CustomAuthGuard)
   @Post()
   @ApiOperation({ summary: 'Change username' })
   @ApiBody({
@@ -32,11 +33,14 @@ export class UserController {
     type: UserUpdateDto
   })
   @ApiResponse({ type: UserInfoDto })
-  async changeUsername(@Body() userUpdateDto: UserUpdateDto, @Res() res: Response) {
-    const result = await this.userService.updateUsername(userUpdateDto);
+  async changeUsername(@Req() req: any, @Body() userUpdateDto: UserUpdateDto, @Res() res: Response) {
+    if (!req.user) {
+      throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
+    }
+    const result = await this.userService.updateUsername(req.user.email, userUpdateDto.username);
     if (!result) {
       res.status(HttpStatus.NOT_FOUND).send();
-      return;
+      throw new HttpException('업데이트에 실패했습니다.', HttpStatus.NOT_FOUND);
     }
     res.status(HttpStatus.OK).send(new UserInfoDto(result));
   }
