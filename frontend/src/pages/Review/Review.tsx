@@ -1,11 +1,11 @@
-import { useSetRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 import { useEffect, useRef } from "react";
+import { fabric } from "fabric";
 
 import CloseIcon from "@/assets/svgs/close.svg?react";
 import ScriptIcon from "@/assets/svgs/whiteboard/script.svg?react";
 
 import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
-import videoRefState from "../Test/components/stateVideoRef";
 
 import LogToggleButton from "@/components/Button/LogToggleButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
@@ -13,19 +13,45 @@ import Header from "@/components/Header/Header";
 import ProgressBar from "./components/ProgressBar";
 
 const Review = () => {
-  const setVideoRef = useSetRecoilState(videoRefState);
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
 
   useEffect(() => {
-    setVideoRef(videoRef);
+    if (!canvasContainerRef.current || !canvasRef.current) return;
+
+    const canvasContainer = canvasContainerRef.current;
+    // 캔버스 생성
+    const newCanvas = new fabric.Canvas(canvasRef.current, {
+      width: canvasContainer.offsetWidth,
+      height: canvasContainer.offsetHeight,
+      selection: false
+    });
+    newCanvas.backgroundColor = "lightgray";
+    newCanvas.defaultCursor = "default";
+
+    var text = new fabric.Text("화이트보드를 불러오고 있습니다", {
+      fontSize: 18,
+      textAlign: "center",
+      originX: "center",
+      originY: "center",
+      left: canvasContainer.offsetWidth / 2,
+      top: canvasContainer.offsetHeight / 2,
+      selectable: false
+    });
+    newCanvas.add(text);
+
+    // 언마운트 시 캔버스 정리
+    return () => {
+      newCanvas.dispose();
+    };
   }, []);
 
   return (
     <>
       <Header type="review" />
-      <section className="relative">
-        <video className="w-[100vw] h-[calc(100vh-5rem)]" autoPlay muted ref={videoRef}></video>
+      <section className="relative w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
+        <canvas className="-z-10" ref={canvasRef} />
         <LogContainer
           type="prompt"
           className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
