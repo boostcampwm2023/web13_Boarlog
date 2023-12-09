@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import EnterIcon from "@/assets/svgs/enter.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
 import CloseIcon from "@/assets/svgs/close.svg?react";
 import Button from "@/components/Button/Button";
 import LogoOriginal from "@/assets/imgs/logoOriginal.png";
 import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
+import { useToast } from "@/components/Toast/useToast";
 
 interface UserAuthSectionProps {
   isSignIn: boolean;
@@ -18,22 +20,23 @@ const PASSWORD_REGEXP = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d
 
 const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
   const navigate = useNavigate();
+  const showToast = useToast();
   const [email, setEmail] = useState<string>("");
-  const [nickname, setNickname] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [passwordConfirm, setPasswordConfirm] = useState<string>("");
   const [isEmailValid, setIsEmailValid] = useState<boolean | null>(null);
-  const [isNicknameValid, setIsNicknameValid] = useState<boolean | null>(null);
+  const [isUsernameValid, setIsUsernameValid] = useState<boolean | null>(null);
   const [isPasswordValid, setIsPasswordValid] = useState<boolean | null>(null);
   const [isPasswordConfirm, setIsPasswordConfirm] = useState<boolean | null>(null);
 
   useEffect(() => {
     setEmail("");
-    setNickname("");
+    setUsername("");
     setPassword("");
     setPasswordConfirm("");
     setIsEmailValid(null);
-    setIsNicknameValid(null);
+    setIsUsernameValid(null);
     setIsPasswordValid(null);
     setIsPasswordConfirm(null);
   }, [isSignIn]);
@@ -43,9 +46,9 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
     setIsEmailValid(EMAIL_REGEXP.test(e.target.value));
   };
 
-  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNickname(e.target.value);
-    setIsNicknameValid(NICKNAME_REGEXP.test(e.target.value));
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+    setIsUsernameValid(NICKNAME_REGEXP.test(e.target.value));
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +64,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
 
   const handleLeftButtonClicked = () => {
     if (isSignIn) {
-      console.log("singin logic");
+      setIsSignIn(false);
     } else {
       setIsSignIn(true);
     }
@@ -69,9 +72,39 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
 
   const handleRightButtonClicked = () => {
     if (isSignIn) {
-      setIsSignIn(false);
+      if (isEmailValid && isPasswordValid) {
+        axios
+          .post(`${import.meta.env.VITE_API_SERVER_URL}/auth/signin`, {
+            email,
+            password
+          })
+          .then((result) => {
+            localStorage.setItem("token", result.data.token);
+            showToast({ message: "로그인에 성공했습니다.", type: "success" });
+            navigate("/");
+          })
+          .catch((error) => {
+            if (error.response.status === 404) showToast({ message: "사용자가 존재하지 않아요.", type: "alert" });
+            else showToast({ message: "잘못된 요청이에요.", type: "alert" });
+          });
+      } else showToast({ message: "올바른 정보를 입력해주세요.", type: "alert" });
     } else {
-      console.log("singup logic");
+      if (isEmailValid && isUsernameValid && isPasswordValid && isPasswordConfirm) {
+        axios
+          .post(`${import.meta.env.VITE_API_SERVER_URL}/auth/signup`, {
+            email,
+            username,
+            password
+          })
+          .then(() => {
+            showToast({ message: "회원가입에 성공했어요.", type: "success" });
+            setIsSignIn(false);
+          })
+          .catch((error) => {
+            if (error.response.status === 409) showToast({ message: "이미 가입한 적이 있어요.", type: "alert" });
+            else showToast({ message: "잘못된 요청이에요.", type: "alert" });
+          });
+      } else showToast({ message: "올바른 정보를 입력해주세요.", type: "alert" });
     }
   };
 
@@ -110,7 +143,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
           {!isSignIn && (
             <div className="flex flex-col gap-2 w-full">
               <p className="semibold-18">닉네임</p>
-              <p className={`medium-12 ${getDescriptionColor(isNicknameValid)}`}>
+              <p className={`medium-12 ${getDescriptionColor(isUsernameValid)}`}>
                 3자 이상 15자 이하의 영문, 숫자, 한글만 사용할 수 있습니다.
               </p>
               <input
@@ -118,8 +151,8 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
                 className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
                 placeholder="닉네임을 입력해주세요"
                 maxLength={15}
-                value={nickname}
-                onChange={handleNicknameChange}
+                value={username}
+                onChange={handleUsernameChange}
               />
             </div>
           )}
@@ -161,8 +194,8 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
           <Button type="grow" buttonStyle="black" onClick={handleLeftButtonClicked}>
             {isSignIn ? (
               <>
-                <EnterIcon className="fill-grayscale-white" />
-                시작하기
+                <UserIcon className="fill-grayscale-white" />
+                회원가입
               </>
             ) : (
               <>
@@ -174,8 +207,8 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
           <Button type="grow" buttonStyle="black" onClick={handleRightButtonClicked}>
             {isSignIn ? (
               <>
-                <UserIcon className="fill-grayscale-white" />
-                회원가입
+                <EnterIcon className="fill-grayscale-white" />
+                시작하기
               </>
             ) : (
               <>
