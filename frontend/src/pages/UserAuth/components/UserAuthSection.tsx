@@ -59,7 +59,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
 
   const handlePasswordConfirm = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordConfirm(e.target.value);
-    setIsPasswordConfirm(e.target.value === password);
+    setIsPasswordConfirm(e.target.value !== "" && e.target.value === password);
   };
 
   const handleLeftButtonClicked = () => {
