@@ -1,21 +1,14 @@
 import { RTCPeerConnection } from 'wrtc';
 import { Socket } from 'socket.io';
-import { ClientInfo } from './ClientInfo';
-
-interface ICanvasData {
-  canvasJSON: string;
-  viewport: number[];
-  eventTime: number;
-  width: number;
-  height: number;
-}
+import { ClientConnectionInfo } from './ClientConnectionInfo';
+import { ICanvasData } from '../interfaces/canvas-data.interface';
 
 export class RoomInfo {
   private readonly _roomId: string;
   private _presenterSocket: Socket | null;
   private readonly _presenterEmail: string;
   private readonly _presenterRTCPC: RTCPeerConnection;
-  private readonly _studentInfoList: Set<ClientInfo>;
+  private readonly _studentInfoList: Set<ClientConnectionInfo>;
   private readonly _startTime: Date;
   private _stream: MediaStream | null;
   private _currentWhiteboardData: ICanvasData | null;
@@ -39,7 +32,7 @@ export class RoomInfo {
     this._presenterSocket = socket;
   }
 
-  get studentInfoList(): Set<ClientInfo> {
+  get studentInfoList(): Set<ClientConnectionInfo> {
     return this._studentInfoList;
   }
 
@@ -65,7 +58,7 @@ export class RoomInfo {
 
   endLecture = () => {
     this._presenterRTCPC.close();
-    this._studentInfoList.forEach((studentInfo: ClientInfo) => {
+    this._studentInfoList.forEach((studentInfo: ClientConnectionInfo) => {
       studentInfo.enterSocket?.leave(this._roomId);
       studentInfo.enterSocket?.disconnect();
       studentInfo.lectureSocket?.leave(this._roomId);
@@ -74,7 +67,7 @@ export class RoomInfo {
     });
   };
 
-  exitRoom = (clientInfo: ClientInfo) => {
+  exitRoom = (clientInfo: ClientConnectionInfo) => {
     clientInfo.lectureSocket?.leave(this._roomId);
     this._studentInfoList.delete(clientInfo);
   };

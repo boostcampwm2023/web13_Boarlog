@@ -2,19 +2,21 @@ import { Server, Socket } from 'socket.io';
 import { RTCIceCandidate, RTCPeerConnection } from 'wrtc';
 import { pc_config } from './config/pc.config';
 import { RoomInfo } from './models/RoomInfo';
-import { ClientInfo, ClientType } from './models/ClientInfo';
+import { ClientConnectionInfo } from './models/ClientConnectionInfo';
+import { ClientType } from './constants/client-type.constant';
 import { Message } from './models/Message';
 import { mediaConverter } from './utils/MediaConverter';
 import { getEmailByJwtPayload } from './utils/auth';
+import { findClientInfoByEmail, saveClientInfo } from './services/client.service';
 
 export class RelayServer {
   private readonly io;
   private readonly roomsInfo: Map<string, RoomInfo>;
-  private readonly clientsInfo: Map<string, ClientInfo>;
+  private readonly clientsConnectionInfo: Map<string, ClientConnectionInfo>;
 
   constructor(port: number) {
     this.roomsInfo = new Map();
-    this.clientsInfo = new Map();
+    this.clientsConnectionInfo = new Map();
     this.io = new Server(port, {
       cors: {
         // TODO: 특정 URL만 origin 하도록 수정 필요
@@ -31,13 +33,16 @@ export class RelayServer {
   createRoom = (socket: Socket) => {
     try {
       const email: string = getEmailByJwtPayload(socket.handshake.auth.accessToken);
-      if (this.clientsInfo.has(email)) {
+      if (this.clientsConnectionInfo.has(email)) {
         // TODO: 이미 참여 중인 방이 있을 때, 클라이언트한테 재 참여할건지 물어보기
         //  아니면 한 강의실만 참여할 수 있다고 해도 좋음
       }
       socket.on('presenterOffer', async (data) => {
         const RTCPC = new RTCPeerConnection(pc_config);
-        this.clientsInfo.set(email, new ClientInfo(ClientType.PRESENTER, RTCPC, data.roomId));
+        // this.clientsInfo.set(email, new ClientConnectionInfo(ClientType.PRESENTER, RTCPC, data.roomId));
+        this.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC));
+        saveClientInfo(email, ClientType.PRESENTER, data.roomId);
+
         this.roomsInfo.set(data.roomId, new RoomInfo(data.roomId, email, RTCPC));
         RTCPC.ontrack = (event) => {
           const roomInfo = this.roomsInfo.get(data.roomId);
@@ -57,7 +62,7 @@ export class RelayServer {
         });
         RTCPC.setLocalDescription(SDP);
 
-        const clientInfo = this.clientsInfo.get(email);
+        const clientInfo = this.clientsConnectionInfo.get(email);
         if (!clientInfo) {
           throw new Error('해당 발표자가 존재하지 않습니다.');
         }
@@ -71,13 +76,16 @@ export class RelayServer {
   enterRoom = (socket: Socket) => {
     try {
       const email: string = getEmailByJwtPayload(socket.handshake.auth.accessToken);
-      if (this.clientsInfo.has(email)) {
+      if (this.clientsConnectionInfo.has(email)) {
         // TODO: 이미 참여 중인 방이 있을 때, 클라이언트한테 재 참여할건지 물어보기
         //  아니면 한 강의실만 참여할 수 있다고 해도 좋음
       }
       socket.on('studentOffer', async (data) => {
         const RTCPC = new RTCPeerConnection(pc_config);
-        this.clientsInfo.set(email, new ClientInfo(ClientType.STUDENT, RTCPC, data.roomId));
+        // this.clientsInfo.set(email, new ClientConnectionInfo(ClientType.STUDENT, RTCPC, data.roomId));
+        this.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC));
+        saveClientInfo(email, ClientType.STUDENT, data.roomId);
+
         const presenterStream = this.roomsInfo.get(data.roomId)?.stream;
         if (!presenterStream) {
           console.log('발표자의 MediaStream이 존재하지 않습니다.');
@@ -102,7 +110,7 @@ export class RelayServer {
         RTCPC.setLocalDescription(SDP);
 
         const roomInfo = this.roomsInfo.get(data.roomId);
-        const clientInfo = this.clientsInfo.get(email);
+        const clientInfo = this.clientsConnectionInfo.get(email);
         if (!clientInfo || !roomInfo) {
           // TODO: 추후 에러처리 필요
           console.log('해당 참여자가 존재하지 않습니다.');
@@ -117,10 +125,14 @@ export class RelayServer {
 
   // TODO: 클라이언트는 한 개의 방만 접속할 수 있는지?
   //  만약 그렇다면, 이미 참여 중인 빙이 있을 때 요청 거부하도록 처리해야 함
-  lecture = (socket: Socket) => {
+  lecture = async (socket: Socket) => {
     const email: string = getEmailByJwtPayload(socket.handshake.auth.accessToken);
-    const clientInfo = this.clientsInfo.get(email);
-    if (!clientInfo || !clientInfo.roomId) {
+    // const clientInfo = this.clientsInfo.get(email);
+    const clientInfo = await findClientInfoByEmail(email);
+    console.log(clientInfo);
+    const clientConnectionInfo = this.clientsConnectionInfo.get(email);
+
+    if (!clientInfo || !clientConnectionInfo || !clientInfo.roomId) {
       // TODO: 추후 클라이언트로 에러처리 필요
       console.log('잘못된 요청입니다.');
       return;
@@ -131,15 +143,15 @@ export class RelayServer {
       console.log('아직 열리지 않았거나 종료된 방입니다.');
       return;
     }
-    if (clientInfo) {
-      clientInfo.lectureSocket = socket;
+    if (clientConnectionInfo) {
+      clientConnectionInfo.lectureSocket = socket;
       socket.join(clientInfo.roomId);
       if (clientInfo.type === ClientType.PRESENTER) {
         roomInfo.presenterSocket = socket;
         socket.join(email);
       }
       if (clientInfo.type === ClientType.STUDENT) {
-        roomInfo.studentInfoList.add(clientInfo);
+        roomInfo.studentInfoList.add(clientConnectionInfo);
       }
     }
 
@@ -178,7 +190,7 @@ export class RelayServer {
       mediaConverter.setFfmpeg(data.roomId);
       this.roomsInfo.get(clientInfo.roomId)?.endLecture();
       this.roomsInfo.delete(clientInfo.roomId);
-      this.clientsInfo.delete(email);
+      this.clientsConnectionInfo.delete(email);
     });
 
     socket.on('leave', (data) => {
@@ -187,14 +199,14 @@ export class RelayServer {
         console.log('해당 참여자가 존재하지 않습니다');
         return;
       }
-      this.roomsInfo.get(clientInfo.roomId)?.exitRoom(clientInfo);
+      this.roomsInfo.get(clientInfo.roomId)?.exitRoom(clientConnectionInfo);
       this.io.of('/lecture').to(clientInfo.roomId).emit('response', new Message(data.type, 'success'));
     });
   };
 
   exchangeCandidate = (namespace: string, email: string, socket: Socket) => {
     try {
-      const RTCPC = this.clientsInfo.get(email)?.RTCPC;
+      const RTCPC = this.clientsConnectionInfo.get(email)?.RTCPC;
       if (!RTCPC) {
         console.log('candidate를 교환할 수 없습니다.');
         return;
