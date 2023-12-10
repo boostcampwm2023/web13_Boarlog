@@ -24,8 +24,12 @@ export class AuthService {
 
   async signIn(signInDto: SignInDto): Promise<string> {
     const user = await this.findUserByEmail(signInDto.email);
-    const validatedPassword = await decryptPassword(signInDto.password, user.password);
-    if (!user || !validatedPassword) {
+    if (!user) {
+      throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
+    }
+
+    const validatedPassword = await decryptPassword(signInDto.password, user?.password);
+    if (!validatedPassword) {
       throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
     }
 
