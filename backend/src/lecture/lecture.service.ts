@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { GenerateUtils } from 'src/utils/GenerateUtils';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
@@ -10,6 +9,7 @@ import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
 import { LectureSubtitle } from './lecture-subtitle.schema';
 import { Lecture } from './schema/lecture.schema';
 import { EnterCode } from './schema/lecture-code.schema';
+import { generateRandomNumber } from 'src/utils/GenerateUtils';
 
 @Injectable()
 export class LectureService {
@@ -51,10 +51,9 @@ export class LectureService {
   }
 
   async generateRoomCode() {
-    const generateUtils = new GenerateUtils();
-    let lectureCode = generateUtils.generateRandomNumber();
+    let lectureCode = generateRandomNumber();
     while (await this.findLectureByCode(lectureCode)) {
-      lectureCode = generateUtils.generateRandomNumber();
+      lectureCode = generateRandomNumber();
     }
     return lectureCode;
   }

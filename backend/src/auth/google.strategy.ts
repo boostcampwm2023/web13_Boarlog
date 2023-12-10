@@ -28,7 +28,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       profile: photos[0].value
     });
 
-    if ((await this.authService.findUser(user.email)) === null) {
+    if ((await this.authService.findUserByEmail(user.email)) === null) {
       await this.authService.signUp(user);
     }
 

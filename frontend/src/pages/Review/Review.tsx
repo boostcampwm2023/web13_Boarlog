@@ -15,6 +15,9 @@ import LogContainer from "@/components/LogContainer/LogContainer";
 import Header from "@/components/Header/Header";
 import ProgressBar from "./components/ProgressBar";
 
+// 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
+const TOTAL_MS_TIME_OF_REVIEW = 200000;
+
 import SmallButton from "@/components/SmallButton/SmallButton";
 
 const Review = () => {
@@ -135,7 +138,7 @@ const Review = () => {
         <LogToggleButton className="absolute top-2.5 right-2.5">
           {isQuestionLogOpen ? <CloseIcon /> : <ScriptIcon fill="black" />}
         </LogToggleButton>
-        <ProgressBar className="absolute bottom-2.5 left-1/2 -translate-x-1/2" />
+        <ProgressBar className="absolute bottom-2.5 left-1/2 -translate-x-1/2" totalTime={TOTAL_MS_TIME_OF_REVIEW} />
         <SmallButton
           className={`absolute text-grayscale-white bg-boarlog-100 bottom-[70px] left-[200px]`}
           onClick={play}

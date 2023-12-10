@@ -1,26 +1,26 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { UserService } from './user.service';
 import { UserInfoDto } from '../auth/dto/userInfo.dto';
-import { UserUpdateDto } from './dto/user.update.dto';
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CustomAuthGuard } from 'src/auth/auth.guard';
+import { UserUpdateDto } from './dto/update-user.dto';
 
 @ApiTags('profile')
 @Controller('/profile')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(CustomAuthGuard)
   @Get()
   @ApiOperation({ summary: 'Get user profile' })
-  @ApiQuery({
-    name: 'email',
-    type: 'string'
-  })
-  async profile(@Query('email') email: string, @Res() res: Response) {
-    const userInfo = await this.userService.findOneByEmail(email);
+  async profile(@Req() req: any, @Res() res: Response) {
+    if (!req.user) {
+      throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
+    }
+    const userInfo = await this.userService.findOneByEmail(req.user.email);
     if (!userInfo) {
-      res.status(HttpStatus.NOT_FOUND).send();
-      return;
+      throw new HttpException('사용자 정보가 존재하지 않습니다.', HttpStatus.NOT_FOUND);
     }
     res.status(HttpStatus.OK).send(new UserInfoDto(userInfo));
   }
