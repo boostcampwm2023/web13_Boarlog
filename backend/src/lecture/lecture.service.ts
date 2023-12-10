@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateLectureDto } from './dto/create-lecture.dto';
-import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { WhiteboardLog } from './schema/whiteboard-log.schema';
 import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
@@ -63,9 +62,7 @@ export class LectureService {
   }
 
   async findLectureInfo(enterCode: EnterCode) {
-    const result = await this.lectureModel.findById(enterCode.lecture_id).populate('presenter_id').exec();
-    const presenter = { username: result.presenter_id.username, email: result.presenter_id.email };
-    return new LectureInfoDto({ title: result.title, description: result.description, presenter: presenter });
+    return await this.lectureModel.findById(enterCode.lecture_id).populate('presenter_id').exec();
   }
 
   async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {

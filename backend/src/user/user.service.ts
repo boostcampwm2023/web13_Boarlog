@@ -24,11 +24,7 @@ export class UserService {
     const lecture = await this.lectureService.findLectureInfo(enterCode);
     return await this.userModel.findOneAndUpdate(
       { email: email },
-      {
-        $push: {
-          lecture_id: { title: lecture.title, description: lecture.description, presenter: lecture.presenter }
-        }
-      },
+      { $push: { lecture_id: lecture.id } },
       { new: true }
     );
   }

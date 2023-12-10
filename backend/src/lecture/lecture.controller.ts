@@ -77,7 +77,10 @@ export class LectureController {
       throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
     }
     const result = await this.lectureService.findLectureInfo(enterCodeDocument);
-    res.status(HttpStatus.OK).send(result);
+    const presenter = { username: result.presenter_id.username, email: result.presenter_id.email };
+    res
+      .status(HttpStatus.OK)
+      .send(new LectureInfoDto({ title: result.title, description: result.description, presenter: presenter }));
   }
 
   @Post('/log/:code')
