@@ -10,6 +10,7 @@ import { LectureSubtitle } from './lecture-subtitle.schema';
 import { Lecture } from './schema/lecture.schema';
 import { EnterCode } from './schema/lecture-code.schema';
 import { generateRandomNumber } from 'src/utils/GenerateUtils';
+import { User } from 'src/user/user.schema';
 
 @Injectable()
 export class LectureService {
@@ -24,11 +25,11 @@ export class LectureService {
     private lectureSubtitleModel: Model<LectureSubtitle>
   ) {}
 
-  async createLecture(createLectureDto: CreateLectureDto, userId: string) {
+  async createLecture(createLectureDto: CreateLectureDto, user: User) {
     const lecture = new this.lectureModel({
       title: createLectureDto.title,
       description: createLectureDto.description,
-      presenter_id: userId
+      presenter: { username: user.username, email: user.email }
     });
     const lectureCode = new this.enterCodeModel({
       code: await this.generateRoomCode(),
@@ -64,7 +65,7 @@ export class LectureService {
 
   async findLectureInfo(enterCode: EnterCode) {
     const result = await this.lectureModel.findById(enterCode.lecture_id).exec();
-    return LectureInfoDto.of(result);
+    return new LectureInfoDto(result);
   }
 
   async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {

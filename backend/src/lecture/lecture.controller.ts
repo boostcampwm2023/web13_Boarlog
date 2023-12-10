@@ -35,7 +35,7 @@ export class LectureController {
   @ApiResponse({ status: 201 })
   async create(@Body() createLecture: CreateLectureDto, @Res() res: Response) {
     const user = await this.userService.findOneByEmail(createLecture.email);
-    const code = await this.lectureService.createLecture(createLecture, user.id);
+    const code = await this.lectureService.createLecture(createLecture, user);
     res.status(HttpStatus.CREATED).send({ code: code });
   }
 
@@ -63,7 +63,7 @@ export class LectureController {
       throw new HttpException('유효하지 않은 강의 참여코드입니다.', HttpStatus.NOT_FOUND);
     }
 
-    await this.userService.updateLecture(req.user.email, enterCodeDocument.lecture_id);
+    await this.userService.updateLecture(req.user.email, enterCodeDocument);
     res.status(HttpStatus.OK).send();
   }
 

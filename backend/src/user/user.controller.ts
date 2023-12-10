@@ -23,6 +23,7 @@ export class UserController {
     if (!userInfo) {
       throw new HttpException('사용자 정보가 존재하지 않습니다.', HttpStatus.NOT_FOUND);
     }
+
     res.status(HttpStatus.OK).send(new UserInfoDto(userInfo));
   }
 

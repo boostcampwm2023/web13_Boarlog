@@ -22,6 +22,7 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule
   ],
   controllers: [LectureController],
-  providers: [LectureService, UserService]
+  providers: [LectureService, UserService],
+  exports: [LectureService, MongooseModule]
 })
 export class LectureModule {}

@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import mongoose from 'mongoose';
 
 export class UserInfoDto {
   @ApiProperty({ example: 'EXAMPLE_USERNAME' })
@@ -11,7 +10,7 @@ export class UserInfoDto {
   @ApiProperty()
   password: string;
 
-  lecture_id: mongoose.Types.ObjectId;
+  lecture_id: { title: string; description: string; present: JSON }; //mongoose.Types.ObjectId;
 
   constructor({ username, email, lecture_id }) {
     this.username = username;

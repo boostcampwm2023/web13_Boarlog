@@ -1,6 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
-import { User } from 'src/user/user.schema';
 
 @Schema()
 export class Lecture {
@@ -10,8 +8,8 @@ export class Lecture {
   @Prop({ default: '' })
   description: string;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  presenter_id: User;
+  @Prop({ required: true, type: JSON })
+  presenter: { username: string; email: string };
 
   @Prop({ default: false })
   is_end: boolean;
