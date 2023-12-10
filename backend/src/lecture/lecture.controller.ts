@@ -21,6 +21,7 @@ import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { LectureService } from './lecture.service';
 import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
 import { CustomAuthGuard } from 'src/auth/auth.guard';
+import { PresenterInfo } from 'src/user/dto/presenterInfo.dto';
 
 @ApiTags('lecture')
 @Controller('lecture')
@@ -77,10 +78,14 @@ export class LectureController {
       throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
     }
     const result = await this.lectureService.findLectureInfo(enterCodeDocument);
-    const presenter = { username: result.presenter_id.username, email: result.presenter_id.email };
-    res
-      .status(HttpStatus.OK)
-      .send(new LectureInfoDto({ title: result.title, description: result.description, presenter: presenter }));
+
+    res.status(HttpStatus.OK).send(
+      new LectureInfoDto({
+        title: result.title,
+        description: result.description,
+        presenter: new PresenterInfo(result.presenter_id.username, result.presenter_id.email)
+      })
+    );
   }
 
   @Post('/log/:code')

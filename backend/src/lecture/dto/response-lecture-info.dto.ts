@@ -12,6 +12,6 @@ export class LectureInfoDto {
   constructor({ title, description, presenter }) {
     this.title = title;
     this.description = description;
-    this.presenter = presenter;
+    this.presenter = presenter.toJSON();
   }
 }
