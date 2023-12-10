@@ -123,7 +123,6 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
           <h1 className="semibold-64">Boarlog</h1>
           <h2 className="semibold-20 text-grayscale-darkgray">기록으로 남기는 실시간 강의</h2>
         </div>
-        {isSignIn ? <></> : <></>}
         <div className="flex flex-col gap-4 w-full">
           <h3 className="semibold-32">{isSignIn ? "로그인" : "회원가입"}</h3>
           <div className="flex flex-col gap-2 w-full">
