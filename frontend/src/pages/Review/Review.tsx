@@ -1,7 +1,7 @@
 import { useRecoilValue } from "recoil";
 import { useEffect, useRef } from "react";
 import { fabric } from "fabric";
-import { ICanvasData, loadCanvasData } from "@/utils/fabricCanvasUtil";
+import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
 
 import axios from "axios";
 
@@ -24,7 +24,7 @@ const Review = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   let fabricCanvasRef = useRef<fabric.Canvas>();
-  let countRef = useRef<number>(0);
+  let canvasCntRef = useRef<number>(0);
 
   let loadedData: ICanvasData[] | null = null;
 
@@ -75,6 +75,12 @@ const Review = () => {
         console.log("프롬프트에 표시할 스크립트 로딩 실패", error);
       });
 
+    // 윈도우 리사이즈 이벤트 감지
+    const handleResize = () => {
+      updateCanvasSize({ fabricCanvas: fabricCanvasRef.current!, whiteboardData: loadedData![canvasCntRef.current] });
+    };
+    window.addEventListener("resize", handleResize);
+
     // 언마운트 시 캔버스 정리
     return () => {
       newCanvas.dispose();
@@ -83,26 +89,26 @@ const Review = () => {
 
   const onFrame = () => {
     const LECTURE_TOTAL_PRAMES = loadedData!.length;
-    const 데이터시간 = loadedData![countRef.current].eventTime;
-    const 지난시간 = Date.now() - startTime;
-    //console.log(LECTURE_TOTAL_PRAMES, countRef.current, 데이터시간, 지난시간);
-    if (지난시간 > 데이터시간) {
+    const eventTime = loadedData![canvasCntRef.current].eventTime;
+    const elapsedTime = Date.now() - startTime;
+    //console.log(LECTURE_TOTAL_PRAMES, canvasCntRef.current, 데이터시간, 지난시간);
+    if (elapsedTime > eventTime) {
       loadCanvasData({
         fabricCanvas: fabricCanvasRef.current!,
-        currentData: loadedData![countRef.current - 1],
-        newData: loadedData![countRef.current]
+        currentData: loadedData![canvasCntRef.current - 1],
+        newData: loadedData![canvasCntRef.current]
       });
-      countRef.current += 1;
+      canvasCntRef.current += 1;
     }
-    if (countRef.current < LECTURE_TOTAL_PRAMES) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    if (canvasCntRef.current < LECTURE_TOTAL_PRAMES) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     else console.log("다시보기 끝");
   };
   const play = () => {
     if (!loadedData) return;
     startTime = Date.now() - playedTime;
 
-    if (countRef.current === 0) {
-      countRef.current = 1;
+    if (canvasCntRef.current === 0) {
+      canvasCntRef.current = 1;
       loadCanvasData({
         fabricCanvas: fabricCanvasRef.current!,
         currentData: canvasData,

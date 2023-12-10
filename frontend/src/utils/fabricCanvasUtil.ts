@@ -30,6 +30,7 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
     return false;
   }
 };
+
 export const loadCanvasData = ({
   fabricCanvas,
   currentData,
@@ -51,29 +52,37 @@ export const loadCanvasData = ({
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);
   // 캔버스 크기 업데이트
 
-  if (isSizeChanged) {
-    // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
-    const HEADER_HEIGHT = 80;
-    const newHegiht = window.innerWidth * (newData.height / newData.width);
-    if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
-      const newWidth = (window.innerHeight - HEADER_HEIGHT) * (newData.width / newData.height);
-      fabricCanvas.setDimensions({
-        width: newWidth,
-        height: window.innerHeight - HEADER_HEIGHT
-      });
-    } else {
-      fabricCanvas.setDimensions({
-        width: window.innerWidth,
-        height: newHegiht
-      });
-    }
-    // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
-    fabricCanvas.setDimensions(
-      {
-        width: newData.width,
-        height: newData.height
-      },
-      { backstoreOnly: true }
-    );
+  if (isSizeChanged) updateCanvasSize({ fabricCanvas, whiteboardData: newData });
+};
+
+export const updateCanvasSize = ({
+  fabricCanvas,
+  whiteboardData
+}: {
+  fabricCanvas: fabric.Canvas;
+  whiteboardData: ICanvasData;
+}) => {
+  // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
+  const HEADER_HEIGHT = 80;
+  const newHegiht = window.innerWidth * (whiteboardData.height / whiteboardData.width);
+  if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
+    const newWidth = (window.innerHeight - HEADER_HEIGHT) * (whiteboardData.width / whiteboardData.height);
+    fabricCanvas.setDimensions({
+      width: newWidth,
+      height: window.innerHeight - HEADER_HEIGHT
+    });
+  } else {
+    fabricCanvas.setDimensions({
+      width: window.innerWidth,
+      height: newHegiht
+    });
   }
+  // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
+  fabricCanvas.setDimensions(
+    {
+      width: whiteboardData.width,
+      height: whiteboardData.height
+    },
+    { backstoreOnly: true }
+  );
 };
