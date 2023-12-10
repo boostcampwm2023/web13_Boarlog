@@ -63,8 +63,9 @@ export class LectureService {
   }
 
   async findLectureInfo(enterCode: EnterCode) {
-    const result = await this.lectureModel.findById(enterCode.lecture_id).exec();
-    return new LectureInfoDto({ title: result.title, description: result.description, presenter: result.presenter_id });
+    const result = await this.lectureModel.findById(enterCode.lecture_id).populate('presenter_id').exec();
+    const presenter = { username: result.presenter_id.username, email: result.presenter_id.email };
+    return new LectureInfoDto({ title: result.title, description: result.description, presenter: presenter });
   }
 
   async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {

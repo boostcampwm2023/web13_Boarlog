@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import mongoose from 'mongoose';
 
 export class LectureInfoDto {
   @ApiProperty({ example: '강의 제목' })
@@ -8,7 +7,7 @@ export class LectureInfoDto {
   @ApiProperty({ example: '강의 설명' })
   description: string;
 
-  presenter: mongoose.Types.ObjectId;
+  presenter: JSON;
 
   constructor({ title, description, presenter }) {
     this.title = title;
