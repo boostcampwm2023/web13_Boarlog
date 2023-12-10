@@ -11,7 +11,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
 import { useToast } from "@/components/Toast/useToast";
-import { ICanvasData, loadCanvasData } from "@/utils/fabricCanvasUtil";
+import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
@@ -71,6 +71,10 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       window.removeEventListener("popstate", backToMain);
     };
     window.addEventListener("popstate", backToMain);
+    return () => {
+      window.removeEventListener("popstate", backToMain);
+      window.addEventListener("resize", handleResize);
+    };
   }, []);
   useEffect(() => {
     if (didMount) {
@@ -90,6 +94,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const enterLecture = async () => {
     await initConnection();
     await createStudentOffer();
+    window.addEventListener("resize", handleResize);
 
     // 서버와 webRTC 연결이 성공했을 때의 동작
     if (!pcRef.current) return;
@@ -279,6 +284,13 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     setParticipantSocket(lectureSocketRef.current);
     lectureSocketRef.current.on("ended", () => handleLectureEnd());
     lectureSocketRef.current.on("update", (data) => handleWhiteboardUpdate(data));
+  };
+  const handleResize = () => {
+    if (!fabricCanvasRef) return;
+    updateCanvasSize({
+      fabricCanvas: fabricCanvasRef,
+      whiteboardData: canvasData
+    });
   };
 
   return (
