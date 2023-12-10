@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
@@ -10,7 +10,6 @@ import { LectureSubtitle } from './lecture-subtitle.schema';
 import { Lecture } from './schema/lecture.schema';
 import { EnterCode } from './schema/lecture-code.schema';
 import { generateRandomNumber } from 'src/utils/GenerateUtils';
-import { User } from 'src/user/user.schema';
 
 @Injectable()
 export class LectureService {
@@ -25,11 +24,11 @@ export class LectureService {
     private lectureSubtitleModel: Model<LectureSubtitle>
   ) {}
 
-  async createLecture(createLectureDto: CreateLectureDto, user: User) {
+  async createLecture(createLectureDto: CreateLectureDto, id: Types.ObjectId) {
     const lecture = new this.lectureModel({
       title: createLectureDto.title,
       description: createLectureDto.description,
-      presenter: { username: user.username, email: user.email }
+      presenter_id: id
     });
     const lectureCode = new this.enterCodeModel({
       code: await this.generateRoomCode(),
@@ -65,7 +64,7 @@ export class LectureService {
 
   async findLectureInfo(enterCode: EnterCode) {
     const result = await this.lectureModel.findById(enterCode.lecture_id).exec();
-    return new LectureInfoDto(result);
+    return new LectureInfoDto({ title: result.title, description: result.description, presenter: result.presenter_id });
   }
 
   async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {

@@ -35,7 +35,7 @@ export class LectureController {
   @ApiResponse({ status: 201 })
   async create(@Body() createLecture: CreateLectureDto, @Res() res: Response) {
     const user = await this.userService.findOneByEmail(createLecture.email);
-    const code = await this.lectureService.createLecture(createLecture, user);
+    const code = await this.lectureService.createLecture(createLecture, user.id);
     res.status(HttpStatus.CREATED).send({ code: code });
   }
 

@@ -19,11 +19,10 @@ export class UserController {
     if (!req.user) {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
     }
-    const userInfo = await this.userService.findOneByEmail(req.user.email);
+    const userInfo = await (await this.userService.findOneByEmail(req.user.email)).populate('lecture_id');
     if (!userInfo) {
       throw new HttpException('사용자 정보가 존재하지 않습니다.', HttpStatus.NOT_FOUND);
     }
-
     res.status(HttpStatus.OK).send(new UserInfoDto(userInfo));
   }
 

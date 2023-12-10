@@ -25,7 +25,9 @@ export class UserService {
     return await this.userModel.findOneAndUpdate(
       { email: email },
       {
-        $push: { lecture_id: { title: lecture.title, description: lecture.description, presenter: lecture.presenter } }
+        $push: {
+          lecture_id: { title: lecture.title, description: lecture.description, presenter: lecture.presenter }
+        }
       },
       { new: true }
     );
