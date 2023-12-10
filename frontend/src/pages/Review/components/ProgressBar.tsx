@@ -26,10 +26,11 @@ interface ProgressBarProps {
   className: string;
   totalTime: number;
   prograssBarState: "disabled" | "playing" | "paused";
-  onFrame: () => void; //매 frame마다 실행할 함수
+  play: () => void;
+  pause: () => void;
 }
 
-const ProgressBar = ({ className, totalTime, prograssBarState }: ProgressBarProps) => {
+const ProgressBar = ({ className, totalTime, prograssBarState, play, pause }: ProgressBarProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const timerRef = useRef<any>();
@@ -76,7 +77,7 @@ const ProgressBar = ({ className, totalTime, prograssBarState }: ProgressBarProp
         type="button"
         className="medium-12 w-8 p-2"
         onClick={() => {
-          setIsPlaying(!isPlaying);
+          prograssBarState === "playing" ? pause() : play();
         }}
         disabled={prograssBarState === "disabled"}
       >

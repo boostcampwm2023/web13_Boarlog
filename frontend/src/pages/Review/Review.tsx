@@ -148,20 +148,9 @@ const Review = () => {
           className="absolute bottom-2.5 left-1/2 -translate-x-1/2"
           totalTime={TOTAL_MS_TIME_OF_REVIEW}
           prograssBarState={prograssBarState}
-          onFrame={onFrame}
+          play={play}
+          pause={pause}
         />
-        <SmallButton
-          className={`absolute text-grayscale-white bg-boarlog-100 bottom-[70px] left-[200px]`}
-          onClick={play}
-        >
-          재생
-        </SmallButton>
-        <SmallButton
-          className={`absolute text-grayscale-white bg-boarlog-100 bottom-[70px] left-[250px]`}
-          onClick={pause}
-        >
-          일시정지
-        </SmallButton>
       </section>
     </>
   );
