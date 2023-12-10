@@ -40,13 +40,12 @@ export class RelayServer {
       }
       socket.on('presenterOffer', async (data) => {
         const RTCPC = new RTCPeerConnection(pc_config);
-        // this.clientsInfo.set(email, new ClientConnectionInfo(ClientType.PRESENTER, RTCPC, data.roomId));
         this.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC));
-        saveClientInfo(email, ClientType.PRESENTER, data.roomId);
-
-        // this.roomsConnectionInfo.set(data.roomId, new RoomConnectionInfo(data.roomId, email, RTCPC));
         this.roomsConnectionInfo.set(data.roomId, new RoomConnectionInfo(RTCPC));
-        saveRoomInfo(data.roomId, new RoomInfoDto(email));
+        await Promise.all([
+          saveClientInfo(email, ClientType.PRESENTER, data.roomId),
+          saveRoomInfo(data.roomId, new RoomInfoDto(email))
+        ]);
 
         RTCPC.ontrack = (event) => {
           const roomInfo = this.roomsConnectionInfo.get(data.roomId);
@@ -85,7 +84,6 @@ export class RelayServer {
       }
       socket.on('studentOffer', async (data) => {
         const RTCPC = new RTCPeerConnection(pc_config);
-        // this.clientsInfo.set(email, new ClientConnectionInfo(ClientType.STUDENT, RTCPC, data.roomId));
         this.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC));
         saveClientInfo(email, ClientType.STUDENT, data.roomId);
 
@@ -116,12 +114,6 @@ export class RelayServer {
           });
         RTCPC.setLocalDescription(SDP);
 
-        // const roomInfo = this.roomsConnectionInfo.get(data.roomId);
-        // const clientInfo = this.clientsConnectionInfo.get(email);
-        // if (!clientInfo) {
-        //   console.log('해당 참여자가 존재하지 않습니다.');
-        //   return;
-        // }
         const clientConnectionInfo = this.clientsConnectionInfo.get(email);
         if (!clientConnectionInfo) {
           console.log('해당 참여자가 존재하지 않습니다.');
@@ -137,9 +129,8 @@ export class RelayServer {
   // TODO: 클라이언트는 한 개의 방만 접속할 수 있는지? 만약 그렇다면, 이미 참여 중인 빙이 있을 때 요청 거부하도록 처리해야 함
   lecture = async (socket: Socket) => {
     const email: string = getEmailByJwtPayload(socket.handshake.auth.accessToken);
-    // const clientInfo = this.clientsInfo.get(email);
     const clientInfo = await findClientInfoByEmail(email);
-    const clientConnectionInfo = this.clientsConnectionInfo.get(email);
+    const clientConnectionInfo = await this.clientsConnectionInfo.get(email);
     if (!clientInfo || !clientConnectionInfo || !clientInfo.roomId) {
       // TODO: 추후 클라이언트로 에러처리 필요
       console.log('잘못된 요청입니다.');

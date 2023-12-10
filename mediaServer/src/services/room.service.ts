@@ -7,8 +7,8 @@ const findRoomInfoById = (roomId: string) => {
   return redis.hgetall(ROOM_INFO_KEY_PREFIX + roomId);
 };
 
-const saveRoomInfo = (roomId: string, roomInfo: RoomInfoDto) => {
-  redis.hset(ROOM_INFO_KEY_PREFIX + roomId, roomInfo);
+const saveRoomInfo = async (roomId: string, roomInfo: RoomInfoDto) => {
+  await redis.hset(ROOM_INFO_KEY_PREFIX + roomId, roomInfo);
 };
 
 const updateWhiteboardData = async (roomId: string, whiteboardData: ICanvasData) => {
