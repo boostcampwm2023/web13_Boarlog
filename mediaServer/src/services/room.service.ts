@@ -15,4 +15,8 @@ const updateWhiteboardData = async (roomId: string, whiteboardData: ICanvasData)
   await redis.hset(ROOM_INFO_KEY_PREFIX + roomId, { currentWhiteboardData: JSON.stringify(whiteboardData) });
 };
 
-export { findRoomInfoById, saveRoomInfo, updateWhiteboardData };
+const deleteRoomInfoById = async (roomId: string) => {
+  await redis.del(ROOM_INFO_KEY_PREFIX + roomId);
+};
+
+export { findRoomInfoById, saveRoomInfo, updateWhiteboardData, deleteRoomInfoById };

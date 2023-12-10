@@ -8,7 +8,7 @@ import { Message } from './models/Message';
 import { mediaConverter } from './utils/MediaConverter';
 import { getEmailByJwtPayload } from './utils/auth';
 import { findClientInfoByEmail, saveClientInfo } from './services/client.service';
-import { findRoomInfoById, saveRoomInfo, updateWhiteboardData } from './services/room.service';
+import { deleteRoomInfoById, findRoomInfoById, saveRoomInfo, updateWhiteboardData } from './services/room.service';
 import { RoomInfoDto } from './dto/room-info.dto';
 
 export class RelayServer {
@@ -148,6 +148,7 @@ export class RelayServer {
     if (clientInfo.type === ClientType.PRESENTER) {
       roomConnectionInfo.presenterSocket = socket;
       socket.join(email);
+      // TODO: API 서버에 강의 시작 요청하기
     }
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
@@ -178,7 +179,7 @@ export class RelayServer {
       this.io.of('/lecture').to(presenterEmail).emit('asked', new Message(data.type, data.content));
     });
 
-    socket.on('end', (data) => {
+    socket.on('end', async (data) => {
       if (clientInfo.type !== ClientType.PRESENTER || clientInfo.roomId !== data.roomId) {
         // TODO: 추후 클라이언트로 에러처리 필요
         console.log('해당 발표자가 존재하지 않습니다');
@@ -189,6 +190,8 @@ export class RelayServer {
       this.roomsConnectionInfo.get(clientInfo.roomId)?.endLecture(data.roomId);
       this.roomsConnectionInfo.delete(clientInfo.roomId);
       this.clientsConnectionInfo.delete(email);
+      await deleteRoomInfoById(data.roomId);
+      // TODO: API 서버에 강의 종료 요청하기
     });
 
     socket.on('leave', (data) => {
