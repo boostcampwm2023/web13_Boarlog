@@ -1,20 +1,19 @@
-import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import "./global.css";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import { RecoilRoot } from "recoil";
+import ToastContainer from "./components/Toast/ToastContainer";
+
 import Home from "@/pages/Home/Home";
-import Login from "./pages/Login/Login";
+import UserAuth from "./pages/UserAuth/UserAuth";
+import Start from "./pages/Start/Start";
+import MyPage from "./pages/MyPage/MyPage";
 import Test from "./pages/Test/Test";
 import Instructor from "./pages/Instructor/Instructor";
 import Participant from "./pages/Participant/Participant";
 import Review from "./pages/Review/Review";
-
-import { RecoilRoot } from "recoil";
-import Example from "./pages/Example/Example";
-
-import ToastContainer from "./components/Toast/ToastContainer";
-import Start from "./pages/Start/Start";
-import MyPage from "./pages/MyPage/MyPage";
-import ErrorPage from "./pages/ErrorPage/ErrorPage";
 import LectureEnd from "./pages/LectureEnd/LectureEnd";
+import Example from "./pages/Example/Example";
+import ErrorPage from "./pages/ErrorPage/ErrorPage";
 
 const App = () => {
   return (
@@ -23,7 +22,7 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/userauth" element={<UserAuth />} />
           <Route path="/start" element={<Start />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/test" element={<Test />} />
