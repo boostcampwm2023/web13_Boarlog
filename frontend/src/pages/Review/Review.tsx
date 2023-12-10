@@ -1,7 +1,8 @@
-import { useRecoilValue } from "recoil";
-import { useEffect, useRef } from "react";
+import { useRecoilValue, useRecoilState } from "recoil";
+import { useState, useEffect, useRef } from "react";
 import { fabric } from "fabric";
 import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
+import progressMsTimeState from "@/stores/stateProgressMsTime";
 
 import axios from "axios";
 
@@ -22,6 +23,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 
 const Review = () => {
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
+  const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
 
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,10 +31,11 @@ const Review = () => {
   let fabricCanvasRef = useRef<fabric.Canvas>();
   let canvasCntRef = useRef<number>(0);
 
-  let loadedData: ICanvasData[] | null = null;
+  //let loadedData: ICanvasData[] | null = null;
+
+  const [loadedData, setLoadedData] = useState<ICanvasData[] | null>(null);
 
   let startTime = Date.now();
-  let playedTime = 0;
 
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
 
@@ -72,7 +75,8 @@ const Review = () => {
 
     axios("./dummyCanvasData.json")
       .then(({ data }) => {
-        loadedData = data;
+        setLoadedData(data);
+        //loadedData = data;
       })
       .catch((error) => {
         console.log("프롬프트에 표시할 스크립트 로딩 실패", error);
@@ -94,7 +98,7 @@ const Review = () => {
     const LECTURE_TOTAL_PRAMES = loadedData!.length;
     const eventTime = loadedData![canvasCntRef.current].eventTime;
     const elapsedTime = Date.now() - startTime;
-    //console.log(LECTURE_TOTAL_PRAMES, canvasCntRef.current, 데이터시간, 지난시간);
+    setProgressMsTime(elapsedTime);
     if (elapsedTime > eventTime) {
       loadCanvasData({
         fabricCanvas: fabricCanvasRef.current!,
@@ -108,7 +112,7 @@ const Review = () => {
   };
   const play = () => {
     if (!loadedData) return;
-    startTime = Date.now() - playedTime;
+    startTime = Date.now() - progressMsTime;
 
     if (canvasCntRef.current === 0) {
       canvasCntRef.current = 1;
@@ -118,11 +122,9 @@ const Review = () => {
         newData: loadedData[0]
       });
     }
-
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
   };
   const pause = () => {
-    playedTime = Date.now() - startTime;
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
   };
 
