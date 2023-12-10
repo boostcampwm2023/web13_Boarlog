@@ -22,7 +22,14 @@ const getPercentOfProgress = (progressTime: number, totalTime: number) => {
   return result.toFixed(1) + "%";
 };
 
-const ProgressBar = ({ className, totalTime }: { className: string; totalTime: number }) => {
+interface ProgressBarProps {
+  className: string;
+  totalTime: number;
+  prograssBarState: "disabled" | "playing" | "paused";
+  onFrame: () => void; //매 frame마다 실행할 함수
+}
+
+const ProgressBar = ({ className, totalTime, prograssBarState }: ProgressBarProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const timerRef = useRef<any>();
@@ -54,6 +61,7 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
 
   useEffect(() => {
     if (progressMsTime >= totalTime) {
+      prograssBarState = "disabled";
       setProgressMsTime(totalTime);
       setIsPlaying(false);
       clearInterval(timerRef.current);
@@ -70,9 +78,15 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
         onClick={() => {
           setIsPlaying(!isPlaying);
         }}
-        disabled={progressMsTime >= totalTime ? true : false}
+        disabled={prograssBarState === "disabled"}
       >
-        {isPlaying ? <PauseIcon /> : <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />}
+        {prograssBarState === "disabled" ? (
+          <PlayIcon fill="gray" />
+        ) : prograssBarState === "playing" ? (
+          <PauseIcon />
+        ) : (
+          <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />
+        )}
       </button>
       <div
         className="flex h-4 grow items-center"
@@ -88,6 +102,7 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
         </div>
       </div>
       <span className="medium-12">{convertMsToTimeString(progressMsTime)}</span>
+      <span className="medium-12">{prograssBarState}</span>
     </div>
   );
 };

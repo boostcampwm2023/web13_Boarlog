@@ -1,5 +1,5 @@
 import { useRecoilValue, useRecoilState } from "recoil";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fabric } from "fabric";
 import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
 import progressMsTimeState from "@/stores/stateProgressMsTime";
@@ -28,6 +28,7 @@ const Review = () => {
   let fabricCanvasRef = useRef<fabric.Canvas>();
   let canvasCntRef = useRef<number>(0);
 
+  const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   let startTime = Date.now();
   let canvasData: ICanvasData = {
     canvasJSON: "",
@@ -40,6 +41,7 @@ const Review = () => {
   let TOTAL_MS_TIME_OF_REVIEW = 200000;
 
   useEffect(() => {
+    console.log("Review 페이지 렌더링");
     handleInitCanvas();
     handleLoadData();
     window.addEventListener("resize", handleResize);
@@ -79,6 +81,7 @@ const Review = () => {
         // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
         TOTAL_MS_TIME_OF_REVIEW = 200000;
         loadedDataRef.current = data;
+        setPrograssBarState("paused");
       })
       .catch((error) => {
         console.log("화이트보드 데이터 로딩 실패", error);
@@ -120,9 +123,13 @@ const Review = () => {
       });
     }
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+
+    setPrograssBarState("playing");
   };
   const pause = () => {
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
+    setPrograssBarState("paused");
+    console.log("pause");
   };
 
   return (
@@ -137,7 +144,12 @@ const Review = () => {
         <LogToggleButton className="absolute top-2.5 right-2.5">
           {isQuestionLogOpen ? <CloseIcon /> : <ScriptIcon fill="black" />}
         </LogToggleButton>
-        <ProgressBar className="absolute bottom-2.5 left-1/2 -translate-x-1/2" totalTime={TOTAL_MS_TIME_OF_REVIEW} />
+        <ProgressBar
+          className="absolute bottom-2.5 left-1/2 -translate-x-1/2"
+          totalTime={TOTAL_MS_TIME_OF_REVIEW}
+          prograssBarState={prograssBarState}
+          onFrame={onFrame}
+        />
         <SmallButton
           className={`absolute text-grayscale-white bg-boarlog-100 bottom-[70px] left-[200px]`}
           onClick={play}
