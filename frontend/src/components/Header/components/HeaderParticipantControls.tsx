@@ -11,7 +11,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
 import { useToast } from "@/components/Toast/useToast";
-import { ICanvasData, loadCanvasData } from "./fabricCanvasUtil";
+import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
@@ -71,6 +71,10 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
       window.removeEventListener("popstate", backToMain);
     };
     window.addEventListener("popstate", backToMain);
+    return () => {
+      window.removeEventListener("popstate", backToMain);
+      window.addEventListener("resize", handleResize);
+    };
   }, []);
   useEffect(() => {
     if (didMount) {
@@ -90,6 +94,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const enterLecture = async () => {
     await initConnection();
     await createStudentOffer();
+    window.addEventListener("resize", handleResize);
 
     // 서버와 webRTC 연결이 성공했을 때의 동작
     if (!pcRef.current) return;
@@ -238,7 +243,12 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
-    loadCanvasData(fabricCanvasRef!, canvasData, data.whiteboard);
+    loadCanvasData({
+      fabricCanvas: fabricCanvasRef!,
+      currentData: canvasData,
+      newData: data.whiteboard
+    });
+    canvasData = data.whiteboard;
     pcRef.current.setRemoteDescription(data.SDP);
   };
   const handleServerCandidate = (data: any) => {
@@ -248,6 +258,14 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   const handleServerError = (err: any) => {
     console.error(err.message);
     showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
+  const handleWhiteboardUpdate = (data: any) => {
+    loadCanvasData({
+      fabricCanvas: fabricCanvasRef!,
+      currentData: canvasData,
+      newData: data.content
+    });
+    canvasData = data.content;
   };
   const handleLectureEnd = () => {
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
@@ -265,7 +283,14 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     });
     setParticipantSocket(lectureSocketRef.current);
     lectureSocketRef.current.on("ended", () => handleLectureEnd());
-    lectureSocketRef.current.on("update", (data) => loadCanvasData(fabricCanvasRef!, canvasData, data.content));
+    lectureSocketRef.current.on("update", (data) => handleWhiteboardUpdate(data));
+  };
+  const handleResize = () => {
+    if (!fabricCanvasRef) return;
+    updateCanvasSize({
+      fabricCanvas: fabricCanvasRef,
+      whiteboardData: canvasData
+    });
   };
 
   return (

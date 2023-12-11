@@ -62,12 +62,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "review" && (
           <>
-            <HeaderParticipantControls setLectureCode={setLectureCode} />
-            <HeaderSettingButton
-              isSettingClicked={isSettingClicked}
-              setIsSettingClicked={setIsSettingClicked}
-              type={type}
-            />
+            <HeaderMainButtons />
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>
         )}

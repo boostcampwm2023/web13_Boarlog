@@ -22,7 +22,23 @@ const getPercentOfProgress = (progressTime: number, totalTime: number) => {
   return result.toFixed(1) + "%";
 };
 
-const ProgressBar = ({ className, totalTime }: { className: string; totalTime: number }) => {
+interface ProgressBarProps {
+  className: string;
+  totalTime: number;
+  prograssBarState: "disabled" | "playing" | "paused";
+  play: () => void;
+  pause: () => void;
+  updateProgressMsTime: (time: number) => void;
+}
+
+const ProgressBar = ({
+  className,
+  totalTime,
+  prograssBarState,
+  play,
+  pause,
+  updateProgressMsTime
+}: ProgressBarProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const timerRef = useRef<any>();
@@ -34,6 +50,7 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
     const mouseClickedX = event.clientX;
     const percent = (mouseClickedX - left) / width;
     setProgressMsTime(Math.round(totalTime * percent));
+    updateProgressMsTime(Math.round(totalTime * percent));
   };
 
   useEffect(() => {
@@ -54,6 +71,7 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
 
   useEffect(() => {
     if (progressMsTime >= totalTime) {
+      prograssBarState = "disabled";
       setProgressMsTime(totalTime);
       setIsPlaying(false);
       clearInterval(timerRef.current);
@@ -68,11 +86,17 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
         type="button"
         className="medium-12 w-8 p-2"
         onClick={() => {
-          setIsPlaying(!isPlaying);
+          prograssBarState === "playing" ? pause() : play();
         }}
-        disabled={progressMsTime >= totalTime ? true : false}
+        disabled={prograssBarState === "disabled"}
       >
-        {isPlaying ? <PauseIcon /> : <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />}
+        {prograssBarState === "disabled" ? (
+          <PlayIcon fill="gray" />
+        ) : prograssBarState === "playing" ? (
+          <PauseIcon />
+        ) : (
+          <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />
+        )}
       </button>
       <div
         className="flex h-4 grow items-center"
@@ -80,7 +104,7 @@ const ProgressBar = ({ className, totalTime }: { className: string; totalTime: n
           handleProgressBarMouseDown(event);
         }}
       >
-        <div className="relative grow h-[6px]   bg-grayscale-lightgray">
+        <div className="relative grow h-[6px] bg-grayscale-lightgray">
           <div
             className={`absolute top-0 left-0 h-[6px] w-[0%] bg-boarlog-100`}
             style={{ width: `${getPercentOfProgress(progressMsTime, totalTime)}` }}

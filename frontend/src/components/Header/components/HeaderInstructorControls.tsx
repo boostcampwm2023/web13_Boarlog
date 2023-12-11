@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 import VolumeMeter from "./VolumeMeter";
 import PlayIcon from "@/assets/svgs/play.svg?react";
@@ -12,7 +13,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import Modal from "@/components/Modal/Modal";
 
 import { useToast } from "@/components/Toast/useToast";
-import { ICanvasData, saveCanvasData } from "./fabricCanvasUtil";
+import { ICanvasData, saveCanvasData } from "@/utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
@@ -71,8 +72,20 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   };
 
   useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
+      .then((result) => {
+        //현재 강의 생성이 잘 되지 않아서 보류
+        console.log(result.data);
+        //setTitle(result.data.title);
+      })
+      .catch(() => {
+        showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+        //navigate("/");
+      });
     setLectureCode(roomid);
     window.addEventListener("popstate", handlePopstate);
+    console.log("Strart");
   }, []);
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
@@ -221,6 +234,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     // 업데이트된 미디어 스트림을 앞으로 참조하도록 설정
     updatedStreamRef.current = mediaStreamDestination.stream;
 
+    startTime = Date.now();
     const onFrame = () => {
       saveCanvasData(fabricCanvasRef!, canvasData, startTime).then((isChanged) => {
         if (isChanged) submitData(canvasData);
@@ -283,6 +297,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     width: 0,
     height: 0
   };
+  let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
     if (!lectureSocketRef.current) return;
@@ -291,6 +306,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       roomId: roomid,
       content: data
     });
+    replayFileArray.push({ ...data });
+    console.log(replayFileArray);
   };
 
   const handleServerAnswer = (data: any) => {
