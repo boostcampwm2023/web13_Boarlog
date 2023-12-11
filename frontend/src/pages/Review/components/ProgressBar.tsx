@@ -68,6 +68,7 @@ const ProgressBar = ({
   };
 
   const handleProgressBarMouseMove = (event: React.MouseEvent) => {
+    console.log("ff");
     if (isProgressBarDrag) {
       const { left } = progressBarRef.current.getBoundingClientRect();
       const mouseClientX = event.clientX;
@@ -88,6 +89,10 @@ const ProgressBar = ({
   const handleProgressBarMouseUp = (event: React.MouseEvent) => {
     setMsTimeAndProgressBarWidth(event);
 
+    setIsProgressBarDrag(false);
+  };
+
+  const handleProgressBarMouseLeave = () => {
     setIsProgressBarDrag(false);
   };
 
@@ -129,6 +134,9 @@ const ProgressBar = ({
         }}
         onMouseMove={(event) => {
           handleProgressBarMouseMove(event);
+        }}
+        onMouseLeave={(event) => {
+          handleProgressBarMouseLeave();
         }}
         ref={progressBarRef}
       >
