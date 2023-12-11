@@ -21,7 +21,7 @@ interface LogItemInterface {
 interface LogContainerInterface {
   type: "question" | "prompt";
   className: string;
-  updateProgressMsTime: (time: number) => void;
+  updateProgressMsTime?: (time: number) => void;
 }
 
 const LogItem = ({ title, contents, className, onClick, style }: LogItemInterface) => {
@@ -142,7 +142,7 @@ const LogContainer = ({ type, className, updateProgressMsTime }: LogContainerInt
                 style={{ borderColor: hilightedItemIndex === index ? "#4f4ffb" : "#e6e6e6" }}
                 onClick={(event: MouseEvent) => {
                   const currentTarget = event.currentTarget as HTMLLIElement;
-                  if (!currentTarget.children[0].textContent) return;
+                  if (!currentTarget.children[0].textContent || !updateProgressMsTime) return;
                   convertTimeStringToMS(currentTarget.children[0].textContent);
                   setProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
                   updateProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));

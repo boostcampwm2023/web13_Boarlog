@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 import VolumeMeter from "./VolumeMeter";
 import PlayIcon from "@/assets/svgs/play.svg?react";
@@ -71,8 +72,20 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   };
 
   useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
+      .then((result) => {
+        //현재 강의 생성이 잘 되지 않아서 보류
+        console.log(result.data);
+        //setTitle(result.data.title);
+      })
+      .catch(() => {
+        showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+        //navigate("/");
+      });
     setLectureCode(roomid);
     window.addEventListener("popstate", handlePopstate);
+    console.log("Strart");
   }, []);
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;
@@ -100,8 +113,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     }
     isLectureStartRef.current = false;
     setElapsedTime(0);
-
-    console.log(replayFileArray);
 
     if (!lectureSocketRef.current) return;
     lectureSocketRef.current.emit("end", {

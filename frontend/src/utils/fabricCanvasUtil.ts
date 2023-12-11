@@ -22,7 +22,6 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
     currentData.canvasJSON = newJSONData;
     currentData.viewport = newViewport;
     currentData.eventTime = Date.now() - startTime;
-    console.log(currentData.eventTime);
     currentData.width = newWidth;
     currentData.height = newHeight;
     return true;
