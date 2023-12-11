@@ -31,7 +31,7 @@ const Review = () => {
   let startTime = Date.now();
   let canvasData: ICanvasData = {
     canvasJSON: "",
-    viewport: [1, 0, 0, 1, 0, 0],
+    viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,
     height: 0
@@ -134,21 +134,34 @@ const Review = () => {
     setPrograssBarState("paused");
     console.log("pause");
   };
+
+  const findClosest = (data: ICanvasData[], target: number) => {
+    // binary search로 개선 가능 할 듯
+    let closestSmallerIndex = -1;
+
+    for (let i = 0; i < data.length; i++) {
+      if (
+        data[i].eventTime < target &&
+        (closestSmallerIndex === -1 || data[i].eventTime > data[closestSmallerIndex].eventTime)
+      ) {
+        closestSmallerIndex = i;
+      }
+    }
+
+    return closestSmallerIndex;
+  };
+
   const updateProgressMsTime = (newProgressMsTime: number) => {
     const currentProgressBarState = prograssBarState;
-    // console.log("업데이트했다", newProgressMsTime);
     pause();
-    //const newCanvasCntRef = 1; // 앞에서부터 비교해가면서 찾아야함? 이게 문제구만..
-    //canvasCntRef.current = newCanvasCntRef;
+    const newCanvasCntRef = findClosest(loadedDataRef.current!, newProgressMsTime);
 
-    if (canvasCntRef.current === 0) {
-      canvasCntRef.current = 1;
-      loadCanvasData({
-        fabricCanvas: fabricCanvasRef.current!,
-        currentData: canvasData,
-        newData: loadedDataRef.current![0]
-      });
-    }
+    loadCanvasData({
+      fabricCanvas: fabricCanvasRef.current!,
+      currentData: canvasData,
+      newData: loadedDataRef.current![newCanvasCntRef]
+    });
+    canvasCntRef.current = newCanvasCntRef + 1;
 
     startTime = Date.now() - newProgressMsTime;
 

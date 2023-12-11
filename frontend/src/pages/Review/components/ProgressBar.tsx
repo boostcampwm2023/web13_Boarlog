@@ -112,7 +112,6 @@ const ProgressBar = ({
         </div>
       </div>
       <span className="medium-12">{convertMsToTimeString(progressMsTime)}</span>
-      <span className="medium-12">{prograssBarState}</span>
     </div>
   );
 };
