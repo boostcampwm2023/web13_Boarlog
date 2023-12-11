@@ -76,9 +76,12 @@ const Review = () => {
     fabricCanvasRef.current = newCanvas;
   };
   const handleLoadData = () => {
+    /* 
+    현재 /lecture/record/:id 에서 불러오는 임시 데이터의 canvasJSON 데이터가 
+    실제 canvasJSON 데이터와 다르기 때문에 임시로 더미 데이터를 불러오도록 설정했습니다.
+    */
     axios("./dummyCanvasData.json")
       .then(({ data }) => {
-        // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
         loadedDataRef.current = data;
         setPrograssBarState("paused");
       })
@@ -86,26 +89,22 @@ const Review = () => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
 
-    /*
+    // 실제 데이터를 불러오는 코드
     axios
       .get(`https://boarlog.shop/lecture/record/6576c9dfccd3e23a8e0fe473`)
       .then((result) => {
-        //console.log(result.data);
+        // console.log(result.data);
+        // loadedDataRef.current = result.data.;
         scriptListRef.current = result.data.subtitles;
         localAudioRef.current!.src = result.data.audio_file;
         localAudioRef.current!.addEventListener("loadedmetadata", () => {
           totalTimeRef.current = localAudioRef.current!.duration * 1000;
         });
+        //setPrograssBarState("paused");
       })
       .catch(() => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
-      */
-
-    localAudioRef.current!.src = "https://cdn.freesound.org/previews/18/18765_18799-lq.mp3";
-    localAudioRef.current!.addEventListener("loadedmetadata", () => {
-      totalTimeRef.current = localAudioRef.current!.duration * 1000;
-    });
   };
   const handleResize = () => {
     updateCanvasSize({
@@ -131,18 +130,12 @@ const Review = () => {
     if (elapsedTime < totalTimeRef.current) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     else {
       setPrograssBarState("paused");
-      console.log("다시보기 끝");
       setProgressMsTime(0);
       canvasCntRef.current = 0;
     }
   };
 
   const play = () => {
-    if (progressMsTime >= totalTimeRef.current) {
-      updateProgressMsTime(0);
-      console.log("reset");
-    }
-
     if (!loadedDataRef.current) return;
     startTime = Date.now() - progressMsTime;
     if (canvasCntRef.current === 0) {

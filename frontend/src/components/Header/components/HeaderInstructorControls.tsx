@@ -73,19 +73,18 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture/record/657605785b0c7ced41076fdf`)
+      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
       .then((result) => {
-        //현재 강의 생성이 잘 되지 않아서 보류
-        console.log(result);
-        //setTitle(result.data.title);
+        const lecureTitle = result.data.title;
+        console.log(lecureTitle);
+        // 이후 작업 내일 예정
       })
       .catch(() => {
-        showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
-        //navigate("/");
+        // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+        // navigate("/");
       });
     setLectureCode(roomid);
     window.addEventListener("popstate", handlePopstate);
-    console.log("Strart");
   }, []);
   useEffect(() => {
     inputMicVolumeRef.current = inputMicVolume;

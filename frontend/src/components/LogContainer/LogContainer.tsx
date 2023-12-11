@@ -2,7 +2,7 @@ import SendMessage from "@/assets/svgs/sendMessage.svg?react";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 import { CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 import { useLocation } from "react-router-dom";
 import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 import progressMsTimeState from "@/stores/stateProgressMsTime";
@@ -42,7 +42,7 @@ const LogContainer = ({ type, className, scriptList, updateProgressMsTime }: Log
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const logContainerRef = useRef<HTMLUListElement | null>(null);
-  const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
+  const progressMsTime = useRecoilValue(progressMsTimeState);
   const socket = useRecoilValue(participantSocketRefState);
   const [hilightedItemIndex, setHilightedItemIndex] = useState(0);
 
