@@ -135,7 +135,7 @@ const ProgressBar = ({
         onMouseMove={(event) => {
           handleProgressBarMouseMove(event);
         }}
-        onMouseLeave={(event) => {
+        onMouseLeave={() => {
           handleProgressBarMouseLeave();
         }}
         ref={progressBarRef}
