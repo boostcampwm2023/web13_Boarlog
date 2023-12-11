@@ -25,7 +25,7 @@ const getPercentOfProgress = (progressTime: number, totalTime: number) => {
 interface ProgressBarProps {
   className: string;
   totalTime: number;
-  prograssBarState: "disabled" | "playing" | "paused";
+  progressBarState: "disabled" | "playing" | "paused";
   play: () => void;
   pause: () => void;
   updateProgressMsTime: (time: number) => void;
@@ -34,36 +34,55 @@ interface ProgressBarProps {
 const ProgressBar = ({
   className,
   totalTime,
-  prograssBarState,
+  progressBarState,
   play,
   pause,
   updateProgressMsTime
 }: ProgressBarProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const [isProgressBarDrag, setIsProgressBarDrag] = useState(false);
+  const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const timerRef = useRef<any>();
-  const lastUpdatedTime = useRef<any>();
-  const UPDATE_INTERVAL_MS = 150;
+  const progressBarRef = useRef<any>();
+  const progressInnerBar = useRef<any>();
+  const [throttle, setThrottle] = useState(false);
 
   const setMsTimeAndProgressBarWidth = (event: React.MouseEvent) => {
-    const { left, width } = event.currentTarget.getBoundingClientRect();
+    const { left, width } = progressBarRef.current.getBoundingClientRect();
     const mouseClickedX = event.clientX;
-    const percent = (mouseClickedX - left) / width;
-    setProgressMsTime(Math.round(totalTime * percent));
+    let percent = (mouseClickedX - left) / width;
+    if (percent <= 0) percent = 0;
     updateProgressMsTime(Math.round(totalTime * percent));
+    setProgressMsTime(Math.round(totalTime * percent));
   };
 
   const handleProgressBarDrag = (event: React.MouseEvent) => {
     setMsTimeAndProgressBarWidth(event);
   };
 
-  const handleProgressBarMouseDown = () => {
+  const handleProgressBarMouseDown = (event: React.MouseEvent) => {
+    if (progressBarState === "playing") {
+      pause();
+    }
+    setMsTimeAndProgressBarWidth(event);
     setIsProgressBarDrag(true);
   };
 
   const handleProgressBarMouseMove = (event: React.MouseEvent) => {
-    if (isProgressBarDrag) handleProgressBarDrag(event);
+    if (isProgressBarDrag) {
+      const { left } = progressBarRef.current.getBoundingClientRect();
+      const mouseClientX = event.clientX;
+      progressInnerBar.current.style.width = `${mouseClientX - left}px`;
+
+      if (throttle) return;
+      else {
+        setThrottle(true);
+        setTimeout(() => {
+          handleProgressBarDrag(event);
+
+          setThrottle(false);
+        }, 250);
+      }
+    }
   };
 
   const handleProgressBarMouseUp = (event: React.MouseEvent) => {
@@ -73,26 +92,9 @@ const ProgressBar = ({
   };
 
   useEffect(() => {
-    if (isPlaying) {
-      lastUpdatedTime.current = new Date().getTime();
-
-      timerRef.current = setInterval(() => {
-        const dateNow = new Date().getTime();
-        const diffTime = dateNow - lastUpdatedTime.current;
-        setProgressMsTime((progressMsTime) => progressMsTime + diffTime);
-
-        lastUpdatedTime.current = dateNow;
-      }, UPDATE_INTERVAL_MS);
-    } else {
-      clearInterval(timerRef.current);
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
     if (progressMsTime >= totalTime) {
-      prograssBarState = "disabled";
+      progressBarState = "disabled";
       setProgressMsTime(totalTime);
-      setIsPlaying(false);
       clearInterval(timerRef.current);
     }
   }, [progressMsTime]);
@@ -105,13 +107,13 @@ const ProgressBar = ({
         type="button"
         className="medium-12 w-8 p-2"
         onClick={() => {
-          prograssBarState === "playing" ? pause() : play();
+          progressBarState === "playing" ? pause() : play();
         }}
-        disabled={prograssBarState === "disabled"}
+        disabled={progressBarState === "disabled"}
       >
-        {prograssBarState === "disabled" ? (
+        {progressBarState === "disabled" ? (
           <PlayIcon fill="gray" />
-        ) : prograssBarState === "playing" ? (
+        ) : progressBarState === "playing" ? (
           <PauseIcon />
         ) : (
           <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />
@@ -122,17 +124,19 @@ const ProgressBar = ({
         onMouseUp={(event) => {
           handleProgressBarMouseUp(event);
         }}
-        onMouseDown={() => {
-          handleProgressBarMouseDown();
+        onMouseDown={(event) => {
+          handleProgressBarMouseDown(event);
         }}
         onMouseMove={(event) => {
           handleProgressBarMouseMove(event);
         }}
+        ref={progressBarRef}
       >
         <div className="relative grow h-[6px] bg-grayscale-lightgray">
           <div
             className={`absolute top-0 left-0 h-[6px] w-[0%] bg-boarlog-100`}
-            style={{ width: `${getPercentOfProgress(progressMsTime, totalTime)}` }}
+            style={{ width: isProgressBarDrag ? "" : `${getPercentOfProgress(progressMsTime, totalTime)}` }}
+            ref={progressInnerBar}
           ></div>
         </div>
       </div>

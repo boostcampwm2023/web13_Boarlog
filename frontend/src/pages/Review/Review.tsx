@@ -27,7 +27,7 @@ const Review = () => {
   let fabricCanvasRef = useRef<fabric.Canvas>();
   let canvasCntRef = useRef<number>(0);
 
-  const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
+  const [progressBarState, setprogressBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   let startTime = Date.now();
   let canvasData: ICanvasData = {
     canvasJSON: "",
@@ -79,7 +79,7 @@ const Review = () => {
         // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
         TOTAL_MS_TIME_OF_REVIEW = 200000;
         loadedDataRef.current = data;
-        setPrograssBarState("paused");
+        setprogressBarState("paused");
       })
       .catch((error) => {
         console.log("화이트보드 데이터 로딩 실패", error);
@@ -123,11 +123,11 @@ const Review = () => {
     }
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
 
-    setPrograssBarState("playing");
+    setprogressBarState("playing");
   };
   const pause = () => {
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
-    setPrograssBarState("paused");
+    setprogressBarState("paused");
   };
 
   // target시간보다 작고 target시간과 가장 가까운 이벤트 시간을 가진 데이터의 인덱스를 반환하는 함수입니다.
@@ -149,7 +149,7 @@ const Review = () => {
 
   // logContainer에서 프롬프트를 클릭하거나 프로그래스 바를 클릭했을 때 진행시간을 조정하는 함수입니다.
   const updateProgressMsTime = (newProgressMsTime: number) => {
-    const currentProgressBarState = prograssBarState;
+    // const currentProgressBarState = progressBarState;
     pause();
     const newCanvasCntRef = findClosest(loadedDataRef.current!, newProgressMsTime);
 
@@ -162,10 +162,11 @@ const Review = () => {
 
     startTime = Date.now() - newProgressMsTime;
 
-    if (currentProgressBarState === "playing") {
-      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-      setPrograssBarState("playing");
-    }
+    // if (currentProgressBarState === "playing") {
+    //   onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    //   setprogressBarState("playing");
+    // }
+    // --> 프로그래스 바를 드래그 할 때, 마우스 클릭을 유지한 경우 타이머가 멈춰야해서 이 부분을 추후 리뷰에서 승인 후 제거하겠습니다.
   };
 
   return (
@@ -184,7 +185,7 @@ const Review = () => {
         <ProgressBar
           className="absolute bottom-2.5 left-1/2 -translate-x-1/2"
           totalTime={TOTAL_MS_TIME_OF_REVIEW}
-          prograssBarState={prograssBarState}
+          progressBarState={progressBarState}
           play={play}
           pause={pause}
           updateProgressMsTime={updateProgressMsTime}
