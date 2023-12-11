@@ -1,4 +1,4 @@
-import { ICanvasData } from '../interfaces/canvas-data.interface';
+import { ICanvasData } from '../types/canvas-data.interface';
 
 export class RoomInfoDto {
   presenterEmail: string;
