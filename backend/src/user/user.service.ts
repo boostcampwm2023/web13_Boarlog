@@ -28,4 +28,16 @@ export class UserService {
       { new: true }
     );
   }
+
+  async findLectureList(email: string) {
+    return (
+      await (
+        await this.findOneByEmail(email)
+      ).populate({
+        path: 'lecture_id',
+        select: '-__v',
+        populate: { path: 'presenter_id', select: '-_id username' }
+      })
+    ).lecture_id;
+  }
 }

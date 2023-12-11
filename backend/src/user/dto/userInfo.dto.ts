@@ -13,9 +13,8 @@ export class UserInfoDto {
 
   lecture_id: mongoose.Types.ObjectId;
 
-  constructor({ username, email, lecture_id }) {
+  constructor({ username, email }) {
     this.username = username;
     this.email = email;
-    this.lecture_id = lecture_id;
   }
 }
