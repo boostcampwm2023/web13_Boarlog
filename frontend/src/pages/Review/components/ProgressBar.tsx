@@ -41,16 +41,35 @@ const ProgressBar = ({
 }: ProgressBarProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
+  const [isProgressBarDrag, setIsProgressBarDrag] = useState(false);
   const timerRef = useRef<any>();
   const lastUpdatedTime = useRef<any>();
   const UPDATE_INTERVAL_MS = 150;
 
-  const handleProgressBarMouseDown = (event: React.MouseEvent) => {
+  const setMsTimeAndProgressBarWidth = (event: React.MouseEvent) => {
     const { left, width } = event.currentTarget.getBoundingClientRect();
     const mouseClickedX = event.clientX;
     const percent = (mouseClickedX - left) / width;
     setProgressMsTime(Math.round(totalTime * percent));
     updateProgressMsTime(Math.round(totalTime * percent));
+  };
+
+  const handleProgressBarDrag = (event: React.MouseEvent) => {
+    setMsTimeAndProgressBarWidth(event);
+  };
+
+  const handleProgressBarMouseDown = () => {
+    setIsProgressBarDrag(true);
+  };
+
+  const handleProgressBarMouseMove = (event: React.MouseEvent) => {
+    if (isProgressBarDrag) handleProgressBarDrag(event);
+  };
+
+  const handleProgressBarMouseUp = (event: React.MouseEvent) => {
+    setMsTimeAndProgressBarWidth(event);
+
+    setIsProgressBarDrag(false);
   };
 
   useEffect(() => {
@@ -100,8 +119,14 @@ const ProgressBar = ({
       </button>
       <div
         className="flex h-4 grow items-center"
-        onMouseDown={(event) => {
-          handleProgressBarMouseDown(event);
+        onMouseUp={(event) => {
+          handleProgressBarMouseUp(event);
+        }}
+        onMouseDown={() => {
+          handleProgressBarMouseDown();
+        }}
+        onMouseMove={(event) => {
+          handleProgressBarMouseMove(event);
         }}
       >
         <div className="relative grow h-[6px] bg-grayscale-lightgray">
