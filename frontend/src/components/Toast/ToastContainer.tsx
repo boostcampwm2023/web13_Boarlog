@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRecoilState } from "recoil";
-import { toastListState } from "./toastAtom";
+import { toastListState } from "../../stores/stateToastList";
 import { useRecoilValue } from "recoil";
 import usePortal from "./usePortal";
 import ReactDOM from "react-dom";
