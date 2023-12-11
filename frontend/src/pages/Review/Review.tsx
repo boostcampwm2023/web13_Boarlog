@@ -1,28 +1,30 @@
 import { useRecoilValue, useRecoilState } from "recoil";
 import { useState, useEffect, useRef } from "react";
 import { fabric } from "fabric";
-import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
-import progressMsTimeState from "@/stores/stateProgressMsTime";
-
 import axios from "axios";
+
+import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
 
 import CloseIcon from "@/assets/svgs/close.svg?react";
 import ScriptIcon from "@/assets/svgs/whiteboard/script.svg?react";
 
+import progressMsTimeState from "@/stores/stateProgressMsTime";
 import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
 
 import LogToggleButton from "@/components/Button/LogToggleButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
 import Header from "@/components/Header/Header";
 import ProgressBar from "./components/ProgressBar";
+import { useToast } from "@/components/Toast/useToast";
 
 const Review = () => {
+  const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
+  const showToast = useToast();
 
   const loadedDataRef = useRef<ICanvasData[]>();
   const scriptListRef = useRef<Array<{ start: string; text: string }>>();
-
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -31,7 +33,6 @@ const Review = () => {
   let canvasCntRef = useRef<number>(0);
   let totalTimeRef = useRef<number>(0);
 
-  const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   let startTime = Date.now();
   let canvasData: ICanvasData = {
     canvasJSON: "",
@@ -81,10 +82,11 @@ const Review = () => {
         loadedDataRef.current = data;
         setPrograssBarState("paused");
       })
-      .catch((error) => {
-        console.log("화이트보드 데이터 로딩 실패", error);
+      .catch(() => {
+        showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
 
+    /*
     axios
       .get(`https://boarlog.shop/lecture/record/6576c9dfccd3e23a8e0fe473`)
       .then((result) => {
@@ -96,9 +98,14 @@ const Review = () => {
         });
       })
       .catch(() => {
-        //showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
-        //navigate("/");
+        showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
+      */
+
+    localAudioRef.current!.src = "https://cdn.freesound.org/previews/18/18765_18799-lq.mp3";
+    localAudioRef.current!.addEventListener("loadedmetadata", () => {
+      totalTimeRef.current = localAudioRef.current!.duration * 1000;
+    });
   };
   const handleResize = () => {
     updateCanvasSize({
@@ -122,10 +129,20 @@ const Review = () => {
       canvasCntRef.current += 1;
     }
     if (elapsedTime < totalTimeRef.current) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-    else console.log("다시보기 끝");
+    else {
+      setPrograssBarState("paused");
+      console.log("다시보기 끝");
+      setProgressMsTime(0);
+      canvasCntRef.current = 0;
+    }
   };
 
   const play = () => {
+    if (progressMsTime >= totalTimeRef.current) {
+      updateProgressMsTime(0);
+      console.log("reset");
+    }
+
     if (!loadedDataRef.current) return;
     startTime = Date.now() - progressMsTime;
     if (canvasCntRef.current === 0) {
@@ -167,6 +184,7 @@ const Review = () => {
 
   // logContainer에서 프롬프트를 클릭하거나 프로그래스 바를 클릭했을 때 진행시간을 조정하는 함수입니다.
   const updateProgressMsTime = (newProgressMsTime: number) => {
+    setProgressMsTime(newProgressMsTime);
     const currentProgressBarState = prograssBarState;
     pause();
     const newCanvasCntRef = findClosest(loadedDataRef.current!, newProgressMsTime);

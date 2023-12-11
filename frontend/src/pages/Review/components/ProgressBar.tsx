@@ -49,7 +49,6 @@ const ProgressBar = ({
     const { left, width } = event.currentTarget.getBoundingClientRect();
     const mouseClickedX = event.clientX;
     const percent = (mouseClickedX - left) / width;
-    setProgressMsTime(Math.round(totalTime * percent));
     updateProgressMsTime(Math.round(totalTime * percent));
   };
 
@@ -71,9 +70,9 @@ const ProgressBar = ({
 
   useEffect(() => {
     if (progressMsTime >= totalTime) {
-      prograssBarState = "disabled";
+      //prograssBarState = "disabled";
       setProgressMsTime(totalTime);
-      setIsPlaying(false);
+      //setIsPlaying(false);
       clearInterval(timerRef.current);
     }
   }, [progressMsTime]);
@@ -95,7 +94,7 @@ const ProgressBar = ({
         ) : prograssBarState === "playing" ? (
           <PauseIcon />
         ) : (
-          <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />
+          <PlayIcon />
         )}
       </button>
       <div

@@ -134,7 +134,6 @@ const LogContainer = ({ type, className, scriptList, updateProgressMsTime }: Log
                   const currentTarget = event.currentTarget as HTMLLIElement;
                   if (!currentTarget.children[0].textContent || !updateProgressMsTime) return;
                   convertTimeStringToMS(currentTarget.children[0].textContent);
-                  setProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
                   updateProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
                 }}
               />
