@@ -91,7 +91,7 @@ export class LectureService {
   }
 
   async findLogs(lecture: Lecture) {
-    return await this.whiteboardLogModel.find({ lecture_id: lecture }).exec();
+    return await this.whiteboardLogModel.find({ lecture_id: lecture }, { _id: 0, lecture_id: 0, __v: 0 }).exec();
   }
 
   async findLectureRecord(id: Types.ObjectId) {

@@ -19,13 +19,7 @@ export class UserController {
     if (!req.user) {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
     }
-    const userInfo = await (
-      await this.userService.findOneByEmail(req.user.email)
-    ).populate({
-      path: 'lecture_id',
-      select: '-_id title description',
-      populate: { path: 'presenter_id', select: '-_id username' }
-    });
+    const userInfo = await this.userService.findOneByEmail(req.user.email);
 
     if (!userInfo) {
       throw new HttpException('사용자 정보가 존재하지 않습니다.', HttpStatus.NOT_FOUND);
