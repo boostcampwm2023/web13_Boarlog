@@ -21,6 +21,8 @@ const Review = () => {
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
 
   const loadedDataRef = useRef<ICanvasData[]>();
+  const scriptListRef = useRef<Array<{ start: string; text: string }>>();
+
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -86,13 +88,10 @@ const Review = () => {
     axios
       .get(`https://boarlog.shop/lecture/record/6576c9dfccd3e23a8e0fe473`)
       .then((result) => {
-        console.log(result.data);
-        console.log(result.data.audio_file);
-        console.log(result.data.subtitles);
+        //console.log(result.data);
+        scriptListRef.current = result.data.subtitles;
         localAudioRef.current!.src = result.data.audio_file;
         localAudioRef.current!.addEventListener("loadedmetadata", () => {
-          console.log("오디오가 로드되었습니다.");
-          console.log(localAudioRef.current!.duration);
           totalTimeRef.current = localAudioRef.current!.duration * 1000;
         });
       })
@@ -100,15 +99,6 @@ const Review = () => {
         //showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
         //navigate("/");
       });
-
-    /*
-    localAudioRef.current!.src = "https://cdn.freesound.org/previews/18/18765_18799-lq.mp3";
-    localAudioRef.current!.addEventListener("loadedmetadata", () => {
-      console.log("오디오가 로드되었습니다.");
-      console.log(localAudioRef.current!.duration);
-      totalTimeRef.current = localAudioRef.current!.duration * 1000;
-    });
-    */
   };
   const handleResize = () => {
     updateCanvasSize({
@@ -172,7 +162,7 @@ const Review = () => {
       }
     }
 
-    return closestSmallerIndex;
+    return closestSmallerIndex >= 0 ? closestSmallerIndex : 0;
   };
 
   // logContainer에서 프롬프트를 클릭하거나 프로그래스 바를 클릭했을 때 진행시간을 조정하는 함수입니다.
@@ -206,6 +196,7 @@ const Review = () => {
         <LogContainer
           type="prompt"
           className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
+          scriptList={scriptListRef.current}
           updateProgressMsTime={updateProgressMsTime}
         />
         <LogToggleButton className="absolute top-2.5 right-2.5">
