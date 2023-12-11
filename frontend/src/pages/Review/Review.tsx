@@ -132,8 +132,9 @@ const Review = () => {
     setPrograssBarState("paused");
   };
 
+  // target시간보다 작고 target시간과 가장 가까운 이벤트 시간을 가진 데이터의 인덱스를 반환하는 함수입니다.
   const findClosest = (data: ICanvasData[], target: number) => {
-    // binary search로 개선 가능 할 듯
+    // 시간 나면 binary search로 개선하겠습니다.
     let closestSmallerIndex = -1;
 
     for (let i = 0; i < data.length; i++) {
@@ -148,6 +149,7 @@ const Review = () => {
     return closestSmallerIndex;
   };
 
+  // logContainer에서 프롬프트를 클릭하거나 프로그래스 바를 클릭했을 때 진행시간을 조정하는 함수입니다.
   const updateProgressMsTime = (newProgressMsTime: number) => {
     const currentProgressBarState = prograssBarState;
     pause();

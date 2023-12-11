@@ -43,7 +43,6 @@ export const loadCanvasData = ({
   const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
-
   //console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
 
   // 캔버스 데이터 업데이트
@@ -51,7 +50,6 @@ export const loadCanvasData = ({
   // 캔버스 뷰포트 업데이트
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);
   // 캔버스 크기 업데이트
-
   if (isSizeChanged) updateCanvasSize({ fabricCanvas, whiteboardData: newData });
 };
 
