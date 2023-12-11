@@ -40,7 +40,6 @@ const Review = () => {
   let TOTAL_MS_TIME_OF_REVIEW = 200000;
 
   useEffect(() => {
-    console.log("Review 페이지 렌더링");
     handleInitCanvas();
     handleLoadData();
     window.addEventListener("resize", handleResize);
@@ -49,9 +48,6 @@ const Review = () => {
       window.addEventListener("resize", handleResize);
     };
   }, []);
-  useEffect(() => {
-    console.log("progressMsTime", progressMsTime);
-  }, [progressMsTimeState]);
 
   // 윈도우 리사이즈 이벤트 감지
   const handleInitCanvas = () => {
@@ -98,11 +94,13 @@ const Review = () => {
 
   const onFrame = () => {
     const LECTURE_TOTAL_PRAMES = loadedDataRef.current!.length;
-    const eventTime = loadedDataRef.current![canvasCntRef.current].eventTime;
+    const eventTime = loadedDataRef.current![canvasCntRef.current]?.eventTime;
     const elapsedTime = Date.now() - startTime;
     // 여기서 elapsedTime이 progressMsTime이랑 관련이 없어서 중간에 바꾸려 해도 먹히지 않음. 개선 필요
     setProgressMsTime(elapsedTime);
-    if (elapsedTime > eventTime) {
+    console.log(elapsedTime > eventTime, canvasCntRef.current < LECTURE_TOTAL_PRAMES);
+    if (elapsedTime > eventTime && canvasCntRef.current < LECTURE_TOTAL_PRAMES) {
+      console.log("다음 프레임 로딩");
       loadCanvasData({
         fabricCanvas: fabricCanvasRef.current!,
         currentData: loadedDataRef.current![canvasCntRef.current - 1],
@@ -110,7 +108,7 @@ const Review = () => {
       });
       canvasCntRef.current += 1;
     }
-    if (canvasCntRef.current < LECTURE_TOTAL_PRAMES) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    if (elapsedTime < TOTAL_MS_TIME_OF_REVIEW) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     else console.log("다시보기 끝");
   };
 
@@ -132,7 +130,6 @@ const Review = () => {
   const pause = () => {
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
     setPrograssBarState("paused");
-    console.log("pause");
   };
 
   const findClosest = (data: ICanvasData[], target: number) => {
