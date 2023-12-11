@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "@/components/Toast/useToast";
@@ -7,7 +7,7 @@ const useAuth = () => {
   const navigate = useNavigate();
   const showToast = useToast();
 
-  useEffect(() => {
+  const checkAuth = useCallback(() => {
     const accessToken = localStorage.getItem("token");
     if (!accessToken) {
       showToast({ message: "로그인이 필요해요.", type: "alert" });
@@ -35,6 +35,8 @@ const useAuth = () => {
       }
     }
   }, [navigate, showToast]);
+
+  return { checkAuth };
 };
 
 export default useAuth;

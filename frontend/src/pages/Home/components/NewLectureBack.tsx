@@ -6,6 +6,7 @@ import SmallButton from "@/components/SmallButton/SmallButton";
 import CloseIcon from "@/assets/svgs/close.svg?react";
 import NewLectureIcon from "@/assets/svgs/newLecture.svg?react";
 import { useToast } from "@/components/Toast/useToast";
+import useAuth from "@/hooks/useAuth";
 
 interface NewLectureBackProps {
   handleNewLectureFalse: () => void;
@@ -14,11 +15,13 @@ interface NewLectureBackProps {
 const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
   const navigate = useNavigate();
   const showToast = useToast();
+  const { checkAuth } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   const handleCreateButtonClicked = () => {
     if (title.replace(/ /g, "") && description.replace(/ /g, "")) {
+      checkAuth();
       axios
         .post(
           `${import.meta.env.VITE_API_SERVER_URL}/lecture`,
