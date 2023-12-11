@@ -98,9 +98,7 @@ const Review = () => {
     const elapsedTime = Date.now() - startTime;
     // 여기서 elapsedTime이 progressMsTime이랑 관련이 없어서 중간에 바꾸려 해도 먹히지 않음. 개선 필요
     setProgressMsTime(elapsedTime);
-    console.log(elapsedTime > eventTime, canvasCntRef.current < LECTURE_TOTAL_PRAMES);
     if (elapsedTime > eventTime && canvasCntRef.current < LECTURE_TOTAL_PRAMES) {
-      console.log("다음 프레임 로딩");
       loadCanvasData({
         fabricCanvas: fabricCanvasRef.current!,
         currentData: loadedDataRef.current![canvasCntRef.current - 1],
