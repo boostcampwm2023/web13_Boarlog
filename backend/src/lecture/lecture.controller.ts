@@ -32,12 +32,18 @@ export class LectureController {
     private readonly userService: UserService
   ) {}
 
+  @UseGuards(CustomAuthGuard)
   @Post()
+  @ApiHeader({ name: 'Authorization' })
   @ApiOperation({ description: '강의를 생성합니다.' })
   @ApiBody({ type: CreateLectureDto })
   @ApiResponse({ status: 201 })
-  async create(@Body() createLecture: CreateLectureDto, @Res() res: Response) {
-    const user = await this.userService.findOneByEmail(createLecture.email);
+  @ApiResponse({ status: 401, description: '로그인 되지 않은 사용자입니다.' })
+  async create(@Body() createLecture: CreateLectureDto, @Req() req: any, @Res() res: Response) {
+    if (!req.user) {
+      throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
+    }
+    const user = await this.userService.findOneByEmail(req.user.email);
     const code = await this.lectureService.createLecture(createLecture, user.id);
     res.status(HttpStatus.CREATED).send({ code: code });
   }
