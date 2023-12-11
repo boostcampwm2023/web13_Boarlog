@@ -1,7 +1,7 @@
 import { RoomInfoDto } from '../dto/room-info.dto';
 import { redis } from '../config/redis.config';
 import { ROOM_INFO_KEY_PREFIX } from '../constants/redis-key.constant';
-import { ICanvasData } from '../interfaces/canvas-data.interface';
+import { ICanvasData } from '../types/canvas-data.interface';
 
 const findRoomInfoById = (roomId: string) => {
   return redis.hgetall(ROOM_INFO_KEY_PREFIX + roomId);

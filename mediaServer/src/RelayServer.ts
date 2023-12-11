@@ -10,6 +10,17 @@ import { getEmailByJwtPayload } from './utils/auth';
 import { findClientInfoByEmail, saveClientInfo } from './services/client.service';
 import { deleteRoomInfoById, findRoomInfoById, saveRoomInfo, updateWhiteboardData } from './services/room.service';
 import { RoomInfoDto } from './dto/room-info.dto';
+import {
+  deleteQuestionStream,
+  findQuestion,
+  findQuestionStreamById,
+  findUnsolvedQuestions,
+  getStreamKeyAndQuestionFromStream,
+  isQuestionStreamExisted,
+  saveQuestion,
+  updateQuestionStatus
+} from './services/question-service';
+import { StreamReadRaw } from './types/redis-stream.type';
 
 export class RelayServer {
   private readonly io;
@@ -45,7 +56,30 @@ export class RelayServer {
         await Promise.all([
           saveClientInfo(email, ClientType.PRESENTER, data.roomId),
           saveRoomInfo(data.roomId, new RoomInfoDto(email))
+          // setQuestionStreamAndGroup(data.roomId)
         ]);
+        socket.join(email);
+
+        const clientInfo = await findClientInfoByEmail(email);
+        if (clientInfo) {
+          const [roomInfo, questions] = await Promise.all([
+            findRoomInfoById(clientInfo.roomId),
+            findUnsolvedQuestions(data.roomId, 'platinouss@gmail.com')
+          ]);
+          const unsolvedQuestions = questions as StreamReadRaw;
+          if (roomInfo.presenterEmail === email) {
+            this.io.of('/create-room').to(email).emit('reconnectPresenter', {
+              whiteboard: roomInfo.currentWhiteboardData,
+              startTime: roomInfo.startTime,
+              questions: unsolvedQuestions[0][1]
+            });
+          } else {
+            if (await isQuestionStreamExisted(data.roomId)) {
+            }
+          }
+        }
+
+        console.log(await findQuestionStreamById('kk'));
 
         RTCPC.ontrack = (event) => {
           const roomInfo = this.roomsConnectionInfo.get(data.roomId);
@@ -54,8 +88,6 @@ export class RelayServer {
             mediaConverter.setSink(event.streams[0], data.roomId);
           }
         };
-
-        socket.join(email);
         this.exchangeCandidate('/create-room', email, socket);
 
         await RTCPC.setRemoteDescription(data.SDP);
@@ -65,11 +97,11 @@ export class RelayServer {
         });
         RTCPC.setLocalDescription(SDP);
 
-        const clientInfo = this.clientsConnectionInfo.get(email);
-        if (!clientInfo) {
+        const clientConnectionInfo = this.clientsConnectionInfo.get(email);
+        if (!clientConnectionInfo) {
           throw new Error('해당 발표자가 존재하지 않습니다.');
         }
-        clientInfo.enterSocket = socket;
+        clientConnectionInfo.enterSocket = socket;
       });
     } catch (e) {
       console.log(e);
@@ -160,11 +192,14 @@ export class RelayServer {
         console.log('해당 발표자가 존재하지 않습니다.');
         return;
       }
-      await updateWhiteboardData(data.roomId, data.content);
-      this.io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content));
+      // TODO: API 서버로 화이트보드 데이터 전달
+      await Promise.all([
+        updateWhiteboardData(data.roomId, data.content),
+        this.io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content))
+      ]);
     });
 
-    socket.on('ask', (data) => {
+    socket.on('ask', async (data) => {
       if (clientInfo.type !== ClientType.STUDENT || clientInfo.roomId !== data.roomId) {
         // TODO: 추후 클라이언트로 에러처리 필요
         console.log('해당 참여자가 존재하지 않습니다.');
@@ -176,7 +211,19 @@ export class RelayServer {
         console.log('발표자가 없습니다.');
         return;
       }
-      this.io.of('/lecture').to(presenterEmail).emit('asked', new Message(data.type, data.content));
+      await saveQuestion(data.roomId, data.content);
+      const streamData = (await findQuestion(data.roomId, presenterEmail)) as StreamReadRaw;
+      const question = getStreamKeyAndQuestionFromStream(streamData);
+      this.io
+        .of('/lecture')
+        .to(presenterEmail)
+        .emit('asked', new Message(data.type, question.content), { questionId: question.streamKey });
+    });
+
+    socket.on('response', (data) => {
+      if (data.type === 'question') {
+        updateQuestionStatus(data.roomId, data.questionId);
+      }
     });
 
     socket.on('end', async (data) => {
@@ -190,7 +237,7 @@ export class RelayServer {
       this.roomsConnectionInfo.get(clientInfo.roomId)?.endLecture(data.roomId);
       this.roomsConnectionInfo.delete(clientInfo.roomId);
       this.clientsConnectionInfo.delete(email);
-      await deleteRoomInfoById(data.roomId);
+      await Promise.all([deleteRoomInfoById(data.roomId), deleteQuestionStream(data.roomId)]);
       // TODO: API 서버에 강의 종료 요청하기
     });
 
