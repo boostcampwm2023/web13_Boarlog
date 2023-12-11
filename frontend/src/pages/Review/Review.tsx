@@ -15,7 +15,6 @@ import LogToggleButton from "@/components/Button/LogToggleButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
 import Header from "@/components/Header/Header";
 import ProgressBar from "./components/ProgressBar";
-import SmallButton from "@/components/SmallButton/SmallButton";
 
 const Review = () => {
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
@@ -50,6 +49,9 @@ const Review = () => {
       window.addEventListener("resize", handleResize);
     };
   }, []);
+  useEffect(() => {
+    console.log("progressMsTime", progressMsTime);
+  }, [progressMsTimeState]);
 
   // 윈도우 리사이즈 이벤트 감지
   const handleInitCanvas = () => {
@@ -98,6 +100,7 @@ const Review = () => {
     const LECTURE_TOTAL_PRAMES = loadedDataRef.current!.length;
     const eventTime = loadedDataRef.current![canvasCntRef.current].eventTime;
     const elapsedTime = Date.now() - startTime;
+    // 여기서 elapsedTime이 progressMsTime이랑 관련이 없어서 중간에 바꾸려 해도 먹히지 않음. 개선 필요
     setProgressMsTime(elapsedTime);
     if (elapsedTime > eventTime) {
       loadCanvasData({
@@ -131,6 +134,29 @@ const Review = () => {
     setPrograssBarState("paused");
     console.log("pause");
   };
+  const updateProgressMsTime = (newProgressMsTime: number) => {
+    const currentProgressBarState = prograssBarState;
+    // console.log("업데이트했다", newProgressMsTime);
+    pause();
+    //const newCanvasCntRef = 1; // 앞에서부터 비교해가면서 찾아야함? 이게 문제구만..
+    //canvasCntRef.current = newCanvasCntRef;
+
+    if (canvasCntRef.current === 0) {
+      canvasCntRef.current = 1;
+      loadCanvasData({
+        fabricCanvas: fabricCanvasRef.current!,
+        currentData: canvasData,
+        newData: loadedDataRef.current![0]
+      });
+    }
+
+    startTime = Date.now() - newProgressMsTime;
+
+    if (currentProgressBarState === "playing") {
+      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+      setPrograssBarState("playing");
+    }
+  };
 
   return (
     <>
@@ -140,6 +166,7 @@ const Review = () => {
         <LogContainer
           type="prompt"
           className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
+          updateProgressMsTime={updateProgressMsTime}
         />
         <LogToggleButton className="absolute top-2.5 right-2.5">
           {isQuestionLogOpen ? <CloseIcon /> : <ScriptIcon fill="black" />}
@@ -150,6 +177,7 @@ const Review = () => {
           prograssBarState={prograssBarState}
           play={play}
           pause={pause}
+          updateProgressMsTime={updateProgressMsTime}
         />
       </section>
     </>

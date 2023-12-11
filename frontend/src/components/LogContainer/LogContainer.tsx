@@ -21,6 +21,7 @@ interface LogItemInterface {
 interface LogContainerInterface {
   type: "question" | "prompt";
   className: string;
+  updateProgressMsTime: (time: number) => void;
 }
 
 const LogItem = ({ title, contents, className, onClick, style }: LogItemInterface) => {
@@ -36,7 +37,7 @@ const LogItem = ({ title, contents, className, onClick, style }: LogItemInterfac
   );
 };
 
-const LogContainer = ({ type, className }: LogContainerInterface) => {
+const LogContainer = ({ type, className, updateProgressMsTime }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
   const [scriptList, setScriptList] = useState<Array<{ start: string; text: string }>>([]);
@@ -144,6 +145,7 @@ const LogContainer = ({ type, className }: LogContainerInterface) => {
                   if (!currentTarget.children[0].textContent) return;
                   convertTimeStringToMS(currentTarget.children[0].textContent);
                   setProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
+                  updateProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
                 }}
               />
             );

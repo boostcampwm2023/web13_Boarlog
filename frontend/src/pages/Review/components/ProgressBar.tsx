@@ -28,9 +28,17 @@ interface ProgressBarProps {
   prograssBarState: "disabled" | "playing" | "paused";
   play: () => void;
   pause: () => void;
+  updateProgressMsTime: (time: number) => void;
 }
 
-const ProgressBar = ({ className, totalTime, prograssBarState, play, pause }: ProgressBarProps) => {
+const ProgressBar = ({
+  className,
+  totalTime,
+  prograssBarState,
+  play,
+  pause,
+  updateProgressMsTime
+}: ProgressBarProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const timerRef = useRef<any>();
@@ -42,6 +50,7 @@ const ProgressBar = ({ className, totalTime, prograssBarState, play, pause }: Pr
     const mouseClickedX = event.clientX;
     const percent = (mouseClickedX - left) / width;
     setProgressMsTime(Math.round(totalTime * percent));
+    updateProgressMsTime(Math.round(totalTime * percent));
   };
 
   useEffect(() => {
@@ -95,7 +104,7 @@ const ProgressBar = ({ className, totalTime, prograssBarState, play, pause }: Pr
           handleProgressBarMouseDown(event);
         }}
       >
-        <div className="relative grow h-[6px]   bg-grayscale-lightgray">
+        <div className="relative grow h-[6px] bg-grayscale-lightgray">
           <div
             className={`absolute top-0 left-0 h-[6px] w-[0%] bg-boarlog-100`}
             style={{ width: `${getPercentOfProgress(progressMsTime, totalTime)}` }}
