@@ -13,7 +13,7 @@ export class WhiteboardLog {
   viewPort: number[];
 
   @Prop({ required: true })
-  event_date: Date;
+  eventDate: string;
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Lecture' })
   lecture_id: Lecture;

@@ -16,12 +16,13 @@ import { ApiBody, ApiHeader, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@n
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { CreateLectureDto } from './dto/create-lecture.dto';
-import { LectureInfoDto } from './dto/response-lecture-info.dto';
+import { LectureInfoDto } from './dto/response/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { LectureService } from './lecture.service';
 import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
 import { CustomAuthGuard } from 'src/auth/auth.guard';
 import { PresenterInfo } from 'src/user/dto/presenterInfo.dto';
+import { Types } from 'mongoose';
 
 @ApiTags('lecture')
 @Controller('lecture')
@@ -101,6 +102,7 @@ export class LectureController {
     if (!enterCodeDocument) {
       throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
     }
+
     await this.lectureService.saveWhiteBoardLog(enterCodeDocument.lecture_id, whiteboardEventDto);
     res.status(HttpStatus.CREATED).send();
   }
@@ -114,5 +116,11 @@ export class LectureController {
     }
     this.lectureService.saveLectureSubtitle(lecture, body.segments);
     res.status(HttpStatus.OK).send();
+  }
+
+  @Get('/record/:id')
+  async getLectureRecordInfo(@Param('id') id: Types.ObjectId, @Res() res: Response) {
+    const result = await this.lectureService.findLectureRecord(id);
+    return res.status(HttpStatus.OK).send(result);
   }
 }
