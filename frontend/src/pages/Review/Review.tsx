@@ -19,13 +19,15 @@ import ProgressBar from "./components/ProgressBar";
 const Review = () => {
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
-  const loadedDataRef = useRef<ICanvasData[]>();
 
+  const loadedDataRef = useRef<ICanvasData[]>();
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const localAudioRef = useRef<HTMLAudioElement>(null);
   let fabricCanvasRef = useRef<fabric.Canvas>();
   let canvasCntRef = useRef<number>(0);
+  let totalTimeRef = useRef<number>(0);
 
   const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   let startTime = Date.now();
@@ -36,8 +38,6 @@ const Review = () => {
     width: 0,
     height: 0
   };
-  // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
-  let TOTAL_MS_TIME_OF_REVIEW = 200000;
 
   useEffect(() => {
     handleInitCanvas();
@@ -48,7 +48,6 @@ const Review = () => {
       window.addEventListener("resize", handleResize);
     };
   }, []);
-
   // 윈도우 리사이즈 이벤트 감지
   const handleInitCanvas = () => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -77,13 +76,39 @@ const Review = () => {
     axios("./dummyCanvasData.json")
       .then(({ data }) => {
         // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
-        TOTAL_MS_TIME_OF_REVIEW = 200000;
         loadedDataRef.current = data;
         setPrograssBarState("paused");
       })
       .catch((error) => {
         console.log("화이트보드 데이터 로딩 실패", error);
       });
+
+    axios
+      .get(`https://boarlog.shop/lecture/record/6576c9dfccd3e23a8e0fe473`)
+      .then((result) => {
+        console.log(result.data);
+        console.log(result.data.audio_file);
+        console.log(result.data.subtitles);
+        localAudioRef.current!.src = result.data.audio_file;
+        localAudioRef.current!.addEventListener("loadedmetadata", () => {
+          console.log("오디오가 로드되었습니다.");
+          console.log(localAudioRef.current!.duration);
+          totalTimeRef.current = localAudioRef.current!.duration * 1000;
+        });
+      })
+      .catch(() => {
+        //showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+        //navigate("/");
+      });
+
+    /*
+    localAudioRef.current!.src = "https://cdn.freesound.org/previews/18/18765_18799-lq.mp3";
+    localAudioRef.current!.addEventListener("loadedmetadata", () => {
+      console.log("오디오가 로드되었습니다.");
+      console.log(localAudioRef.current!.duration);
+      totalTimeRef.current = localAudioRef.current!.duration * 1000;
+    });
+    */
   };
   const handleResize = () => {
     updateCanvasSize({
@@ -106,7 +131,7 @@ const Review = () => {
       });
       canvasCntRef.current += 1;
     }
-    if (elapsedTime < TOTAL_MS_TIME_OF_REVIEW) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    if (elapsedTime < totalTimeRef.current) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     else console.log("다시보기 끝");
   };
 
@@ -123,10 +148,13 @@ const Review = () => {
     }
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
 
+    localAudioRef.current!.play();
     setPrograssBarState("playing");
   };
   const pause = () => {
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
+
+    localAudioRef.current!.pause();
     setPrograssBarState("paused");
   };
 
@@ -161,10 +189,12 @@ const Review = () => {
     canvasCntRef.current = newCanvasCntRef + 1;
 
     startTime = Date.now() - newProgressMsTime;
+    localAudioRef.current!.currentTime = newProgressMsTime / 1000;
 
     if (currentProgressBarState === "playing") {
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
       setPrograssBarState("playing");
+      localAudioRef.current!.play();
     }
   };
 
@@ -183,13 +213,14 @@ const Review = () => {
         </LogToggleButton>
         <ProgressBar
           className="absolute bottom-2.5 left-1/2 -translate-x-1/2"
-          totalTime={TOTAL_MS_TIME_OF_REVIEW}
+          totalTime={totalTimeRef.current}
           prograssBarState={prograssBarState}
           play={play}
           pause={pause}
           updateProgressMsTime={updateProgressMsTime}
         />
       </section>
+      <audio playsInline ref={localAudioRef}></audio>
     </>
   );
 };

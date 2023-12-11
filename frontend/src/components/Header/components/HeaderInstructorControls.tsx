@@ -73,10 +73,10 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
+      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture/record/657605785b0c7ced41076fdf`)
       .then((result) => {
         //현재 강의 생성이 잘 되지 않아서 보류
-        console.log(result.data);
+        console.log(result);
         //setTitle(result.data.title);
       })
       .catch(() => {

@@ -21,6 +21,7 @@ interface LogItemInterface {
 interface LogContainerInterface {
   type: "question" | "prompt";
   className: string;
+  scriptList?: Array<{ start: string; text: string }>;
   updateProgressMsTime?: (time: number) => void;
 }
 
