@@ -123,4 +123,16 @@ export class LectureController {
     const result = await this.lectureService.findLectureRecord(id);
     return res.status(HttpStatus.OK).send(result);
   }
+
+  @UseGuards(CustomAuthGuard)
+  @Get('/list')
+  @ApiHeader({ name: 'Authorization' })
+  async getLectureList(@Req() req: any, @Res() res: Response) {
+    if (!req.user) {
+      throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
+    }
+
+    const result = await this.userService.findLectureList(req.user.email);
+    return res.status(HttpStatus.OK).send(result);
+  }
 }
