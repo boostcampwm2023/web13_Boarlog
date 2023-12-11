@@ -9,6 +9,8 @@ relayServer.listen('/create-room', 'connection', relayServer.createRoom);
 relayServer.listen('/enter-room', 'connection', relayServer.enterRoom);
 relayServer.listen('/lecture', 'connection', relayServer.lecture);
 
+export { relayServer };
+
 // const app = http.createServer((req, res) => {
 //   try {
 //     fs.readFile(__dirname + '/../' + req.url, (err, file) => {
