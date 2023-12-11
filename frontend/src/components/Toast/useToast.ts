@@ -1,5 +1,5 @@
 import { useSetRecoilState } from "recoil";
-import { toastListState } from "./toastAtom";
+import { toastListState } from "../../stores/stateToastList";
 import { ToastMessage } from "./toastType";
 import { TOAST_AVAILABLE_TIME } from "./constants";
 
