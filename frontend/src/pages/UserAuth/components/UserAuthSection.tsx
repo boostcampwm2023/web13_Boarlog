@@ -80,6 +80,8 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
           })
           .then((result) => {
             localStorage.setItem("token", result.data.token);
+            localStorage.setItem("username", result.data.username);
+            localStorage.setItem("email", result.data.email);
             showToast({ message: "로그인에 성공했습니다.", type: "success" });
             navigate("/");
           })
