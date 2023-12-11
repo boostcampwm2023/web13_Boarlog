@@ -12,7 +12,7 @@ import {
   Res,
   UseGuards
 } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
 import { CreateLectureDto } from './dto/create-lecture.dto';
@@ -32,11 +32,18 @@ export class LectureController {
     private readonly userService: UserService
   ) {}
 
+  @UseGuards(CustomAuthGuard)
   @Post()
+  @ApiHeader({ name: 'Authorization' })
+  @ApiOperation({ description: '강의를 생성합니다.' })
   @ApiBody({ type: CreateLectureDto })
   @ApiResponse({ status: 201 })
-  async create(@Body() createLecture: CreateLectureDto, @Res() res: Response) {
-    const user = await this.userService.findOneByEmail(createLecture.email);
+  @ApiResponse({ status: 401, description: '로그인 되지 않은 사용자입니다.' })
+  async create(@Body() createLecture: CreateLectureDto, @Req() req: any, @Res() res: Response) {
+    if (!req.user) {
+      throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
+    }
+    const user = await this.userService.findOneByEmail(req.user.email);
     const code = await this.lectureService.createLecture(createLecture, user.id);
     res.status(HttpStatus.CREATED).send({ code: code });
   }
@@ -54,7 +61,8 @@ export class LectureController {
   @ApiHeader({ name: 'Authorization' })
   @ApiParam({ name: 'code', type: 'string' })
   @ApiResponse({ status: 200 })
-  @ApiResponse({ status: 404 })
+  @ApiResponse({ status: 401, description: '로그인 되지 않은 사용자입니다.' })
+  @ApiResponse({ status: 404, description: '유효하지 않은 강의 참여코드입니다.' })
   async enter(@Param('code') code: string, @Req() req: any, @Res() res: Response) {
     if (!req.user) {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
