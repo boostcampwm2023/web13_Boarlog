@@ -39,8 +39,8 @@ const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderPro
         <div className="flex flex-row gap-3 w-full h-14 justify-start">
           <img className="w-14 h-14" src={ProfileSmall} alt="내 프로필" />
           <div className="flex flex-col justify-between h-full">
-            <p className="semibold-20">닉네임</p>
-            <p className="medium-16 text-grayscale-darkgray">user.exampleEmail@gmail.com</p>
+            <p className="semibold-20">{localStorage.getItem("username")}</p>
+            <p className="medium-16 text-grayscale-darkgray">{localStorage.getItem("email")}</p>
           </div>
         </div>
         <div className="flex flex-row gap-4 w-full">
