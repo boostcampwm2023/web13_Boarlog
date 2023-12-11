@@ -11,6 +11,6 @@ export class WhiteboardEventDto {
   })
   viewPort: number[];
 
-  @ApiProperty({ example: '2023-12-06T12:34:56.789Z' })
-  eventDate: Date;
+  @ApiProperty({ example: '123456' })
+  eventDate: string;
 }

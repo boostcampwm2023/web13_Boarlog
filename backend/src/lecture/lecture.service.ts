@@ -9,6 +9,7 @@ import { LectureSubtitle } from './lecture-subtitle.schema';
 import { Lecture } from './schema/lecture.schema';
 import { EnterCode } from './schema/lecture-code.schema';
 import { generateRandomNumber } from 'src/utils/GenerateUtils';
+import { LectureRecordDto } from './dto/response/response-lecture-record.dto';
 
 @Injectable()
 export class LectureService {
@@ -69,7 +70,7 @@ export class LectureService {
     const whiteboardLog = new this.whiteboardLogModel({
       canvasJSON: whiteboardEventDto.canvasJSON,
       viewPort: whiteboardEventDto.viewPort,
-      event_date: whiteboardEventDto.eventDate,
+      eventDate: whiteboardEventDto.eventDate,
       lecture_id: lecture
     });
     return await whiteboardLog.save();
@@ -84,8 +85,20 @@ export class LectureService {
   async saveLectureSubtitle(lecture: EnterCode, data: any) {
     const subtitleInfo = this.extractAPIData(data);
     return await new this.lectureSubtitleModel({
-      lecture_id: lecture,
+      lecture_id: lecture.lecture_id,
       subtitle: subtitleInfo
     }).save();
+  }
+
+  async findLogs(lecture: Lecture) {
+    return await this.whiteboardLogModel.find({ lecture_id: lecture }).exec();
+  }
+
+  async findLectureRecord(id: Types.ObjectId) {
+    const lecture = await this.lectureModel.findById(id).exec();
+    const logs = await this.findLogs(lecture);
+    const subtitles = (await this.lectureSubtitleModel.findOne({ lecture_id: lecture }).exec()).subtitle;
+    const audioFile = lecture.audio_file;
+    return new LectureRecordDto(logs, subtitles, audioFile);
   }
 }
