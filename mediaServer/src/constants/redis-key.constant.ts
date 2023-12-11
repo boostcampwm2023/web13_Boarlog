@@ -1,0 +1,4 @@
+const CLIENT_INFO_KEY_PREFIX = 'user:';
+const ROOM_INFO_KEY_PREFIX = 'room:';
+
+export { CLIENT_INFO_KEY_PREFIX, ROOM_INFO_KEY_PREFIX };

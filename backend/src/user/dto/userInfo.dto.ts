@@ -13,15 +13,9 @@ export class UserInfoDto {
 
   lecture_id: mongoose.Types.ObjectId;
 
-  constructor({ username, email }) {
+  constructor({ username, email, lecture_id }) {
     this.username = username;
     this.email = email;
-  }
-
-  static of(user: any): any {
-    return {
-      username: user.username,
-      email: user.email
-    };
+    this.lecture_id = lecture_id;
   }
 }
