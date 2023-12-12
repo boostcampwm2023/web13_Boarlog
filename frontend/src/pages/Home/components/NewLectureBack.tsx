@@ -5,6 +5,8 @@ import Button from "@/components/Button/Button";
 import SmallButton from "@/components/SmallButton/SmallButton";
 import CloseIcon from "@/assets/svgs/close.svg?react";
 import NewLectureIcon from "@/assets/svgs/newLecture.svg?react";
+import { useToast } from "@/components/Toast/useToast";
+import useAuth from "@/hooks/useAuth";
 
 interface NewLectureBackProps {
   handleNewLectureFalse: () => void;
@@ -12,22 +14,39 @@ interface NewLectureBackProps {
 
 const NewLectureBack = ({ handleNewLectureFalse }: NewLectureBackProps) => {
   const navigate = useNavigate();
+  const showToast = useToast();
+  const { checkAuth } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
   const handleCreateButtonClicked = () => {
-    axios
-      .post(`${import.meta.env.VITE_API_SERVER_URL}/lecture`, {
-        title,
-        description,
-        email: "example@gmail.com"
-      })
-      .then((result) => {
-        navigate(`/instructor?roomid=${result.data.code}`);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    if (title.replace(/ /g, "") && description.replace(/ /g, "")) {
+      checkAuth();
+      axios
+        .post(
+          `${import.meta.env.VITE_API_SERVER_URL}/lecture`,
+          {
+            title,
+            description,
+            email: localStorage.getItem("email")
+          },
+          {
+            headers: {
+              Authorization: localStorage.getItem("token")
+            }
+          }
+        )
+        .then((result) => {
+          showToast({ message: "강의 생성을 완료했어요.", type: "success" });
+          navigate(`/instructor?roomid=${result.data.code}`);
+        })
+        .catch((error) => {
+          if (error.response?.status === 401) {
+            showToast({ message: "로그인이 만료되었어요.", type: "alert" });
+            navigate("/userauth");
+          }
+        });
+    } else showToast({ message: "올바른 강의 정보를 입력해주세요.", type: "alert" });
   };
 
   return (
