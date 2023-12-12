@@ -66,7 +66,7 @@ export class RelayServer {
         socket.join(email);
         await Promise.all([
           saveClientInfo(email, ClientType.PRESENTER, data.roomId),
-          saveRoomInfo(data.roomId, new RoomInfoDto(email))
+          saveRoomInfo(data.roomId, new RoomInfoDto(email, data.whiteboard))
         ]);
         if (roomInfo.presenterEmail !== email) {
           if (await isQuestionStreamExisted(data.roomId)) {
