@@ -21,6 +21,7 @@ import {
 } from './services/question-service';
 import { StreamReadRaw } from './types/redis-stream.type';
 import { isCreatedRoomAndNotEqualPresenterEmail } from './validation/request.validation';
+import { uploadFileToObjectStorage } from './utils/ncp-storage';
 
 export class RelayServer {
   private readonly _io;
@@ -172,6 +173,10 @@ export class RelayServer {
     }
     const roomInfo = await findRoomInfoById(clientInfo.roomId);
     const roomConnectionInfo = this.roomsConnectionInfo.get(clientInfo.roomId);
+
+    const token = socket.handshake.auth.accessToken;
+    const code = clientInfo.roomId
+
     if (!roomConnectionInfo) {
       // TODO: 추후 클라이언트로 에러처리 필요
       console.log('아직 열리지 않았거나 종료된 방입니다.');
@@ -182,10 +187,15 @@ export class RelayServer {
     if (clientInfo.type === ClientType.PRESENTER) {
       roomConnectionInfo.presenterSocket = socket;
       socket.join(email);
-      // TODO: API 서버에 강의 시작 요청하기
     }
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
+      // TODO: API 서버에 강의 시작 요청하기 
+      const response = await fetch((process.env.SERVER_API_URL + '/lecture/'+code) as string, {
+        method: 'PATCH',
+        headers: { 'Authorization': token }
+      })
+      console.log("response: "+response.status)
     }
 
     socket.on('edit', async (data) => {
@@ -195,6 +205,12 @@ export class RelayServer {
         return;
       }
       // TODO: API 서버로 화이트보드 데이터 전달
+      const response = await fetch(process.env.SERVER_API_URL+'/lecture/log/'+data.roomId, {
+        method: 'POST',
+        body: data.content
+      })
+      console.log("response: "+response.status)
+
       await Promise.all([
         updateWhiteboardData(data.roomId, data.content),
         this._io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content))
@@ -248,7 +264,18 @@ export class RelayServer {
       this.roomsConnectionInfo.delete(clientInfo.roomId);
       this.clientsConnectionInfo.delete(email);
       await Promise.all([deleteRoomInfoById(data.roomId), deleteQuestionStream(data.roomId)]);
+
       // TODO: API 서버에 강의 종료 요청하기
+      const url = await mediaConverter.getAudioFileUrl(data.roomId);
+      const response = await fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: data.roomId,
+          audio: url
+        })
+      });
+      console.log("response: "+response.status)
     });
 
     socket.on('leave', (data) => {
