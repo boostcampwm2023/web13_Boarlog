@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 import VolumeMeter from "./VolumeMeter";
+import useAuth from "@/hooks/useAuth";
+
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
 import MicOffIcon from "@/assets/svgs/micOff.svg?react";
@@ -54,10 +56,11 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
 
   const navigate = useNavigate();
   const showToast = useToast();
+  const { checkAuth } = useAuth();
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
-  const sampleAccessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MwMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE2ODUyMDYsImV4cCI6MTcwMjcyMjAwNn0.gNXyIPGyaBKX5KjBVB6USNWGEc3k9ZruCTglCGeLo3Y";
+  const guestAccessToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MxNEBnbWFpbC5jb20iLCJpYXQiOjE3MDIzNjA4OTMsImV4cCI6MTcwMzM5NzY5M30.nSbiGLp03Zmz0xNdlmAKDWEAuPXJfZu4MBwVW9JW6Yk";
   const pc_config = {
     iceServers: [
       {
@@ -67,6 +70,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   };
 
   useEffect(() => {
+    checkAuth();
     setDidMount(true);
     const backToMain = () => {
       leaveLecture({ isLectureEnd: false });
@@ -158,10 +162,11 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
       // guest 판별 로직 추가 예정
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
-          accessToken: sampleAccessToken,
+          accessToken: guestAccessToken,
           refreshToken: "test"
         }
       });
+      //      accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
 
       if (!socketRef.current) return;
       socketRef.current.on(`serverAnswer`, (data) => handleServerAnswer(data));
@@ -293,10 +298,11 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     if (!managerRef.current) return;
     lectureSocketRef.current = managerRef.current.socket("/lecture", {
       auth: {
-        accessToken: sampleAccessToken,
+        accessToken: guestAccessToken,
         refreshToken: "sample"
       }
     });
+    //    accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
     setParticipantSocket(lectureSocketRef.current);
     lectureSocketRef.current.on("ended", () => handleLectureEnd());
     lectureSocketRef.current.on("update", (data) => handleWhiteboardUpdate(data));

@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 import VolumeMeter from "./VolumeMeter";
+import useAuth from "@/hooks/useAuth";
+
 import PlayIcon from "@/assets/svgs/play.svg?react";
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
@@ -15,7 +17,6 @@ import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 import { ICanvasData, saveCanvasData } from "@/utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
-import useAuth from "@/hooks/useAuth";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
@@ -30,9 +31,6 @@ interface HeaderInstructorControlsProps {
 }
 
 const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderInstructorControlsProps) => {
-  const { checkAuth } = useAuth();
-  const isLectureStartRef = useRef<boolean>(false);
-
   const [isMicOn, setIsMicOn] = useState(true);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
@@ -46,7 +44,9 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
   const navigate = useNavigate();
   const showToast = useToast();
+  const { checkAuth } = useAuth();
 
+  const isLectureStartRef = useRef<boolean>(false);
   const timerIdRef = useRef<number | null>(null); // 경과 시간 표시 타이머 id
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const managerRef = useRef<Manager>();
