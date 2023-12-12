@@ -24,6 +24,7 @@ import micVolumeGainState from "@/stores/stateMicVolumeGain";
 import micVolumeState from "@/stores/stateMicVolume";
 import canvasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
+import questionListState from "@/pages/Test/components/stateQuestionList";
 
 interface HeaderInstructorControlsProps {
   setLectureCode: React.Dispatch<React.SetStateAction<string>>;
@@ -42,6 +43,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   const setInputMicVolumeState = useSetRecoilState(micVolumeGainState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
+  const setQuestionList = useSetRecoilState(questionListState);
   const navigate = useNavigate();
   const showToast = useToast();
   const { checkAuth } = useAuth();
@@ -348,6 +350,10 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     fabricCanvasRef!.loadFromJSON(data.whiteboard.canvasJSON, () => {});
     fabricCanvasRef!.setViewportTransform(data.whiteboard.viewport);
     startTime = new Date(data.startTime).getTime();
+    const questionList = data.questions.map((question: any) => {
+      return { content: question[1][1], questionId: question[0] };
+    });
+    setQuestionList(questionList);
     showToast({ message: "이전에 진행한 강의 내용을 불러왔습니다.", type: "default" });
   };
   const handlePopstate = () => {
