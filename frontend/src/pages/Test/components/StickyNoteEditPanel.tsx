@@ -58,7 +58,6 @@ const StickyNoteEditPanel = () => {
 
     const align = textBox.get("textAlign");
     const fontSize = getFontSizeByPixel(textBox.get("fontSize"));
-
     if (!align || !fontSize) return { align: "left", fontSize: "m" };
 
     return { align: align, fontSize: fontSize };
@@ -90,11 +89,16 @@ const StickyNoteEditPanel = () => {
   useEffect(() => {
     if (!noteInstance || !canvas) return;
 
+    const memoBackground = noteInstance.item(0);
     const textBox = noteInstance.item(1);
-
     const fontPixel = getFontSizePixelByCode(fontSize);
 
     textBox.set({ fontSize: fontPixel });
+    const textBoxHeight = textBox.get("height") <= 145 ? 145 : textBox.get("height") + 20;
+    memoBackground.set({ height: textBoxHeight });
+
+    // @ts-ignore
+    noteInstance.addWithUpdate();
     canvas.renderAll();
   }, [fontSize]);
 

@@ -1,8 +1,9 @@
 import { atom } from "recoil";
 
-const clickedQuestionContentsState = atom<string | undefined>({
+const clickedQuestionContentsState = atom<{ content: string; questionId: string } | undefined>({
   key: "clickedQuestionContentsState",
-  default: ""
+  default: undefined,
+  dangerouslyAllowMutability: true
 });
 
 export default clickedQuestionContentsState;

@@ -16,6 +16,7 @@ export const getStickyNoteInstance = (
   content = "더블 클릭해 메모 내용을 편집하세요..."
 ) => {
   const text = new fabric.Textbox(content, {
+    fontFamily: "Pretendard Variable",
     left: mousePositionX + INITIAL_TOP_AND_LEFT_PADDING,
     top: mousePositionY + INITIAL_TOP_AND_LEFT_PADDING,
     width: INITIAL_TEXT_WIDTH,
