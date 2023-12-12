@@ -15,19 +15,22 @@ import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 import { ICanvasData, saveCanvasData } from "@/utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
+import useAuth from "@/hooks/useAuth";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolumeGainState from "@/stores/stateMicVolumeGain";
 import micVolumeState from "@/stores/stateMicVolume";
-import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+import canvasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
 
 interface HeaderInstructorControlsProps {
   setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+  setLectureTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsProps) => {
+const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderInstructorControlsProps) => {
+  const { checkAuth } = useAuth();
   const isLectureStartRef = useRef<boolean>(false);
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -37,7 +40,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolumeGainState);
-  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+  const fabricCanvasRef = useRecoilValue(canvasInstanceState);
   const setInputMicVolumeState = useSetRecoilState(micVolumeGainState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
@@ -56,8 +59,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const prevInputMicVolumeRef = useRef<number>(0);
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
-  const sampleAccessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
   const pc_config = {
     iceServers: [
       {
@@ -72,12 +73,12 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   };
 
   useEffect(() => {
+    checkAuth();
     axios
       .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
       .then((result) => {
-        const lecureTitle = result.data.title;
-        console.log(lecureTitle);
-        // 이후 작업 내일 예정
+        const lectureTitle = result.data.title;
+        setLectureTitle(lectureTitle);
       })
       .catch(() => {
         // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
@@ -94,6 +95,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       replaceAudioTrack();
     }
   }, [selectedMicrophone]);
+
+  let startTime = Date.now();
 
   const startLecture = async () => {
     if (!selectedMicrophone) {
@@ -137,13 +140,14 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
-          accessToken: sampleAccessToken,
+          accessToken: localStorage.getItem("token"),
           refreshToken: "sample"
         }
       });
       socketRef.current.on("connect_error", (err) => handleServerError(err));
       socketRef.current.on(`serverAnswer`, (data) => handleServerAnswer(data));
       socketRef.current.on(`serverCandidate`, (data) => handleServerCandidate(data));
+      socketRef.current.on(`reconnectPresenter`, (data) => handleReconnect(data));
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
@@ -185,7 +189,9 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
         offerToReceiveAudio: false,
         offerToReceiveVideo: false
       });
+      saveCanvasData(fabricCanvasRef!, canvasData, startTime);
       socketRef.current.emit("presenterOffer", {
+        whiteboard: canvasData,
         socketId: socketRef.current.id,
         roomId: roomid,
         SDP: SDP
@@ -245,7 +251,6 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
   };
 
-  let startTime = Date.now();
   // 경과 시간을 표시하기 위한 부분입니다
   const startTimer = () => {
     const updateElapsedTime = () => {
@@ -291,12 +296,12 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   let canvasData: ICanvasData = {
     canvasJSON: "",
-    viewport: [1, 0, 0, 1, 0, 0],
+    viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,
     height: 0
   };
-  let replayFileArray: ICanvasData[] = [];
+  //let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
     if (!lectureSocketRef.current) return;
@@ -305,8 +310,11 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       roomId: roomid,
       content: data
     });
+    /*
+    화이트보드 다시보기 더미 데이터를 만들기 위한 코드입니다.
     replayFileArray.push({ ...data });
     console.log(replayFileArray);
+    */
   };
 
   const handleServerAnswer = (data: any) => {
@@ -321,22 +329,26 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   };
   const handleConnected = () => {
     isLectureStartRef.current = true;
-    startTime = Date.now();
     startTimer();
     showToast({ message: "강의가 시작되었습니다.", type: "success" });
     if (!managerRef.current) return;
     lectureSocketRef.current = managerRef.current.socket("/lecture", {
       auth: {
-        accessToken: sampleAccessToken,
+        accessToken: localStorage.getItem("token"),
         refreshToken: "sample"
       }
     });
     setInstructorSocket(lectureSocketRef.current);
-    submitData(canvasData);
   };
   const handleServerError = (err: any) => {
     console.error(err.message);
     showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
+  const handleReconnect = (data: any) => {
+    fabricCanvasRef!.loadFromJSON(data.whiteboard.canvasJSON, () => {});
+    fabricCanvasRef!.setViewportTransform(data.whiteboard.viewport);
+    startTime = new Date(data.startTime).getTime();
+    showToast({ message: "이전에 진행한 강의 내용을 불러왔습니다.", type: "default" });
   };
   const handlePopstate = () => {
     stopLecture();

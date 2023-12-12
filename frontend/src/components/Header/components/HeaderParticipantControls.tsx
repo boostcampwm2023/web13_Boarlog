@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -16,25 +17,26 @@ import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
-import speakerVolmeState from "@/stores/stateSpeakerVolume";
+import speakerVolumeState from "@/stores/stateSpeakerVolume";
 import micVolumeState from "@/stores/stateMicVolume";
 import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 interface HeaderParticipantControlsProps {
   setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+  setLectureTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControlsProps) => {
-  const [isSpeakerOn, setisSpeakerOn] = useState(false);
+const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderParticipantControlsProps) => {
+  const [isSpeakerOn, setIsSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
   const [didMount, setDidMount] = useState(false);
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
-  const speakerVolume = useRecoilValue(speakerVolmeState);
+  const speakerVolume = useRecoilValue(speakerVolumeState);
   const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
-  const setSpeakerVolume = useSetRecoilState(speakerVolmeState);
+  const setSpeakerVolume = useSetRecoilState(speakerVolumeState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setParticipantSocket = useSetRecoilState(participantSocketRefState);
 
@@ -78,6 +80,16 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   }, []);
   useEffect(() => {
     if (didMount) {
+      axios
+        .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
+        .then((result) => {
+          const lectureTitle = result.data.title;
+          setLectureTitle(lectureTitle);
+        })
+        .catch(() => {
+          // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+          // navigate("/");
+        });
       enterLecture();
       setLectureCode(roomid);
     }
@@ -220,16 +232,16 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     if (!onFrameIdRef.current) {
       // 최초 연결 후 음소거 해제
       startAnalyse();
-      setisSpeakerOn(true);
+      setIsSpeakerOn(true);
       showToast({ message: "음소거가 해제되었습니다.", type: "success" });
     } else if (isSpeakerOn) {
       prevSpeakerVolumeRef.current = speakerVolumeRef.current;
       setSpeakerVolume(0);
-      setisSpeakerOn(false);
+      setIsSpeakerOn(false);
       showToast({ message: "음소거 되었습니다.", type: "alert" });
     } else {
       setSpeakerVolume(prevSpeakerVolumeRef.current);
-      setisSpeakerOn(true);
+      setIsSpeakerOn(true);
       showToast({ message: "음소거가 해제되었습니다.", type: "success" });
     }
   };
@@ -243,6 +255,10 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
+
+    console.log(data);
+    console.log(data.whiteboard);
+
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
