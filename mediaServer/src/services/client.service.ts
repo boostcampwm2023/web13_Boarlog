@@ -17,7 +17,7 @@ const saveClientInfo = async (email: string, clientType: ClientType, roomId: str
 const sendDataToReconnectPresenter = async (email: string, roomId: string, roomInfo: Record<string, string>) => {
   const unsolvedQuestions = (await findUnsolvedQuestions(roomId, email)) as StreamReadRaw;
   sendMessageUsingSocket('/create-room', email, 'reconnectPresenter', {
-    whiteboard: roomInfo.currentWhiteboardData,
+    whiteboard: JSON.parse(roomInfo.currentWhiteboardData),
     startTime: roomInfo.startTime,
     questions: unsolvedQuestions[0][1]
   });

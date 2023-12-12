@@ -64,15 +64,15 @@ export class RelayServer {
         this.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC));
         this.roomsConnectionInfo.set(data.roomId, new RoomConnectionInfo(RTCPC));
         socket.join(email);
-        await Promise.all([
-          saveClientInfo(email, ClientType.PRESENTER, data.roomId),
-          saveRoomInfo(data.roomId, new RoomInfoDto(email, data.whiteboard))
-        ]);
         if (roomInfo.presenterEmail !== email) {
           if (await isQuestionStreamExisted(data.roomId)) {
             await deleteQuestionStream(data.roomId);
           }
           await setQuestionStreamAndGroup(data.roomId);
+          await Promise.all([
+            saveClientInfo(email, ClientType.PRESENTER, data.roomId),
+            saveRoomInfo(data.roomId, new RoomInfoDto(email, data.whiteboard))
+          ]);
         }
         if (roomInfo.presenterEmail === email) {
           await sendDataToReconnectPresenter(email, data.roomId, roomInfo);
