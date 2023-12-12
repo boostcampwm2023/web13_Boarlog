@@ -1,14 +1,13 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/Toast/useToast";
 
 import Button from "@/components/Button/Button";
+import { useToast } from "@/components/Toast/useToast";
 
 import EnterIcon from "@/assets/svgs/enter.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
 import CloseIcon from "@/assets/svgs/close.svg?react";
-
 import LogoOriginal from "@/assets/imgs/logoOriginal.png";
 import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
 interface UserAuthSectionProps {
@@ -81,9 +80,10 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
             password
           })
           .then((result) => {
-            localStorage.setItem("token", result.data.token);
-            localStorage.setItem("username", result.data.username);
-            localStorage.setItem("email", result.data.email);
+            const { token, username, email } = result.data;
+            localStorage.setItem("token", token);
+            localStorage.setItem("username", username);
+            localStorage.setItem("email", email);
             showToast({ message: "로그인에 성공했습니다.", type: "success" });
             navigate("/");
           })

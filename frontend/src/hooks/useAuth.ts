@@ -23,9 +23,10 @@ const useAuth = () => {
               Authorization: accessToken
             }
           })
-          .then((result) => {
-            localStorage.setItem("username", result.data.username);
-            localStorage.setItem("email", result.data.email);
+          .then((response) => {
+            const { username, email } = response.data;
+            localStorage.setItem("username", username);
+            localStorage.setItem("email", email);
           })
           .catch((error) => {
             if (error.response?.status === 401) {
