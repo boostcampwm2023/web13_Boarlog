@@ -62,9 +62,9 @@ export class RelayServer {
         }
         const RTCPC = new RTCPeerConnection(pc_config);
         this.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC));
-        this.roomsConnectionInfo.set(data.roomId, new RoomConnectionInfo(RTCPC));
         socket.join(email);
         if (roomInfo.presenterEmail !== email) {
+          this.roomsConnectionInfo.set(data.roomId, new RoomConnectionInfo(RTCPC));
           if (await isQuestionStreamExisted(data.roomId)) {
             await deleteQuestionStream(data.roomId);
           }
@@ -82,6 +82,11 @@ export class RelayServer {
           const roomInfo = this.roomsConnectionInfo.get(data.roomId);
           if (roomInfo) {
             roomInfo.stream = event.streams[0];
+            roomInfo.studentInfoList.forEach((clientConnectionInfo: ClientConnectionInfo) => {
+              event.streams[0].getTracks().forEach((track: any) => {
+                clientConnectionInfo.RTCPC.getSenders()[0].replaceTrack(track);
+              });
+            });
             mediaConverter.setSink(event.streams[0], data.roomId);
           }
         };
