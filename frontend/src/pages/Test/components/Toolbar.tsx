@@ -24,9 +24,11 @@ import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
 import clickedQuestionContentsState from "./stateClickedQuestionContents";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 import stickyNoteInstance, { fabricObjectWithAddWithUpdate, fabricObjectWithItem } from "./stateStickyNoteInstance";
+import isMemoEditingState from "@/stores/stateIsMemoEditing";
 
 const Toolbar = () => {
   const [activeTool, setActiveTool] = useRecoilState(activeToolState);
+  const setIsMemoEditing = useSetRecoilState(isMemoEditingState);
   const canvas = useRecoilValue(canvasInstanceState);
   const setVisibilityEditPanel = useSetRecoilState(stickyNoteEditPanelVisibilityState);
   const setStickyNoteInstance = useSetRecoilState(stickyNoteInstance);
@@ -134,6 +136,8 @@ const Toolbar = () => {
 
       const handleEditText = ({ target }: fabric.IEvent<MouseEvent>) => {
         if (!target) return;
+        setIsMemoEditing(true);
+
         const textBox = (target as fabricObjectWithItem).item(1);
         const backGround = (target as fabricObjectWithItem).item(0);
 
@@ -187,6 +191,7 @@ const Toolbar = () => {
 
         // 텍스트의 수정을 마치는 이벤트 처리
         dummyTextBox.on("editing:exited", () => {
+          setIsMemoEditing(false);
           handleEditEnd(dummyTextBox, textBox, target as fabricObjectWithAddWithUpdate);
         });
       };
@@ -325,7 +330,7 @@ const Toolbar = () => {
             setIsQuestionListOpen(false);
           }}
           disabled={activeTool === "stickyNote"}
-          title="Add Stikynote (포스트잇 추가)"
+          title="Add StickyNote (포스트잇 추가)"
         />
         <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
         {/* <ToolButton
