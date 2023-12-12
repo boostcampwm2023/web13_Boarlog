@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+import useAuth from "@/hooks/useAuth";
 import Button from "@/components/Button/Button";
-import ProfileBig from "@/assets/imgs/profileBig.png";
-import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
-import EnterIcon from "@/assets/svgs/enter.svg?react";
 import { useToast } from "@/components/Toast/useToast";
 import ReplayLectureCard from "./ReplayLectureCard";
-import useAuth from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+
+import EnterIcon from "@/assets/svgs/enter.svg?react";
+import ProfileBig from "@/assets/imgs/profileBig.png";
+import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
 
 const NICKNAME_REGEXP = /^[a-zA-Z0-9가-힣]{3,15}$/;
 
@@ -35,6 +37,7 @@ const MyPageSection = () => {
         headers: { Authorization: localStorage.getItem("token") }
       })
       .then((result) => {
+        console.log(result);
         setLectureList(result.data);
       })
       .catch((error) => {
@@ -67,9 +70,10 @@ const MyPageSection = () => {
             }
           )
           .then((result) => {
-            localStorage.setItem("username", result.data.username);
-            localStorage.setItem("email", result.data.email);
-            setUsername(result.data.username);
+            const { username, email } = result.data;
+            localStorage.setItem("username", username);
+            localStorage.setItem("email", email);
+            setUsername(username);
           })
           .catch((error) => {
             if (error.response.status === 401) {
