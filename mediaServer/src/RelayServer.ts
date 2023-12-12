@@ -172,6 +172,10 @@ export class RelayServer {
     }
     const roomInfo = await findRoomInfoById(clientInfo.roomId);
     const roomConnectionInfo = this.roomsConnectionInfo.get(clientInfo.roomId);
+
+    const token = socket.handshake.auth.accessToken;
+    const code = clientInfo.roomId
+
     if (!roomConnectionInfo) {
       // TODO: 추후 클라이언트로 에러처리 필요
       console.log('아직 열리지 않았거나 종료된 방입니다.');
@@ -186,8 +190,6 @@ export class RelayServer {
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
       // TODO: API 서버에 강의 시작 요청하기 
-      const token = socket.handshake.auth.accessToken
-      const code = clientInfo.roomId
       const response = await fetch((process.env.SERVER_API_URL + '/lecture/'+code) as string, {
         method: 'PATCH',
         headers: { 'Authorization': token }
@@ -202,6 +204,12 @@ export class RelayServer {
         return;
       }
       // TODO: API 서버로 화이트보드 데이터 전달
+      const response = await fetch(process.env.SERVER_API_URL+'/lecture/log/'+data.roomId, {
+        method: 'POST',
+        body: data.content
+      })
+      console.log("response: "+response.status)
+      
       await Promise.all([
         updateWhiteboardData(data.roomId, data.content),
         this._io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content))
