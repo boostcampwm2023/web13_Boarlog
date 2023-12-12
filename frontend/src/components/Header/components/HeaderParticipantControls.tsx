@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 import VolumeMeter from "./VolumeMeter";
 import StopIcon from "@/assets/svgs/stop.svg?react";
@@ -23,9 +24,10 @@ import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 interface HeaderParticipantControlsProps {
   setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+  setLectureTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControlsProps) => {
+const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderParticipantControlsProps) => {
   const [isSpeakerOn, setIsSpeakerOn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState<number>(0);
@@ -78,6 +80,16 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
   }, []);
   useEffect(() => {
     if (didMount) {
+      axios
+        .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
+        .then((result) => {
+          const lectureTitle = result.data.title;
+          setLectureTitle(lectureTitle);
+        })
+        .catch(() => {
+          // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+          // navigate("/");
+        });
       enterLecture();
       setLectureCode(roomid);
     }
@@ -243,6 +255,9 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
     };
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
+
+    console.log(data.whiteboard);
+
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,

@@ -15,19 +15,22 @@ interface HeaderProps {
 const Header = ({ type }: HeaderProps) => {
   const [isProfileClicked, setIsProfileClicked] = useState(false);
   const [isSettingClicked, setIsSettingClicked] = useState(false);
+  const [lectureTitle, setLectureTitle] = useState("강의 제목");
   const [lectureCode, setLectureCode] = useState("000000");
 
   return (
     <header className="flex w-100 h-20 items-center justify-between px-6 py-4 bg-grayscale-white border-header box-border z-10 sticky top-0">
       <div className="flex items-center gap-4 semibold-20">
-        {(type === "login" || type === "main") && <HeaderLogo type={type === "login" ? "login" : "normal"} />}
+        {(type === "login" || type === "main") && (
+          <HeaderLogo type={type === "login" ? "login" : "normal"} lectureTitle={lectureTitle} />
+        )}
         {(type === "instructor" || type === "participant") && (
           <>
-            <HeaderLogo type="lecture" />
+            <HeaderLogo type="lecture" lectureTitle={lectureTitle} />
             <HeaderCodeCopyButton lectureCode={lectureCode} />
           </>
         )}
-        {type === "review" && <HeaderLogo type="lecture" />}
+        {type === "review" && <HeaderLogo type="lecture" lectureTitle={lectureTitle} />}
       </div>
 
       <div className="flex items-center gap-4 semibold-20">
@@ -40,7 +43,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "instructor" && (
           <>
-            <HeaderInstructorControls setLectureCode={setLectureCode} />
+            <HeaderInstructorControls setLectureCode={setLectureCode} setLectureTitle={setLectureTitle} />
             <HeaderSettingButton
               isSettingClicked={isSettingClicked}
               setIsSettingClicked={setIsSettingClicked}
@@ -51,7 +54,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "participant" && (
           <>
-            <HeaderParticipantControls setLectureCode={setLectureCode} />
+            <HeaderParticipantControls setLectureCode={setLectureCode} setLectureTitle={setLectureTitle} />
             <HeaderSettingButton
               isSettingClicked={isSettingClicked}
               setIsSettingClicked={setIsSettingClicked}

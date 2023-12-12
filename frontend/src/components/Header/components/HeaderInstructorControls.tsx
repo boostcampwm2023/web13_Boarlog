@@ -20,14 +20,15 @@ import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolumeGainState from "@/stores/stateMicVolumeGain";
 import micVolumeState from "@/stores/stateMicVolume";
-import cavasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+import canvasInstanceState from "@/pages/Test/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
 
 interface HeaderInstructorControlsProps {
   setLectureCode: React.Dispatch<React.SetStateAction<string>>;
+  setLectureTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsProps) => {
+const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderInstructorControlsProps) => {
   const isLectureStartRef = useRef<boolean>(false);
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -37,7 +38,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   const selectedMicrophone = useRecoilValue(selectedMicrophoneState);
   const inputMicVolume = useRecoilValue(micVolumeGainState);
-  const fabricCanvasRef = useRecoilValue(cavasInstanceState);
+  const fabricCanvasRef = useRecoilValue(canvasInstanceState);
   const setInputMicVolumeState = useSetRecoilState(micVolumeGainState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
@@ -76,8 +77,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
       .then((result) => {
         const lectureTitle = result.data.title;
-        console.log(lectureTitle);
-        // 이후 작업 내일 예정
+        setLectureTitle(lectureTitle);
       })
       .catch(() => {
         // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
@@ -144,6 +144,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
       socketRef.current.on("connect_error", (err) => handleServerError(err));
       socketRef.current.on(`serverAnswer`, (data) => handleServerAnswer(data));
       socketRef.current.on(`serverCandidate`, (data) => handleServerCandidate(data));
+      socketRef.current.on(`reconnectPresenter`, (data) => handleReconnect(data));
 
       // 1. 로컬 stream 생성 (발표자 브라우저에서 미디어 track 설정)
       if (!selectedMicrophone) throw new Error("마이크를 먼저 선택해 주세요");
@@ -291,7 +292,7 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
 
   let canvasData: ICanvasData = {
     canvasJSON: "",
-    viewport: [1, 0, 0, 1, 0, 0],
+    viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,
     height: 0
@@ -337,6 +338,17 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
   const handleServerError = (err: any) => {
     console.error(err.message);
     showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
+  };
+  const handleReconnect = (data: any) => {
+    console.log("reconnect", data);
+    console.log(data.whiteboard);
+    console.log(data.whiteboard.canvasJSON);
+    console.log(data.whiteboard.viewport);
+
+    //fabricCanvasRef!.loadFromJSON(data.whiteboard.canvasJSON, () => {});
+    //fabricCanvasRef!.setViewportTransform(data.whiteboard.viewport);
+    startTime = Date.now() - data.startTime;
+    showToast({ message: "이전에 진행한 강의 내용을 불러왔습니다.", type: "default" });
   };
   const handlePopstate = () => {
     stopLecture();
