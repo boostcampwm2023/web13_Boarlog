@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 
 import useAuth from "@/hooks/useAuth";
 import Button from "@/components/Button/Button";
-import { useToast } from "@/components/Toast/useToast";
 import ReplayLectureCard from "./ReplayLectureCard";
+import { useToast } from "@/components/Toast/useToast";
 
 import EnterIcon from "@/assets/svgs/enter.svg?react";
 import ProfileBig from "@/assets/imgs/profileBig.png";
@@ -68,8 +68,8 @@ const MyPageSection = () => {
               headers: { Authorization: localStorage.getItem("token") }
             }
           )
-          .then((result) => {
-            const { username, email } = result.data;
+          .then((response) => {
+            const { username, email } = response.data;
             localStorage.setItem("username", username);
             localStorage.setItem("email", email);
             setUsername(username);
