@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue, useResetRecoilState, useSetRecoilState } from "recoil";
 import { Socket, Manager } from "socket.io-client";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -44,6 +44,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setInstructorSocket = useSetRecoilState(instructorSocketState);
   const setQuestionList = useSetRecoilState(questionListState);
+  const resetQuestionList = useResetRecoilState(questionListState);
   const navigate = useNavigate();
   const showToast = useToast();
   const { checkAuth } = useAuth();
@@ -130,6 +131,8 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     if (lectureSocketRef.current) lectureSocketRef.current.disconnect(); // 소켓 연결 해제
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
+
+    resetQuestionList();
 
     setMicVolumeState(0);
     setIsCloseModalOpen(false);
