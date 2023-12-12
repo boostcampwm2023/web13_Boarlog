@@ -37,7 +37,6 @@ const MyPageSection = () => {
         headers: { Authorization: localStorage.getItem("token") }
       })
       .then((result) => {
-        console.log(result);
         setLectureList(result.data);
       })
       .catch((error) => {
