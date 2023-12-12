@@ -42,6 +42,12 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
     setIsPasswordConfirm(null);
   }, [isSignIn]);
 
+  const handleEnterPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      handleRightButtonClicked();
+    }
+  };
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     setIsEmailValid(EMAIL_REGEXP.test(e.target.value));
@@ -141,6 +147,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
               maxLength={30}
               value={email}
               onChange={handleEmailChange}
+              onKeyDown={handleEnterPress}
             />
           </div>
           {!isSignIn && (
@@ -156,6 +163,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
                 maxLength={10}
                 value={username}
                 onChange={handleUsernameChange}
+                onKeyDown={handleEnterPress}
               />
             </div>
           )}
@@ -173,6 +181,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
               maxLength={30}
               value={password}
               onChange={handlePasswordChange}
+              onKeyDown={handleEnterPress}
             />
           </div>
           {!isSignIn && (
@@ -188,6 +197,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
                 maxLength={50}
                 value={passwordConfirm}
                 onChange={handlePasswordConfirm}
+                onKeyDown={handleEnterPress}
               />
             </div>
           )}
