@@ -5,7 +5,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 import VolumeMeter from "./VolumeMeter";
-import useAuth from "@/hooks/useAuth";
 
 import StopIcon from "@/assets/svgs/stop.svg?react";
 import MicOnIcon from "@/assets/svgs/micOn.svg?react";
@@ -56,7 +55,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
 
   const navigate = useNavigate();
   const showToast = useToast();
-  const { checkAuth } = useAuth();
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
   const pc_config = {
@@ -68,7 +66,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   };
 
   useEffect(() => {
-    checkAuth();
     setDidMount(true);
     const backToMain = () => {
       leaveLecture({ isLectureEnd: false });
