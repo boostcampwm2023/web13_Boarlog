@@ -7,6 +7,7 @@ import HeaderParticipantControls from "./components/HeaderParticipantControls";
 import HeaderProfileButton from "./components/HeaderProfileButton";
 import HeaderSettingButton from "./components/HeaderSettingButton";
 import HeaderCodeCopyButton from "./components/HeaderCodeCopyButton";
+import HeaderReviewButtons from "./components/HeaderReviewButtons";
 
 interface HeaderProps {
   type: "login" | "main" | "instructor" | "participant" | "review";
@@ -65,7 +66,7 @@ const Header = ({ type }: HeaderProps) => {
         )}
         {type === "review" && (
           <>
-            <HeaderMainButtons />
+            <HeaderReviewButtons />
             <HeaderProfileButton isProfileClicked={isProfileClicked} setIsProfileClicked={setIsProfileClicked} />
           </>
         )}

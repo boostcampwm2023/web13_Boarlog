@@ -4,19 +4,22 @@ import CalendarIcon from "@/assets/svgs/calendar.svg?react";
 import PlayIcon from "@/assets/svgs/play.svg?react";
 
 interface ReplayLectureCardProps {
-  profileImage: string;
   date: string;
   duration: string;
   user: string;
   title: string;
   description: string;
+  onClick: () => void;
 }
 
-const ReplayLectureCard = ({ profileImage, date, duration, user, title, description }: ReplayLectureCardProps) => {
+const ReplayLectureCard = ({ date, duration, user, title, description, onClick }: ReplayLectureCardProps) => {
   return (
-    <div className="flex flex-col w-full p-6 gap-4 justify-between bg-grayscale-white border-default rounded-xl hover:shadow-xl duration-500 cursor-pointer break-keep">
+    <div
+      className="flex flex-col w-full p-6 gap-4 justify-between bg-grayscale-white border-default rounded-xl hover:shadow-xl duration-500 cursor-pointer break-keep"
+      onClick={onClick}
+    >
       <div className="flex flex-row gap-3 w-full items-center">
-        <img src={profileImage ? profileImage : ProfileMedium} alt="강의 진행자 프로필" className="w-12 h-12" />
+        <img src={ProfileMedium} alt="강의 진행자 프로필" className="w-12 h-12" />
         <div className="flex flex-col w-full gap-1 justify-center items-left semibold-20">
           {title}
           <div className="flex flex-row gap-1 items-center medium-16 text-grayscale-darkgray">

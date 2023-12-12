@@ -1,6 +1,7 @@
 import { useRecoilValue, useRecoilState } from "recoil";
 import { useState, useEffect, useRef } from "react";
 import { fabric } from "fabric";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
@@ -32,6 +33,8 @@ const Review = () => {
   let fabricCanvasRef = useRef<fabric.Canvas>();
   let canvasCntRef = useRef<number>(0);
   let totalTimeRef = useRef<number>(0);
+
+  const lectureId = new URLSearchParams(useLocation().search).get("id") || "nodata";
   let startTime = Date.now();
   let canvasData: ICanvasData = {
     canvasJSON: "",
@@ -88,10 +91,9 @@ const Review = () => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
 
-    /*
     // 실제 데이터를 불러오는 코드
     axios
-      .get(`https://boarlog.shop/lecture/record/6576c9dfccd3e23a8e0fe473`)
+      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture/record/${lectureId}`)
       .then((result) => {
         // console.log(result.data);
         // loadedDataRef.current = result.data.;
@@ -105,7 +107,7 @@ const Review = () => {
       .catch(() => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
-    */
+
     localAudioRef.current!.src = "https://cdn.freesound.org/previews/18/18765_18799-lq.mp3";
     localAudioRef.current!.addEventListener("loadedmetadata", () => {
       totalTimeRef.current = localAudioRef.current!.duration * 1000;

@@ -96,11 +96,6 @@ const ProgressBar = ({
 
   const handleProgressBarMouseLeave = () => {
     setIsProgressBarDrag(false);
-    /*
-    if (progressBarStateRef.current === "playing") {
-      play();
-      progressBarStateRef.current = "paused";
-    }*/
   };
 
   return (

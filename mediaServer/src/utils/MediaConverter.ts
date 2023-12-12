@@ -7,6 +7,7 @@ import ffmpegPath from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import { PeerStreamInfo } from '../models/PeerStreamInfo';
 import { FfmpegCommand } from '../models/FfmpegCommand';
+import { uploadFileToObjectStorage } from './ncp-storage';
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class MediaConverter {
@@ -90,6 +91,17 @@ class MediaConverter {
         console.log(`${tempFileName}을 찾을 수 없습니다.`);
       }
     });
+  };
+
+  getAudioFileUrl = async (roomId: string) => {
+    const streamInfo = this.peerStreamInfoList.get(roomId);
+    if (!streamInfo) {
+      console.log('해당 강의실 발표자가 존재하지 않습니다.');
+      return;
+    }
+    const url = await uploadFileToObjectStorage(streamInfo.recordFileName, roomId);
+    console.log(`${url}에 파일 저장`);
+    return url;
   };
 }
 

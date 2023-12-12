@@ -1,6 +1,7 @@
+import axios from "axios";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import { useToast } from "@/components/Toast/useToast";
 
 const useAuth = () => {
@@ -23,11 +24,11 @@ const useAuth = () => {
             }
           })
           .then((response) => {
-            localStorage.setItem("username", response.data.username);
-            localStorage.setItem("email", response.data.email);
+            const { username, email } = response.data;
+            localStorage.setItem("username", username);
+            localStorage.setItem("email", email);
           })
           .catch((error) => {
-            console.log(error.response?.status);
             if (error.response?.status === 401) {
               showToast({ message: "로그인이 만료되었어요.", type: "alert" });
               navigate("/userauth");

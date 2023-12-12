@@ -134,6 +134,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
 
     resetQuestionList();
 
+    setMicVolumeState(0);
     setIsCloseModalOpen(false);
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
     navigate("/lecture-end");
