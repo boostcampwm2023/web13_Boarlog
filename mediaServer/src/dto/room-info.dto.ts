@@ -5,9 +5,9 @@ export class RoomInfoDto {
   startTime: Date;
   currentWhiteboardData: ICanvasData | null;
 
-  constructor(presenterEmail: string) {
+  constructor(presenterEmail: string, whiteboardData: ICanvasData) {
     this.presenterEmail = presenterEmail;
     this.startTime = new Date();
-    this.currentWhiteboardData = null;
+    this.currentWhiteboardData = whiteboardData;
   }
 }
