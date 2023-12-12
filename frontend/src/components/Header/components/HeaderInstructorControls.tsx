@@ -15,6 +15,7 @@ import Modal from "@/components/Modal/Modal";
 import { useToast } from "@/components/Toast/useToast";
 import { ICanvasData, saveCanvasData } from "@/utils/fabricCanvasUtil";
 import { convertMsTohhmm } from "@/utils/convertMsToTimeString";
+import useAuth from "@/hooks/useAuth";
 import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
@@ -29,6 +30,7 @@ interface HeaderInstructorControlsProps {
 }
 
 const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderInstructorControlsProps) => {
+  const { checkAuth } = useAuth();
   const isLectureStartRef = useRef<boolean>(false);
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -57,8 +59,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   const prevInputMicVolumeRef = useRef<number>(0);
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
-  const sampleAccessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3NAZ21haWwuY29tIiwiaWF0IjoxNzAxNjY0NTc4LCJleHAiOjE3MDI3MDEzNzh9.e2ikfmTsFCoVNxenHpAh__hLhoJnUPWSf-FmFSPo_RA";
   const pc_config = {
     iceServers: [
       {
@@ -73,6 +73,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   };
 
   useEffect(() => {
+    checkAuth();
     axios
       .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
       .then((result) => {
@@ -94,6 +95,8 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       replaceAudioTrack();
     }
   }, [selectedMicrophone]);
+
+  let startTime = Date.now();
 
   const startLecture = async () => {
     if (!selectedMicrophone) {
@@ -137,7 +140,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
       socketRef.current = managerRef.current.socket("/create-room", {
         auth: {
-          accessToken: sampleAccessToken,
+          accessToken: localStorage.getItem("token"),
           refreshToken: "sample"
         }
       });
@@ -248,7 +251,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
   };
 
-  let startTime = Date.now();
   // 경과 시간을 표시하기 위한 부분입니다
   const startTimer = () => {
     const updateElapsedTime = () => {
@@ -299,7 +301,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     width: 0,
     height: 0
   };
-  let replayFileArray: ICanvasData[] = [];
+  //let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
     if (!lectureSocketRef.current) return;
@@ -308,8 +310,11 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       roomId: roomid,
       content: data
     });
+    /*
+    화이트보드 다시보기 더미 데이터를 만들기 위한 코드입니다.
     replayFileArray.push({ ...data });
     console.log(replayFileArray);
+    */
   };
 
   const handleServerAnswer = (data: any) => {
@@ -324,13 +329,12 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   };
   const handleConnected = () => {
     isLectureStartRef.current = true;
-    startTime = Date.now();
     startTimer();
     showToast({ message: "강의가 시작되었습니다.", type: "success" });
     if (!managerRef.current) return;
     lectureSocketRef.current = managerRef.current.socket("/lecture", {
       auth: {
-        accessToken: sampleAccessToken,
+        accessToken: localStorage.getItem("token"),
         refreshToken: "sample"
       }
     });
@@ -341,12 +345,9 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
   };
   const handleReconnect = (data: any) => {
-    console.log("reconnect", data);
-    console.log(data.startTime);
-
     fabricCanvasRef!.loadFromJSON(data.whiteboard.canvasJSON, () => {});
     fabricCanvasRef!.setViewportTransform(data.whiteboard.viewport);
-    startTime = Date.now() - data.startTime;
+    startTime = new Date(data.startTime).getTime();
     showToast({ message: "이전에 진행한 강의 내용을 불러왔습니다.", type: "default" });
   };
   const handlePopstate = () => {

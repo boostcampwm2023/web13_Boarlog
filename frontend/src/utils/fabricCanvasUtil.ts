@@ -21,7 +21,7 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
   if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
     currentData.canvasJSON = newJSONData;
     currentData.viewport = newViewport;
-    currentData.eventTime = Date.now() - startTime;
+    currentData.eventTime = startTime === 0 ? 0 : Date.now() - startTime;
     currentData.width = newWidth;
     currentData.height = newHeight;
     return true;
@@ -61,8 +61,8 @@ export const updateCanvasSize = ({
 }) => {
   // 발표자 화이트보드 비율에 맞춰서 캔버스 크기 조정
   const HEADER_HEIGHT = 80;
-  const newHegiht = window.innerWidth * (whiteboardData.height / whiteboardData.width);
-  if (newHegiht > window.innerHeight - HEADER_HEIGHT) {
+  const newHeight = window.innerWidth * (whiteboardData.height / whiteboardData.width);
+  if (newHeight > window.innerHeight - HEADER_HEIGHT) {
     const newWidth = (window.innerHeight - HEADER_HEIGHT) * (whiteboardData.width / whiteboardData.height);
     fabricCanvas.setDimensions({
       width: newWidth,
@@ -71,7 +71,7 @@ export const updateCanvasSize = ({
   } else {
     fabricCanvas.setDimensions({
       width: window.innerWidth,
-      height: newHegiht
+      height: newHeight
     });
   }
   // 화이트보드 내용을 캔버스 크기에 맞춰서 재조정
