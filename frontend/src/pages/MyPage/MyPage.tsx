@@ -5,7 +5,7 @@ const MyPage = () => {
   return (
     <>
       <Header type="main" />
-      <MyPageSection profileImage="" />
+      <MyPageSection />
     </>
   );
 };
