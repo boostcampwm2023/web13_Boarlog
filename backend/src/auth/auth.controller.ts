@@ -35,6 +35,6 @@ export class AuthController {
       throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
     }
     const result = await this.authService.signIn(signInDto);
-    return res.status(HttpStatus.OK).send(new ResponseSignInDto(result));
+    return res.status(HttpStatus.OK).send(result);
   }
 }

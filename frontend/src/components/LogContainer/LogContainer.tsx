@@ -2,10 +2,9 @@ import SendMessage from "@/assets/svgs/sendMessage.svg?react";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 import { CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 import { useLocation } from "react-router-dom";
 import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
-import axios from "axios";
 import progressMsTimeState from "@/stores/stateProgressMsTime";
 import convertTimeStringToMS from "@/utils/converTimeStringToMS";
 
@@ -21,6 +20,7 @@ interface LogItemInterface {
 interface LogContainerInterface {
   type: "question" | "prompt";
   className: string;
+  scriptList?: Array<{ start: string; text: string }>;
   updateProgressMsTime?: (time: number) => void;
 }
 
@@ -37,30 +37,20 @@ const LogItem = ({ title, contents, className, onClick, style }: LogItemInterfac
   );
 };
 
-const LogContainer = ({ type, className, updateProgressMsTime }: LogContainerInterface) => {
+const LogContainer = ({ type, className, scriptList, updateProgressMsTime }: LogContainerInterface) => {
   const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
   const [questionList, setQuestionList] = useState<Array<{ title: string; contents: string }>>([]);
-  const [scriptList, setScriptList] = useState<Array<{ start: string; text: string }>>([]);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
   const logContainerRef = useRef<HTMLUListElement | null>(null);
-  const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
+  const progressMsTime = useRecoilValue(progressMsTimeState);
   const socket = useRecoilValue(participantSocketRefState);
   const [hilightedItemIndex, setHilightedItemIndex] = useState(0);
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
 
   if (type === "prompt") {
-    useEffect(() => {
-      axios("./reviewLecture.json")
-        .then(({ data }) => {
-          setScriptList(data);
-        })
-        .catch((error) => {
-          console.log("프롬프트에 표시할 스크립트 로딩 실패", error);
-        });
-    }, []);
-
     useLayoutEffect(() => {
+      if (!scriptList) return;
       let currentIndexOfPrompt =
         scriptList.findIndex((value) => {
           const startTime = Math.floor(+value.start / 1000) * 1000;
@@ -132,7 +122,7 @@ const LogContainer = ({ type, className, updateProgressMsTime }: LogContainerInt
       )}
       {type === "prompt" && (
         <ul className="px-4 flex-grow overflow-y-auto	" ref={logContainerRef}>
-          {scriptList.map(({ start, text }, index) => {
+          {scriptList?.map(({ start, text }, index) => {
             return (
               <LogItem
                 key={`k-${index}`}
@@ -144,7 +134,6 @@ const LogContainer = ({ type, className, updateProgressMsTime }: LogContainerInt
                   const currentTarget = event.currentTarget as HTMLLIElement;
                   if (!currentTarget.children[0].textContent || !updateProgressMsTime) return;
                   convertTimeStringToMS(currentTarget.children[0].textContent);
-                  setProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
                   updateProgressMsTime(convertTimeStringToMS(currentTarget.children[0].textContent));
                 }}
               />

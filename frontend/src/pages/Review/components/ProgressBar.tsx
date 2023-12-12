@@ -1,8 +1,8 @@
 import PlayIcon from "@/assets/svgs/progressPlay.svg?react";
 import PauseIcon from "@/assets/svgs/progressPause.svg?react";
 
-import { useRecoilState } from "recoil";
-import { useEffect, useRef, useState } from "react";
+import { useRecoilValue } from "recoil";
+import { useEffect, useRef } from "react";
 import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 
 import progressMsTimeState from "@/stores/stateProgressMsTime";
@@ -45,6 +45,7 @@ const ProgressBar = ({
   const progressBarRef = useRef<any>();
   const progressInnerBar = useRef<any>();
   const [throttle, setThrottle] = useState(false);
+  const timerRef = useRef<any>();
 
   const setMsTimeAndProgressBarWidth = (event: React.MouseEvent) => {
     const { left, width } = progressBarRef.current.getBoundingClientRect();
@@ -120,7 +121,7 @@ const ProgressBar = ({
         ) : progressBarState === "playing" ? (
           <PauseIcon />
         ) : (
-          <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />
+          <PlayIcon />
         )}
       </button>
       <div
