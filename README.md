@@ -12,6 +12,15 @@
 
 <br/>
 
+<p align=center>
+  <a href="https://weak-sugar-603.notion.site/TEAM_528-7780e03d7e9847b89fdf9f926036987b?pvs=4">노션</a>
+  &nbsp; | &nbsp; 
+  <a href="https://weak-sugar-603.notion.site/d1fb2080ff934e859d50c5cd3620e223">백로그</a>
+  &nbsp; | &nbsp;
+  <a href="https://www.figma.com/file/1wp3yrrwOU6M7y7v5WOXet/%EB%94%94%EC%9E%90%EC%9D%B8-%EC%8B%9C%EC%95%88?type=design&node-id=33-8035&mode=design&t=kKUoymq1TBmjD0HR-0">피그마</a>
+  &nbsp; | &nbsp; 
+  <a href="https://github.com/boostcampwm2023/web13_Boarlog/wiki">위키</a>
+</p>
 
 ## 프로젝트 소개: 기록으로 남기는 실시간 강의, Boarlog
 
