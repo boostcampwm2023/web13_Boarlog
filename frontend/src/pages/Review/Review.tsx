@@ -18,7 +18,7 @@ import ProgressBar from "./components/ProgressBar";
 import { useToast } from "@/components/Toast/useToast";
 
 const Review = () => {
-  const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
+  const [progressBarState, setProgressBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
   const showToast = useToast();
@@ -82,7 +82,7 @@ const Review = () => {
     axios("./dummyCanvasData.json")
       .then(({ data }) => {
         loadedDataRef.current = data;
-        setprogressBarState("paused");
+        setProgressBarState("paused");
       })
       .catch(() => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
@@ -99,7 +99,7 @@ const Review = () => {
         localAudioRef.current!.addEventListener("loadedmetadata", () => {
           totalTimeRef.current = localAudioRef.current!.duration * 1000;
         });
-        //setPrograssBarState("paused");
+        //setProgressBarState("paused");
       })
       .catch(() => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
@@ -128,7 +128,7 @@ const Review = () => {
     }
     if (elapsedTime < totalTimeRef.current) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     else {
-      setPrograssBarState("paused");
+      setProgressBarState("paused");
       setProgressMsTime(0);
       canvasCntRef.current = 0;
     }
@@ -147,13 +147,13 @@ const Review = () => {
     }
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     localAudioRef.current!.play();
-    setPrograssBarState("playing");
+    setProgressBarState("playing");
   };
   const pause = () => {
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
 
     localAudioRef.current!.pause();
-    setPrograssBarState("paused");
+    setProgressBarState("paused");
   };
 
   // target시간보다 작고 target시간과 가장 가까운 이벤트 시간을 가진 데이터의 인덱스를 반환하는 함수입니다.
@@ -207,7 +207,7 @@ const Review = () => {
         <ProgressBar
           className="absolute bottom-2.5 left-1/2 -translate-x-1/2"
           totalTime={totalTimeRef.current}
-          prograssBarState={prograssBarState}
+          progressBarState={progressBarState}
           play={play}
           pause={pause}
           updateProgressMsTime={updateProgressMsTime}

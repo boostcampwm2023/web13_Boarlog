@@ -1,11 +1,11 @@
 import PlayIcon from "@/assets/svgs/progressPlay.svg?react";
 import PauseIcon from "@/assets/svgs/progressPause.svg?react";
 
-import { useRecoilValue } from "recoil";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 
 import progressMsTimeState from "@/stores/stateProgressMsTime";
+import { useRecoilState } from "recoil";
 
 const getPercentOfProgress = (progressTime: number, totalTime: number) => {
   const percent = (progressTime / totalTime) * 100;
@@ -45,7 +45,6 @@ const ProgressBar = ({
   const progressBarRef = useRef<any>();
   const progressInnerBar = useRef<any>();
   const [throttle, setThrottle] = useState(false);
-  const timerRef = useRef<any>();
 
   const setMsTimeAndProgressBarWidth = (event: React.MouseEvent) => {
     const { left, width } = progressBarRef.current.getBoundingClientRect();
