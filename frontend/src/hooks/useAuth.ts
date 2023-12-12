@@ -1,6 +1,7 @@
+import axios from "axios";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import { useToast } from "@/components/Toast/useToast";
 
 const useAuth = () => {
