@@ -1,8 +1,9 @@
 import { atom, selector } from "recoil";
 
-const questionListState = atom<string[]>({
+const questionListState = atom<Array<{ content: string; questionId: string }>>({
   key: "questionListState",
-  default: []
+  default: [],
+  dangerouslyAllowMutability: true
 });
 export const questionCountState = selector<number>({
   key: "questionCountState",

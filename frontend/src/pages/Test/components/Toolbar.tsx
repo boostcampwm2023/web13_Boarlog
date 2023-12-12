@@ -7,10 +7,11 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursor from "@/assets/svgs/addStickyMemoCursor.svg";
 import EraserCursor from "@/assets/svgs/eraserMouseCursor.svg";
 
-import { useEffect } from "react";
-import { useRecoilValue, useSetRecoilState, useRecoilState, useResetRecoilState } from "recoil";
 import { fabric } from "fabric";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { getStickyNoteInstance } from "./getStickyNoteInstance";
+import { useRecoilValue, useSetRecoilState, useRecoilState, useResetRecoilState } from "recoil";
 
 import ToolButton from "./ToolButton";
 import ColorPanel from "./ColorPanel";
@@ -18,10 +19,11 @@ import QuestionButton from "./QuestionButton";
 
 import activeToolState from "./stateActiveTool";
 import canvasInstanceState from "./stateCanvasInstance";
+import isQuestionListOpenState from "./stateIsQuestionListOpen";
+import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
+import clickedQuestionContentsState from "./stateClickedQuestionContents";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 import stickyNoteInstance, { fabricObjectWithAddWithUpdate, fabricObjectWithItem } from "./stateStickyNoteInstance";
-import clickedQuestionContentsState from "./stateClickedQuestionContents";
-import isQuestionListOpenState from "./stateIsQuestionListOpen";
 
 const Toolbar = () => {
   const [activeTool, setActiveTool] = useRecoilState(activeToolState);
@@ -31,6 +33,8 @@ const Toolbar = () => {
   const questionContents = useRecoilValue(clickedQuestionContentsState);
   const setDefaultQuestionContents = useResetRecoilState(clickedQuestionContentsState);
   const setIsQuestionListOpen = useSetRecoilState(isQuestionListOpenState);
+  const questionSocket = useRecoilValue(instructorSocketRefState);
+  const roomId = new URLSearchParams(useLocation().search).get("roomid") || "999999";
 
   /**
    * @description 화이트 보드에 그려져 있는 요소들을 클릭을 통해 선택 가능한지 여부를 제어하기 위한 함수입니다.
@@ -77,11 +81,18 @@ const Toolbar = () => {
       const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
 
       const stickyMemo =
-        questionContents?.length === 0
+        questionContents?.content?.length === 0
           ? getStickyNoteInstance(mousePositionX, mousePositionY)
-          : getStickyNoteInstance(mousePositionX, mousePositionY, questionContents);
+          : getStickyNoteInstance(mousePositionX, mousePositionY, questionContents?.content);
 
       canvas.add(stickyMemo);
+
+      questionSocket?.emit("solved", {
+        type: "question",
+        roomId: roomId,
+        questionId: questionContents?.questionId
+      });
+      console.log("roomid:", roomId, questionContents?.questionId);
 
       setDefaultQuestionContents();
 

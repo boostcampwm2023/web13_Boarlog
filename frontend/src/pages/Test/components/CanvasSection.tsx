@@ -7,14 +7,14 @@ import StickyNoteEditPanel from "./StickyNoteEditPanel";
 import QuestionList from "./QuestionList";
 
 import questionListState from "./stateQuestionList";
-import cavasInstanceState from "./stateCanvasInstance";
+import canvasInstanceState from "./stateCanvasInstance";
 import isQuestionListOpenState from "./stateIsQuestionListOpen";
 import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const setCanvas = useSetRecoilState(cavasInstanceState);
+  const setCanvas = useSetRecoilState(canvasInstanceState);
   const socket = useRecoilValue(instructorSocketRefState);
   const isEditPanelVisible = useRecoilValue(stickyNoteEditPanelVisibilityState);
   const isQuestionListOpen = useRecoilValue(isQuestionListOpenState);
@@ -25,7 +25,7 @@ const CanvasSection = () => {
   useEffect(() => {
     if (!socket) return;
     socket.on("asked", (data) => {
-      setQuestions([data.content, ...questions]);
+      setQuestions([{ content: data.content, questionId: data.questionId }, ...questions]);
     });
   }, [socket, questions]);
 

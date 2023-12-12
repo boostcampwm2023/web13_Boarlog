@@ -18,7 +18,9 @@ const QuestionList = () => {
   const handleAddButtonClicked = (index: number) => {
     if (!listRef.current) return;
     const questionContents = listRef.current.children[index].textContent;
-    if (questionContents) setQuestionContents(questionContents);
+    const dataQuestionId = (listRef.current.children[index] as HTMLLIElement).dataset.questionId;
+    if (!questionContents || !dataQuestionId) return;
+    if (questionContents) setQuestionContents({ content: questionContents, questionId: dataQuestionId });
     setActiveTool("stickyNote");
   };
 
@@ -27,8 +29,12 @@ const QuestionList = () => {
       <h2 className="semibold-18 inline-block mt-1 p-4">질문 리스트</h2>
       <div className="h-[36rem] px-4 overflow-y-auto">
         <ul ref={listRef}>
-          {questions.map((question, index) => (
-            <li className={`p-4 h-fit mb-4 min-h-[6.25rem] ${MEMO_COLOR} relative`} key={index}>
+          {questions.map(({ content, questionId }, index) => (
+            <li
+              className={`p-4 h-fit mb-4 min-h-[6.25rem] ${MEMO_COLOR} relative`}
+              key={index}
+              data-question-id={questionId}
+            >
               <div className="flex justify-center items-center h-[100%] w-[100%] bg-black/30 absolute top-0 left-0 opacity-0 hover:opacity-100">
                 <button
                   type="button"
@@ -41,7 +47,7 @@ const QuestionList = () => {
                   <AddIcon />
                 </button>
               </div>
-              {question}
+              {content}
             </li>
           ))}
         </ul>
