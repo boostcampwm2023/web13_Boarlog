@@ -88,6 +88,7 @@ const Review = () => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
 
+    /*
     // 실제 데이터를 불러오는 코드
     axios
       .get(`https://boarlog.shop/lecture/record/6576c9dfccd3e23a8e0fe473`)
@@ -104,6 +105,11 @@ const Review = () => {
       .catch(() => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
+    */
+    localAudioRef.current!.src = "https://cdn.freesound.org/previews/18/18765_18799-lq.mp3";
+    localAudioRef.current!.addEventListener("loadedmetadata", () => {
+      totalTimeRef.current = localAudioRef.current!.duration * 1000;
+    });
   };
   const handleResize = () => {
     updateCanvasSize({
