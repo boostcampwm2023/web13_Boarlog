@@ -1,33 +1,38 @@
 import { useRecoilValue, useRecoilState } from "recoil";
 import { useState, useEffect, useRef } from "react";
 import { fabric } from "fabric";
-import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
-import progressMsTimeState from "@/stores/stateProgressMsTime";
-
 import axios from "axios";
+
+import { ICanvasData, loadCanvasData, updateCanvasSize } from "@/utils/fabricCanvasUtil";
 
 import CloseIcon from "@/assets/svgs/close.svg?react";
 import ScriptIcon from "@/assets/svgs/whiteboard/script.svg?react";
 
+import progressMsTimeState from "@/stores/stateProgressMsTime";
 import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
 
 import LogToggleButton from "@/components/Button/LogToggleButton";
 import LogContainer from "@/components/LogContainer/LogContainer";
 import Header from "@/components/Header/Header";
 import ProgressBar from "./components/ProgressBar";
+import { useToast } from "@/components/Toast/useToast";
 
 const Review = () => {
+  const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
   const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
-  const loadedDataRef = useRef<ICanvasData[]>();
+  const showToast = useToast();
 
+  const loadedDataRef = useRef<ICanvasData[]>();
+  const scriptListRef = useRef<Array<{ start: string; text: string }>>();
   const onFrameIdRef = useRef<number | null>(null); // 마이크 볼륨 측정 타이머 id
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const localAudioRef = useRef<HTMLAudioElement>(null);
   let fabricCanvasRef = useRef<fabric.Canvas>();
   let canvasCntRef = useRef<number>(0);
+  let totalTimeRef = useRef<number>(0);
 
-  const [prograssBarState, setPrograssBarState] = useState<"disabled" | "playing" | "paused">("disabled");
   let startTime = Date.now();
   let canvasData: ICanvasData = {
     canvasJSON: "",
@@ -36,8 +41,6 @@ const Review = () => {
     width: 0,
     height: 0
   };
-  // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
-  let TOTAL_MS_TIME_OF_REVIEW = 200000;
 
   useEffect(() => {
     handleInitCanvas();
@@ -48,7 +51,6 @@ const Review = () => {
       window.addEventListener("resize", handleResize);
     };
   }, []);
-
   // 윈도우 리사이즈 이벤트 감지
   const handleInitCanvas = () => {
     if (!canvasContainerRef.current || !canvasRef.current) return;
@@ -74,15 +76,34 @@ const Review = () => {
     fabricCanvasRef.current = newCanvas;
   };
   const handleLoadData = () => {
+    /* 
+    현재 /lecture/record/:id 에서 불러오는 임시 데이터의 canvasJSON 데이터가 
+    실제 canvasJSON 데이터와 다르기 때문에 임시로 더미 데이터를 불러오도록 설정했습니다.
+    */
     axios("./dummyCanvasData.json")
       .then(({ data }) => {
-        // 추후 해당 다시보기의 전체 플레이 타임을 받아올 수 있어야 할 것 같습니다.
-        TOTAL_MS_TIME_OF_REVIEW = 200000;
         loadedDataRef.current = data;
         setPrograssBarState("paused");
       })
-      .catch((error) => {
-        console.log("화이트보드 데이터 로딩 실패", error);
+      .catch(() => {
+        showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
+      });
+
+    // 실제 데이터를 불러오는 코드
+    axios
+      .get(`https://boarlog.shop/lecture/record/6576c9dfccd3e23a8e0fe473`)
+      .then((result) => {
+        // console.log(result.data);
+        // loadedDataRef.current = result.data.;
+        scriptListRef.current = result.data.subtitles;
+        localAudioRef.current!.src = result.data.audio_file;
+        localAudioRef.current!.addEventListener("loadedmetadata", () => {
+          totalTimeRef.current = localAudioRef.current!.duration * 1000;
+        });
+        //setPrograssBarState("paused");
+      })
+      .catch(() => {
+        showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
   };
   const handleResize = () => {
@@ -106,8 +127,12 @@ const Review = () => {
       });
       canvasCntRef.current += 1;
     }
-    if (elapsedTime < TOTAL_MS_TIME_OF_REVIEW) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-    else console.log("다시보기 끝");
+    if (elapsedTime < totalTimeRef.current) onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    else {
+      setPrograssBarState("paused");
+      setProgressMsTime(0);
+      canvasCntRef.current = 0;
+    }
   };
 
   const play = () => {
@@ -123,10 +148,13 @@ const Review = () => {
     }
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
 
+    localAudioRef.current!.play();
     setPrograssBarState("playing");
   };
   const pause = () => {
     if (onFrameIdRef.current) window.cancelAnimationFrame(onFrameIdRef.current);
+
+    localAudioRef.current!.pause();
     setPrograssBarState("paused");
   };
 
@@ -144,11 +172,12 @@ const Review = () => {
       }
     }
 
-    return closestSmallerIndex;
+    return closestSmallerIndex >= 0 ? closestSmallerIndex : 0;
   };
 
   // logContainer에서 프롬프트를 클릭하거나 프로그래스 바를 클릭했을 때 진행시간을 조정하는 함수입니다.
   const updateProgressMsTime = (newProgressMsTime: number) => {
+    setProgressMsTime(newProgressMsTime);
     const currentProgressBarState = prograssBarState;
     pause();
     const newCanvasCntRef = findClosest(loadedDataRef.current!, newProgressMsTime);
@@ -161,10 +190,12 @@ const Review = () => {
     canvasCntRef.current = newCanvasCntRef + 1;
 
     startTime = Date.now() - newProgressMsTime;
+    localAudioRef.current!.currentTime = newProgressMsTime / 1000;
 
     if (currentProgressBarState === "playing") {
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
       setPrograssBarState("playing");
+      localAudioRef.current!.play();
     }
   };
 
@@ -176,6 +207,7 @@ const Review = () => {
         <LogContainer
           type="prompt"
           className={`absolute top-2.5 right-2.5 ${isQuestionLogOpen ? "block" : "hidden"}`}
+          scriptList={scriptListRef.current}
           updateProgressMsTime={updateProgressMsTime}
         />
         <LogToggleButton className="absolute top-2.5 right-2.5">
@@ -183,13 +215,14 @@ const Review = () => {
         </LogToggleButton>
         <ProgressBar
           className="absolute bottom-2.5 left-1/2 -translate-x-1/2"
-          totalTime={TOTAL_MS_TIME_OF_REVIEW}
+          totalTime={totalTimeRef.current}
           prograssBarState={prograssBarState}
           play={play}
           pause={pause}
           updateProgressMsTime={updateProgressMsTime}
         />
       </section>
+      <audio playsInline ref={localAudioRef}></audio>
     </>
   );
 };

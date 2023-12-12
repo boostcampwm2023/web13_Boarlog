@@ -323,7 +323,7 @@ const HeaderParticipantControls = ({ setLectureCode }: HeaderParticipantControls
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
       />
-      <audio id="localAudio" playsInline autoPlay muted ref={localAudioRef}></audio>
+      <audio playsInline autoPlay muted ref={localAudioRef}></audio>
     </>
   );
 };

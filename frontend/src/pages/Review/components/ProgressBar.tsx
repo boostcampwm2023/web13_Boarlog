@@ -1,8 +1,8 @@
 import PlayIcon from "@/assets/svgs/progressPlay.svg?react";
 import PauseIcon from "@/assets/svgs/progressPause.svg?react";
 
-import { useRecoilState } from "recoil";
-import { useEffect, useRef, useState } from "react";
+import { useRecoilValue } from "recoil";
+import { useEffect, useRef } from "react";
 import { convertMsToTimeString } from "@/utils/convertMsToTimeString";
 
 import progressMsTimeState from "@/stores/stateProgressMsTime";
@@ -39,41 +39,18 @@ const ProgressBar = ({
   pause,
   updateProgressMsTime
 }: ProgressBarProps) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progressMsTime, setProgressMsTime] = useRecoilState(progressMsTimeState);
+  const progressMsTime = useRecoilValue(progressMsTimeState);
   const timerRef = useRef<any>();
-  const lastUpdatedTime = useRef<any>();
-  const UPDATE_INTERVAL_MS = 150;
 
   const handleProgressBarMouseDown = (event: React.MouseEvent) => {
     const { left, width } = event.currentTarget.getBoundingClientRect();
     const mouseClickedX = event.clientX;
     const percent = (mouseClickedX - left) / width;
-    setProgressMsTime(Math.round(totalTime * percent));
     updateProgressMsTime(Math.round(totalTime * percent));
   };
 
   useEffect(() => {
-    if (isPlaying) {
-      lastUpdatedTime.current = new Date().getTime();
-
-      timerRef.current = setInterval(() => {
-        const dateNow = new Date().getTime();
-        const diffTime = dateNow - lastUpdatedTime.current;
-        setProgressMsTime((progressMsTime) => progressMsTime + diffTime);
-
-        lastUpdatedTime.current = dateNow;
-      }, UPDATE_INTERVAL_MS);
-    } else {
-      clearInterval(timerRef.current);
-    }
-  }, [isPlaying]);
-
-  useEffect(() => {
     if (progressMsTime >= totalTime) {
-      prograssBarState = "disabled";
-      setProgressMsTime(totalTime);
-      setIsPlaying(false);
       clearInterval(timerRef.current);
     }
   }, [progressMsTime]);
@@ -95,7 +72,7 @@ const ProgressBar = ({
         ) : prograssBarState === "playing" ? (
           <PauseIcon />
         ) : (
-          <PlayIcon fill={`${progressMsTime >= totalTime && "gray"}`} />
+          <PlayIcon />
         )}
       </button>
       <div
