@@ -82,13 +82,13 @@ const CanvasSection = () => {
     const handleDelete = ({ key, code }: { key: string; code: string }) => {
       if (!canvas) return;
       if (!(code === "Delete" || key === "Delete" || code === "Backspace" || key === "Backspace")) return;
-      const activeObjects = canvas.getActiveObjects();
+      const activeObjects = canvas!.getActiveObjects();
       if (activeObjects && activeObjects.length > 0) {
         // 선택된 모든 객체 삭제
         activeObjects.forEach((obj) => {
-          canvas.remove(obj);
+          canvas!.remove(obj);
         });
-        canvas.discardActiveObject(); // 선택 해제
+        canvas!.discardActiveObject(); // 선택 해제
       }
     };
 
@@ -101,7 +101,7 @@ const CanvasSection = () => {
     return () => {
       window.removeEventListener("keyup", handleDelete);
     };
-  }, [isMemoEditing]);
+  }, [canvas, isMemoEditing]);
 
   return (
     <div className="relative w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>
