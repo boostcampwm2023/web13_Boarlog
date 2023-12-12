@@ -59,8 +59,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   const { checkAuth } = useAuth();
 
   const roomid = new URLSearchParams(useLocation().search).get("roomid") || "999999";
-  const guestAccessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBsYXRpbm91c3MxNEBnbWFpbC5jb20iLCJpYXQiOjE3MDIzNjA4OTMsImV4cCI6MTcwMzM5NzY5M30.nSbiGLp03Zmz0xNdlmAKDWEAuPXJfZu4MBwVW9JW6Yk";
   const pc_config = {
     iceServers: [
       {
@@ -162,10 +160,11 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
       // guest 판별 로직 추가 예정
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
-          accessToken: guestAccessToken,
+          accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
           refreshToken: "test"
         }
       });
+      //guestAccessToken
       //      accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
 
       if (!socketRef.current) return;
@@ -298,7 +297,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     if (!managerRef.current) return;
     lectureSocketRef.current = managerRef.current.socket("/lecture", {
       auth: {
-        accessToken: guestAccessToken,
+        accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : socketRef.current!.id,
         refreshToken: "sample"
       }
     });
