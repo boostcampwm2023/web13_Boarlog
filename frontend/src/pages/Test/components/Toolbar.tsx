@@ -143,6 +143,7 @@ const Toolbar = () => {
 
         // 더미 텍스트박스를 생성합니다.
         const dummyTextBox = new fabric.Textbox(textBox.text, {
+          fontFamily: "Pretendard Variable",
           textAlign: textBox.textAlign,
           fontSize: textBox.fontSize,
           width: textBox.width,
