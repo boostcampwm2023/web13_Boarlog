@@ -69,8 +69,10 @@ export class LectureService {
   async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {
     const whiteboardLog = new this.whiteboardLogModel({
       canvasJSON: whiteboardEventDto.canvasJSON,
-      viewPort: whiteboardEventDto.viewPort,
-      eventDate: whiteboardEventDto.eventDate,
+      viewport: whiteboardEventDto.viewport,
+      eventTime: whiteboardEventDto.eventTime,
+      width: whiteboardEventDto.width,
+      height: whiteboardEventDto.height,
       lecture_id: lecture
     });
     return await whiteboardLog.save();
