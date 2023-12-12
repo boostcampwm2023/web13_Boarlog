@@ -192,7 +192,8 @@ const Toolbar = () => {
       };
 
       stickyMemo.on("selected", ({ target }) => {
-        if (!target) return;
+        if (!target || canvas.getActiveObjects().length !== 1) return;
+
         setVisibilityEditPanel(true);
         setStickyNoteInstance(target as fabricObjectWithItem);
         canvas.on("selection:cleared", handleClear);
