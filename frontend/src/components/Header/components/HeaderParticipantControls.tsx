@@ -147,6 +147,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     if (pcRef.current) pcRef.current.close(); // RTCPeerConnection 해제
     if (mediaStreamRef.current) mediaStreamRef.current.getTracks().forEach((track) => track.stop()); // 미디어 트랙 중지
 
+    setMicVolumeState(0);
     setIsModalOpen(false);
     isLectureEnd ? navigate("/lecture-end") : navigate("/");
   };
