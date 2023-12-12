@@ -17,7 +17,7 @@ interface UserAuthSectionProps {
 
 const EMAIL_REGEXP = /^[a-zA-Z0-9._+]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/;
 const NICKNAME_REGEXP = /^[a-zA-Z0-9가-힣]{3,15}$/;
-const PASSWORD_REGEXP = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const PASSWORD_REGEXP = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
   const navigate = useNavigate();
