@@ -21,7 +21,7 @@ import {
 } from './services/question-service';
 import { StreamReadRaw } from './types/redis-stream.type';
 import { isCreatedRoomAndNotEqualPresenterEmail } from './validation/request.validation';
-import { uploadFileToObjectStorage } from './utils/ncp-storage';
+import { AskedRequestDto } from './dto/asked.request.dto';
 
 export class RelayServer {
   private readonly _io;
@@ -175,7 +175,7 @@ export class RelayServer {
     const roomConnectionInfo = this.roomsConnectionInfo.get(clientInfo.roomId);
 
     const token = socket.handshake.auth.accessToken;
-    const code = clientInfo.roomId
+    const code = clientInfo.roomId;
 
     if (!roomConnectionInfo) {
       // TODO: 추후 클라이언트로 에러처리 필요
@@ -190,12 +190,12 @@ export class RelayServer {
     }
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
-      // TODO: API 서버에 강의 시작 요청하기 
-      const response = await fetch((process.env.SERVER_API_URL + '/lecture/'+code) as string, {
+      // TODO: API 서버에 강의 시작 요청하기
+      const response = await fetch((process.env.SERVER_API_URL + '/lecture/' + code) as string, {
         method: 'PATCH',
-        headers: { 'Authorization': token }
-      })
-      console.log("response: "+response.status)
+        headers: { Authorization: token }
+      });
+      console.log('response: ' + response.status);
     }
 
     socket.on('edit', async (data) => {
@@ -205,11 +205,11 @@ export class RelayServer {
         return;
       }
       // TODO: API 서버로 화이트보드 데이터 전달
-      const response = await fetch(process.env.SERVER_API_URL+'/lecture/log/'+data.roomId, {
+      const response = await fetch(process.env.SERVER_API_URL + '/lecture/log/' + data.roomId, {
         method: 'POST',
         body: data.content
-      })
-      console.log("response: "+response.status)
+      });
+      console.log('response: ' + response.status);
 
       await Promise.all([
         updateWhiteboardData(data.roomId, data.content),
@@ -235,7 +235,7 @@ export class RelayServer {
       this._io
         .of('/lecture')
         .to(presenterEmail)
-        .emit('asked', new Message(data.type, question.content), { questionId: question.streamKey });
+        .emit('asked', new AskedRequestDto(data.type, question.content, question.streamKey));
     });
 
     socket.on('solved', async (data) => {
@@ -275,7 +275,7 @@ export class RelayServer {
           audio: url
         })
       });
-      console.log("response: "+response.status)
+      console.log('response: ' + response.status);
     });
 
     socket.on('leave', (data) => {
