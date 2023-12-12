@@ -136,7 +136,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
               type="text"
               className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
               placeholder="이메일을 입력해주세요"
-              maxLength={50}
+              maxLength={30}
               value={email}
               onChange={handleEmailChange}
             />
@@ -151,7 +151,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
                 type="text"
                 className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
                 placeholder="닉네임을 입력해주세요"
-                maxLength={15}
+                maxLength={10}
                 value={username}
                 onChange={handleUsernameChange}
               />
@@ -168,7 +168,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
               type="password"
               className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
               placeholder="비밀번호을 입력해주세요"
-              maxLength={50}
+              maxLength={30}
               value={password}
               onChange={handlePasswordChange}
             />

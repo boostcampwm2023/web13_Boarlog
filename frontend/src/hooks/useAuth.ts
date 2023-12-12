@@ -22,12 +22,11 @@ const useAuth = () => {
               Authorization: accessToken
             }
           })
-          .then((response) => {
-            localStorage.setItem("username", response.data.username);
-            localStorage.setItem("email", response.data.email);
+          .then((result) => {
+            localStorage.setItem("username", result.data.username);
+            localStorage.setItem("email", result.data.email);
           })
           .catch((error) => {
-            console.log(error.response?.status);
             if (error.response?.status === 401) {
               showToast({ message: "로그인이 만료되었어요.", type: "alert" });
               navigate("/userauth");
