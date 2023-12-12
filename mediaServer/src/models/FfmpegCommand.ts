@@ -27,7 +27,7 @@ export class FfmpegCommand {
         const url = await uploadFileToObjectStorage(recordFilePath, roomId);
         console.log(`${url}에 파일 저장`);
 
-        fetch(process.env.SERVER_API_URL as string, {
+        fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

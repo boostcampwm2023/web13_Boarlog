@@ -182,10 +182,17 @@ export class RelayServer {
     if (clientInfo.type === ClientType.PRESENTER) {
       roomConnectionInfo.presenterSocket = socket;
       socket.join(email);
-      // TODO: API 서버에 강의 시작 요청하기
     }
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
+      // TODO: API 서버에 강의 시작 요청하기 
+      const token = socket.handshake.auth.accessToken
+      const code = clientInfo.roomId
+      const response = await fetch((process.env.SERVER_API_URL + '/lecture/'+code) as string, {
+        method: 'PATCH',
+        headers: { 'Authorization': token }
+      })
+      console.log("response: "+response.status)
     }
 
     socket.on('edit', async (data) => {
