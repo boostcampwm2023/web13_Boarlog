@@ -186,7 +186,9 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         offerToReceiveAudio: false,
         offerToReceiveVideo: false
       });
+      saveCanvasData(fabricCanvasRef!, canvasData, startTime);
       socketRef.current.emit("presenterOffer", {
+        whiteboard: canvasData,
         socketId: socketRef.current.id,
         roomId: roomid,
         SDP: SDP
@@ -333,7 +335,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       }
     });
     setInstructorSocket(lectureSocketRef.current);
-    submitData(canvasData);
   };
   const handleServerError = (err: any) => {
     console.error(err.message);
@@ -341,12 +342,10 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   };
   const handleReconnect = (data: any) => {
     console.log("reconnect", data);
-    console.log(data.whiteboard);
-    console.log(data.whiteboard.canvasJSON);
-    console.log(data.whiteboard.viewport);
+    console.log(data.startTime);
 
-    //fabricCanvasRef!.loadFromJSON(data.whiteboard.canvasJSON, () => {});
-    //fabricCanvasRef!.setViewportTransform(data.whiteboard.viewport);
+    fabricCanvasRef!.loadFromJSON(data.whiteboard.canvasJSON, () => {});
+    fabricCanvasRef!.setViewportTransform(data.whiteboard.viewport);
     startTime = Date.now() - data.startTime;
     showToast({ message: "이전에 진행한 강의 내용을 불러왔습니다.", type: "default" });
   };

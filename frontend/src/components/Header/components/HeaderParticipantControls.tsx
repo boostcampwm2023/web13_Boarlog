@@ -256,6 +256,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
 
+    console.log(data);
     console.log(data.whiteboard);
 
     loadCanvasData({
