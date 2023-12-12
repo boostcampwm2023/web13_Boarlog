@@ -222,6 +222,14 @@ export class RelayServer {
         .emit('asked', new Message(data.type, question.content), { questionId: question.streamKey });
     });
 
+    socket.on('solved', async (data) => {
+      if (clientInfo.type !== ClientType.PRESENTER || clientInfo.roomId !== data.roomId) {
+        console.log('해당 강의실 발표자만 질문을 완료할 수 있습니다.');
+        return;
+      }
+      await updateQuestionStatus(data.roomId, data.questionId);
+    });
+
     socket.on('response', (data) => {
       if (data.type === 'question') {
         updateQuestionStatus(data.roomId, data.questionId);
