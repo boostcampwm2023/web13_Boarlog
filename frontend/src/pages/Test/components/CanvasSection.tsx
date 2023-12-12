@@ -1,5 +1,5 @@
 import { fabric } from "fabric";
-import { useRecoilValue, useSetRecoilState, useRecoilState } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
