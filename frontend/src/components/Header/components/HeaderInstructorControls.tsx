@@ -75,8 +75,8 @@ const HeaderInstructorControls = ({ setLectureCode }: HeaderInstructorControlsPr
     axios
       .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
       .then((result) => {
-        const lecureTitle = result.data.title;
-        console.log(lecureTitle);
+        const lectureTitle = result.data.title;
+        console.log(lectureTitle);
         // 이후 작업 내일 예정
       })
       .catch(() => {
