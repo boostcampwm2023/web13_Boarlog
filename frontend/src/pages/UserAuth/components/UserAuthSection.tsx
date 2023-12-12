@@ -1,14 +1,16 @@
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useToast } from "@/components/Toast/useToast";
+
+import Button from "@/components/Button/Button";
+
 import EnterIcon from "@/assets/svgs/enter.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
 import CloseIcon from "@/assets/svgs/close.svg?react";
-import Button from "@/components/Button/Button";
+
 import LogoOriginal from "@/assets/imgs/logoOriginal.png";
 import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
-import { useToast } from "@/components/Toast/useToast";
-
 interface UserAuthSectionProps {
   isSignIn: boolean;
   setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
