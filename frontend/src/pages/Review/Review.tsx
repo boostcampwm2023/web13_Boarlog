@@ -32,7 +32,6 @@ const Review = () => {
   let fabricCanvasRef = useRef<fabric.Canvas>();
   let canvasCntRef = useRef<number>(0);
   let totalTimeRef = useRef<number>(0);
-
   let startTime = Date.now();
   let canvasData: ICanvasData = {
     canvasJSON: "",
@@ -83,7 +82,7 @@ const Review = () => {
     axios("./dummyCanvasData.json")
       .then(({ data }) => {
         loadedDataRef.current = data;
-        setPrograssBarState("paused");
+        setprogressBarState("paused");
       })
       .catch(() => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
@@ -147,7 +146,6 @@ const Review = () => {
       });
     }
     onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-
     localAudioRef.current!.play();
     setPrograssBarState("playing");
   };
@@ -178,7 +176,6 @@ const Review = () => {
   // logContainer에서 프롬프트를 클릭하거나 프로그래스 바를 클릭했을 때 진행시간을 조정하는 함수입니다.
   const updateProgressMsTime = (newProgressMsTime: number) => {
     setProgressMsTime(newProgressMsTime);
-    const currentProgressBarState = prograssBarState;
     pause();
     const newCanvasCntRef = findClosest(loadedDataRef.current!, newProgressMsTime);
 
@@ -191,12 +188,6 @@ const Review = () => {
 
     startTime = Date.now() - newProgressMsTime;
     localAudioRef.current!.currentTime = newProgressMsTime / 1000;
-
-    if (currentProgressBarState === "playing") {
-      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
-      setPrograssBarState("playing");
-      localAudioRef.current!.play();
-    }
   };
 
   return (
