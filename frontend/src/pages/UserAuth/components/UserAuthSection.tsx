@@ -1,14 +1,15 @@
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
+import Button from "@/components/Button/Button";
+import { useToast } from "@/components/Toast/useToast";
+
 import EnterIcon from "@/assets/svgs/enter.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
 import CloseIcon from "@/assets/svgs/close.svg?react";
-import Button from "@/components/Button/Button";
 import LogoOriginal from "@/assets/imgs/logoOriginal.png";
 import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
-import { useToast } from "@/components/Toast/useToast";
-
 interface UserAuthSectionProps {
   isSignIn: boolean;
   setIsSignIn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,7 +17,7 @@ interface UserAuthSectionProps {
 
 const EMAIL_REGEXP = /^[a-zA-Z0-9._+]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/;
 const NICKNAME_REGEXP = /^[a-zA-Z0-9가-힣]{3,15}$/;
-const PASSWORD_REGEXP = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const PASSWORD_REGEXP = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
   const navigate = useNavigate();
@@ -79,9 +80,10 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
             password
           })
           .then((result) => {
-            localStorage.setItem("token", result.data.token);
-            localStorage.setItem("username", result.data.username);
-            localStorage.setItem("email", result.data.email);
+            const { token, username, email } = result.data;
+            localStorage.setItem("token", token);
+            localStorage.setItem("username", username);
+            localStorage.setItem("email", email);
             showToast({ message: "로그인에 성공했습니다.", type: "success" });
             navigate("/");
           })
@@ -136,7 +138,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
               type="text"
               className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
               placeholder="이메일을 입력해주세요"
-              maxLength={50}
+              maxLength={30}
               value={email}
               onChange={handleEmailChange}
             />
@@ -151,7 +153,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
                 type="text"
                 className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
                 placeholder="닉네임을 입력해주세요"
-                maxLength={15}
+                maxLength={10}
                 value={username}
                 onChange={handleUsernameChange}
               />
@@ -168,7 +170,7 @@ const UserAuthSection = ({ isSignIn, setIsSignIn }: UserAuthSectionProps) => {
               type="password"
               className="rounded-xl border-black w-full flex-grow medium-12 p-3 focus:outline-none focus:ring-1 focus:ring-boarlog-100 focus:border-transparent"
               placeholder="비밀번호을 입력해주세요"
-              maxLength={50}
+              maxLength={30}
               value={password}
               onChange={handlePasswordChange}
             />
