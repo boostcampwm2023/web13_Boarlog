@@ -21,6 +21,7 @@ import {
 } from './services/question-service';
 import { StreamReadRaw } from './types/redis-stream.type';
 import { isCreatedRoomAndNotEqualPresenterEmail } from './validation/request.validation';
+import { uploadFileToObjectStorage } from './utils/ncp-storage';
 
 export class RelayServer {
   private readonly _io;
@@ -209,7 +210,7 @@ export class RelayServer {
         body: data.content
       })
       console.log("response: "+response.status)
-      
+
       await Promise.all([
         updateWhiteboardData(data.roomId, data.content),
         this._io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content))
@@ -255,7 +256,18 @@ export class RelayServer {
       this.roomsConnectionInfo.delete(clientInfo.roomId);
       this.clientsConnectionInfo.delete(email);
       await Promise.all([deleteRoomInfoById(data.roomId), deleteQuestionStream(data.roomId)]);
+
       // TODO: API 서버에 강의 종료 요청하기
+      const url = await mediaConverter.getAudioFileUrl(data.roomId);
+      const response = await fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: data.roomId,
+          audio: url
+        })
+      });
+      console.log("response: "+response.status)
     });
 
     socket.on('leave', (data) => {
