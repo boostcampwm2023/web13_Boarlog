@@ -22,6 +22,10 @@
   <a href="https://github.com/boostcampwm2023/web13_Boarlog/wiki">위키</a>
 </p>
 
+<div align="center">
+<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fboostcampwm2023%2Fweb13_Boarlog&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
+</div>
+
 ## 프로젝트 소개: 기록으로 남기는 실시간 강의, Boarlog
 
 > **필기앱처럼 강의도 기록으로 남기면 어떨까?**
@@ -34,6 +38,104 @@
 - **강의 기록 및 재생**: 강의 종료 후에는 AI를 활용하여 음성을 스크립트로 변환, 이를 화이트보드 내용과 함께 저장하여 언제든지 다시볼 수 있습니다.
 
 <br/>
+
+## 주요 기능
+
+### 🧑‍🏫 강의 생성 및 진행
+
+> 강의자가 강의를 생성하고, **음성**으로 강의하며 **화이트보드**를 실시간으로 편집할 수 있습니다.
+
+
+<table align=center>
+<tr>
+  <td>
+<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+  </td>
+  <td>
+<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+  </td>
+</tr>
+<tr>
+  <td>
+    <p align=center>강의 생성 및 마이크 설정</p>
+  </td>
+  <td>
+    <p align=center>화이트보드 편집</p>
+  </td>
+</tr>
+</table>
+
+### 🧑‍🎓 강의 참여
+
+> 강의자가 공유한 **강의번호**를 입력하여 강의에 참여하고, 강의자의 음성과 화이트보드 내용을 실시간으로 볼 수 있습니다.
+
+<table align=center>
+<tr>
+  <td>
+<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+  </td>
+  <td>
+ <img src="https://user-images.githubusercontent.com/65100540/207755392-7a929720-80cf-4160-9f3e-5bc71e463750.gif" width=380 />
+  </td>
+</tr>
+<tr>
+  <td>
+    <p align=center>강의실 입장</p>
+  </td>
+  <td>
+    <p align=center>강의내용 확인 및 스피커 조절</p>
+  </td>
+</tr>
+</table>
+
+
+### ❔️ 상호작용 및 피드백
+
+> 참여자들은 질문을 보내고, 강의자는 이를 포스트잇 형태로 화이트보드에 추가하여 답변할 수 있습니다.
+
+<table align=center>
+<tr>
+  <td>
+<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+  </td>
+  <td>
+ <img src="https://user-images.githubusercontent.com/65100540/207755392-7a929720-80cf-4160-9f3e-5bc71e463750.gif" width=380 />
+  </td>
+</tr>
+<tr>
+  <td>
+    <p align=center>질문 보내기</p>
+  </td>
+  <td>
+    <p align=center>질문 확인 후 화이트보드에 추가</p>
+  </td>
+</tr>
+</table>
+
+
+### 🎥 강의 다시보기
+
+> 강의 종료 후에는 서버에서 화이트보드와 음성, AI를 이용한 음성 스크립트를 저장하여 언제든지 다시볼 수 있습니다.
+
+
+<table align=center>
+<tr>
+  <td>
+<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+  </td>
+  <td>
+ <img src="https://user-images.githubusercontent.com/65100540/207755392-7a929720-80cf-4160-9f3e-5bc71e463750.gif" width=380 />
+  </td>
+</tr>
+<tr>
+  <td>
+    <p align=center>참여한 강의 내역 확인</p>
+  </td>
+  <td>
+    <p align=center>강의 다시보기</p>
+  </td>
+</tr>
+</table>
 
 ## 기술 스택
 
