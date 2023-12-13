@@ -64,6 +64,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
       }
     ]
   };
+  let accessToken = localStorage.getItem("token");
 
   useEffect(() => {
     setDidMount(true);
@@ -79,16 +80,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   }, []);
   useEffect(() => {
     if (didMount) {
-      axios
-        .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
-        .then((result) => {
-          const lectureTitle = result.data.title;
-          setLectureTitle(lectureTitle);
-        })
-        .catch(() => {
-          // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
-          // navigate("/");
-        });
       enterLecture();
       setLectureCode(roomid);
     }
@@ -103,6 +94,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   }, [selectedSpeaker]);
 
   const enterLecture = async () => {
+    await checkAuth();
     await initConnection();
     await createStudentOffer();
     window.addEventListener("resize", handleResize);
@@ -152,18 +144,43 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     isLectureEnd ? navigate("/lecture-end") : navigate("/");
   };
 
+  const checkAuth = async () => {
+    axios
+      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture?code=${roomid}`)
+      .then((result) => {
+        const lectureTitle = result.data.title;
+        setLectureTitle(lectureTitle);
+      })
+      .catch(() => {
+        showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+        navigate("/");
+      });
+    if (accessToken) {
+      await axios
+        .get(`${import.meta.env.VITE_API_SERVER_URL}/profile`, {
+          headers: {
+            Authorization: accessToken
+          }
+        })
+        .then(() => {})
+        .catch((error) => {
+          if (error.response?.status === 401) {
+            accessToken = "";
+            showToast({ message: "로그인이 만료되어 guest로 입장합니다.", type: "alert" });
+          } else showToast({ message: "유저 정보를 불러오는데 문제가 발생했어요", type: "alert" });
+        });
+    }
+  };
   const initConnection = async () => {
     try {
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
       // guest 판별 로직 추가 예정
       socketRef.current = managerRef.current.socket("/enter-room", {
         auth: {
-          accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
+          accessToken: accessToken ? accessToken : "",
           refreshToken: "test"
         }
       });
-      //guestAccessToken
-      //      accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
 
       if (!socketRef.current) return;
       socketRef.current.on(`serverAnswer`, (data) => handleServerAnswer(data));
@@ -258,9 +275,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
 
-    console.log(data);
-    console.log(data.whiteboard);
-
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
@@ -295,11 +309,10 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     if (!managerRef.current) return;
     lectureSocketRef.current = managerRef.current.socket("/lecture", {
       auth: {
-        accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : socketRef.current!.id,
+        accessToken: accessToken ? accessToken : socketRef.current!.id,
         refreshToken: "sample"
       }
     });
-    //    accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
     setParticipantSocket(lectureSocketRef.current);
     lectureSocketRef.current.on("ended", () => handleLectureEnd());
     lectureSocketRef.current.on("update", (data) => handleWhiteboardUpdate(data));
