@@ -44,7 +44,7 @@ export class LectureController {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
     }
     const user = await this.userService.findOneByEmail(req.user.email);
-    const code = await this.lectureService.createLecture(createLecture, user.id);
+    const code = await this.lectureService.createLecture(createLecture, user._id);
     res.status(HttpStatus.CREATED).send({ code: code });
   }
 

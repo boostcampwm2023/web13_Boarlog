@@ -59,7 +59,7 @@ export class LectureService {
   }
 
   async findLectureByCode(code: string) {
-    return await this.enterCodeModel.findOne({ code: code });
+    return await this.enterCodeModel.findOne({ code: code }).exec();
   }
 
   async findLectureInfo(enterCode: EnterCode) {
