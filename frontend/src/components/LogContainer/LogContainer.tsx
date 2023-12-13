@@ -90,7 +90,11 @@ const LogContainer = ({ type, className, scriptList, updateProgressMsTime }: Log
     const messageContents = inputRef.value;
     if (!messageContents || !socket) return;
     // 추후 사용자의 닉네임을 가져와야한다.
-    setQuestionList([...questionList, { title: "닉네임", contents: messageContents }]);
+
+    setQuestionList([
+      ...questionList,
+      { title: localStorage.getItem("username") || "Guest", contents: messageContents }
+    ]);
 
     socket?.emit("ask", {
       type: "question",
