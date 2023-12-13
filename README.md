@@ -4,7 +4,7 @@
 
 <p align="center">
 <a href="https://boarlog.netlify.app">
-<img width="300" src="https://github.com/boostcampwm2023/web13_Boarlog/assets/79556112/b51a0131-4112-4f86-909d-acbeb7a6c5c2"/>
+<img width="300" alt="배포 패이지로 이동" src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/2465c664-cf4f-405b-ae2c-d09cbe86e597"/>
 </a>
 </p>
 
