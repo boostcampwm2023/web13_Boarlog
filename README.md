@@ -67,6 +67,11 @@
             <td>
                 <img src="https://img.shields.io/badge/React-61DAFB?logo=React&logoColor=ffffff">
                 <img src="https://img.shields.io/badge/Vite-646CFF?logo=Vite&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/Recoil-3578E5?logo=recoil&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/Axios-5A29E4?logo=axios&logoColor=ffffff">
+		<img src="https://img.shields.io/badge/Fabric.js-4895ce">
+		<img src="https://img.shields.io/badge/Modernizr-c63574">
             </td>
         </tr>
         <tr>
@@ -74,16 +79,14 @@
                 <p align=center>Backend</p>
             </td>
             <td>
-                <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff">
-                <img src="https://img.shields.io/badge/Node.js-114411?logo=node.js">
-                <img src="https://img.shields.io/badge/Express-17202C?logo=Express">
+                <img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs">
                 <img src="https://img.shields.io/badge/MongoDB-114411?logo=mongodb">
                 <img src="https://img.shields.io/badge/Mongoose-114411?logo=mongodb">
             </td>
         </tr>
         <tr>
             <td>
-                <p align=center>CI/CD</p>
+                <p align=center>Deployment</p>
             </td>
             <td>
                  <img src="https://img.shields.io/badge/GitHub Actions-000000?logo=github-actions">
@@ -94,6 +97,8 @@
                 <p align=center>Deployment</p>
             </td>
             <td>
+                <img src="https://img.shields.io/badge/Netlify-00C7B7?logo=netlify&logoColor=ffffff&">
+                <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=ffffff&">
                 <img src="https://img.shields.io/badge/nginx-014532?logo=Nginx&logoColor=009639&">
                 <img src="https://img.shields.io/badge/Naver Cloud Platform-03C75A?logo=naver&logoColor=ffffff">  
             </td>
@@ -111,13 +116,7 @@
     </tbody>
 </table>
 
-### Front-End
 
-- `JavaScript` `HTML5` `CSS3` `React` `Socket.io` `Fabric.js` `React Router` `TailwindCSS` `Modernizr`
-
-### Back-End
-
-- `NestJS` `MongoDB` `Docker`
 
 ## 팀 소개: TEAM_528
 
