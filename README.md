@@ -37,6 +37,80 @@
 
 ## 기술 스택
 
+<table align=center>
+    <thead>
+        <tr>
+            <th>category</th>
+            <th>stack</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <p align=center>Common</p>
+            </td>
+            <td>
+                 <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/WebRTC-333333?logo=webrtc">
+                <img src="https://img.shields.io/badge/Socket.io-010101?logo=Socket.io">
+                <img src="https://img.shields.io/badge/Jest-341f0e?logo=jest&logoColor=FF0000&">
+                <img src="https://img.shields.io/badge/Prettier-F7B93E?logo=prettier&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=Eslint">
+                <img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/.ENV-ECD53F?logo=.ENV&logoColor=ffffff">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                  <p align=center>Frontend</p>
+            </td>
+            <td>
+                <img src="https://img.shields.io/badge/React-61DAFB?logo=React&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/Vite-646CFF?logo=Vite&logoColor=ffffff">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p align=center>Backend</p>
+            </td>
+            <td>
+                <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/Node.js-114411?logo=node.js">
+                <img src="https://img.shields.io/badge/Express-17202C?logo=Express">
+                <img src="https://img.shields.io/badge/MongoDB-114411?logo=mongodb">
+                <img src="https://img.shields.io/badge/Mongoose-114411?logo=mongodb">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p align=center>CI/CD</p>
+            </td>
+            <td>
+                 <img src="https://img.shields.io/badge/GitHub Actions-000000?logo=github-actions">
+            </td>
+        </tr>
+                <tr>
+            <td>
+                <p align=center>Deployment</p>
+            </td>
+            <td>
+                <img src="https://img.shields.io/badge/nginx-014532?logo=Nginx&logoColor=009639&">
+                <img src="https://img.shields.io/badge/Naver Cloud Platform-03C75A?logo=naver&logoColor=ffffff">  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <p align=center>Collaboration</p>
+            </td>
+            <td>
+                <img src="https://img.shields.io/badge/Notion-000000?logo=Notion">
+                <img src="https://img.shields.io/badge/Figma-F24E1E?logo=Figma&logoColor=ffffff">
+                <img src="https://img.shields.io/badge/Slack-4A154B?logo=Slack&logoColor=ffffff">
+            </td>
+        </tr>
+    </tbody>
+</table>
+
 ### Front-End
 
 - `JavaScript` `HTML5` `CSS3` `React` `Socket.io` `Fabric.js` `React Router` `TailwindCSS` `Modernizr`
