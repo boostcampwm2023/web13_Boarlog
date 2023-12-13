@@ -1,4 +1,5 @@
 export enum ClientType {
   PRESENTER = 'PRESENTER',
-  STUDENT = 'STUDENT'
+  STUDENT = 'STUDENT',
+  GUEST = 'GUEST'
 }
