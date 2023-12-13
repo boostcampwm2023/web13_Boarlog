@@ -107,6 +107,7 @@ class MediaConverter {
   requestToServer = async (roomId: string) => {
     // TODO: API 서버에 강의 종료 요청하기
     const url = await this.saveAudioFile(roomId);
+    await this.extractSubtitle(url, roomId);
     fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -115,6 +116,24 @@ class MediaConverter {
         audio: url
       })
     }).then((response) => console.log(`[${response.status}]강의 음성 파일 저장: ${url}`));
+  };
+
+  extractSubtitle = async (url: any, code: string) => {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('X-CLOVASPEECH-API-KEY', process.env.CLOVA_API_KEY as string);
+
+    const response = await fetch(process.env.CLOVA_API_URL as string, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({
+        language: process.env.CLOVA_API_LANGUAGE,
+        completion: process.env.CLOVA_API_COMPLETION,
+        url: url,
+        callback: `${process.env.SERVER_API_URL}/lecture/${code}/text`
+      })
+    });
+    console.log(`[${response.status}] 강의 자막 저장`);
   };
 }
 
