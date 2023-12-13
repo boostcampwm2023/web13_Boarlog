@@ -267,7 +267,7 @@ export class RelayServer {
       await Promise.all([deleteRoomInfoById(data.roomId), deleteQuestionStream(data.roomId)]);
 
       // TODO: API 서버에 강의 종료 요청하기
-      const url = await mediaConverter.getAudioFileUrl(data.roomId);
+      const url = mediaConverter.getAudioFileURL();
       const response = await fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },

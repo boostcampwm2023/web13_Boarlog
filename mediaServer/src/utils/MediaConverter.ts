@@ -12,12 +12,14 @@ ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class MediaConverter {
   private readonly peerStreamInfoList: Map<string, PeerStreamInfo>;
+  private audioURL: string | undefined;
 
   constructor() {
     this.peerStreamInfoList = new Map();
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);
     }
+    this.audioURL = '';
   }
 
   setSink = (tracks: MediaStream, roomId: string) => {
@@ -79,6 +81,10 @@ class MediaConverter {
     streamInfo.stopRecording();
     this.deleteTempFile(streamInfo.audioTempFileName);
     this.peerStreamInfoList.delete(roomId);
+
+    this.saveAudioFile(roomId).then((url) => {
+      this.audioURL = url;
+    });
   };
 
   getOutputAbsolutePath = (fileName: string) => {
@@ -93,7 +99,7 @@ class MediaConverter {
     });
   };
 
-  getAudioFileUrl = async (roomId: string) => {
+  saveAudioFile = async (roomId: string) => {
     const streamInfo = this.peerStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
@@ -102,6 +108,10 @@ class MediaConverter {
     const url = await uploadFileToObjectStorage(streamInfo.recordFileName, roomId);
     console.log(`${url}에 파일 저장`);
     return url;
+  };
+
+  getAudioFileURL = () => {
+    return this.audioURL;
   };
 }
 
