@@ -84,8 +84,8 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         setLectureTitle(lectureTitle);
       })
       .catch(() => {
-        // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
-        // navigate("/");
+        showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+        navigate("/");
       });
     setLectureCode(roomid);
     window.addEventListener("popstate", handlePopstate);

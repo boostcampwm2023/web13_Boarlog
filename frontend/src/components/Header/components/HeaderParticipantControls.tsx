@@ -152,8 +152,8 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
         setLectureTitle(lectureTitle);
       })
       .catch(() => {
-        // showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
-        // navigate("/");
+        showToast({ message: "존재하지 않는 강의실입니다.", type: "alert" });
+        navigate("/");
       });
     if (accessToken) {
       await axios
@@ -168,8 +168,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
         .catch((error) => {
           if (error.response?.status === 401) {
             accessToken = "";
-            console.log("로그인이 만료되어 guest로 입장합니다.");
-            //showToast({ message: "로그인이 만료되어 guest로 입장합니다.", type: "alert" });
+            showToast({ message: "로그인이 만료되어 guest로 입장합니다.", type: "alert" });
           } else showToast({ message: "유저 정보를 불러오는데 문제가 발생했어요", type: "alert" });
         });
     }
