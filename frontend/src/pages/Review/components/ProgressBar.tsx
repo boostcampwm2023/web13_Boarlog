@@ -53,7 +53,6 @@ const ProgressBar = ({
     let percent = (mouseClickedX - left) / width;
     if (percent <= 0) percent = 0;
     updateProgressMsTime(Math.round(totalTime * percent));
-    console.log(Math.round(totalTime * percent));
   };
 
   const handleProgressBarDrag = (event: React.MouseEvent) => {
@@ -80,7 +79,6 @@ const ProgressBar = ({
         setThrottle(true);
         setTimeout(() => {
           handleProgressBarDrag(event);
-
           setThrottle(false);
         }, 250);
       }
@@ -137,7 +135,7 @@ const ProgressBar = ({
         <div className="relative grow h-[6px] bg-grayscale-lightgray">
           <div
             className={`absolute top-0 left-0 h-[6px] w-[0%] bg-boarlog-100`}
-            style={{ width: isProgressBarDrag ? "" : `${getPercentOfProgress(progressMsTime, totalTime)}` }}
+            style={{ width: `${getPercentOfProgress(progressMsTime, totalTime)}` }}
             ref={progressInnerBar}
           ></div>
         </div>
