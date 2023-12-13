@@ -36,6 +36,7 @@ export class UserService {
       ).populate({
         path: 'lecture_id',
         select: '-__v',
+        match: { is_end: true },
         populate: { path: 'presenter_id', select: '-_id username' }
       })
     ).lecture_id;
