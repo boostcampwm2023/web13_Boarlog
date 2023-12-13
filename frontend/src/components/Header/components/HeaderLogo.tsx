@@ -5,7 +5,7 @@ const HeaderLogo = ({ type, lectureTitle }: { type: "login" | "normal" | "lectur
   const navigate = useNavigate();
 
   const handleLogoClicked = () => {
-    if (type === "login") navigate("/login");
+    if (type === "login") navigate("/userauth");
     else if (type === "normal") navigate("/");
   };
 
