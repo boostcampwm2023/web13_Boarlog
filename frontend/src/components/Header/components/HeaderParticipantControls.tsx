@@ -162,9 +162,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
             Authorization: accessToken
           }
         })
-        .then(() => {
-          console.log("유저 정보 확인");
-        })
+        .then(() => {})
         .catch((error) => {
           if (error.response?.status === 401) {
             accessToken = "";
@@ -175,7 +173,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   };
   const initConnection = async () => {
     try {
-      console.log("initConnection", accessToken);
       managerRef.current = new Manager(import.meta.env.VITE_MEDIA_SERVER_URL);
       // guest 판별 로직 추가 예정
       socketRef.current = managerRef.current.socket("/enter-room", {
@@ -184,8 +181,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
           refreshToken: "test"
         }
       });
-      //guestAccessToken
-      //      accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
 
       if (!socketRef.current) return;
       socketRef.current.on(`serverAnswer`, (data) => handleServerAnswer(data));
@@ -280,9 +275,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
 
-    console.log(data);
-    console.log(data.whiteboard);
-
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
@@ -321,7 +313,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
         refreshToken: "sample"
       }
     });
-    //    accessToken: localStorage.getItem("token") ? localStorage.getItem("token") : "",
     setParticipantSocket(lectureSocketRef.current);
     lectureSocketRef.current.on("ended", () => handleLectureEnd());
     lectureSocketRef.current.on("update", (data) => handleWhiteboardUpdate(data));
