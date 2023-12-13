@@ -207,7 +207,8 @@ export class RelayServer {
       // TODO: API 서버로 화이트보드 데이터 전달
       const response = await fetch(process.env.SERVER_API_URL + '/lecture/log/' + data.roomId, {
         method: 'POST',
-        body: data.content
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data.content)
       });
       console.log('response: ' + response.status);
 
