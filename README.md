@@ -126,13 +126,12 @@
                 <p align=center>Common</p>
             </td>
             <td>
-                 <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff">
+		<img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=ffffff">
                 <img src="https://img.shields.io/badge/WebRTC-333333?logo=webrtc">
                 <img src="https://img.shields.io/badge/Socket.io-010101?logo=Socket.io">
-                <img src="https://img.shields.io/badge/Jest-341f0e?logo=jest&logoColor=FF0000&">
                 <img src="https://img.shields.io/badge/Prettier-F7B93E?logo=prettier&logoColor=ffffff">
                 <img src="https://img.shields.io/badge/ESLint-4B32C3?logo=Eslint">
-                <img src="https://img.shields.io/badge/npm-CB3837?logo=npm&logoColor=ffffff">
+		<img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=ffffff">
                 <img src="https://img.shields.io/badge/.ENV-ECD53F?logo=.ENV&logoColor=ffffff">
             </td>
         </tr>
