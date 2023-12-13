@@ -182,11 +182,10 @@ export class RelayServer {
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
       // TODO: API 서버에 강의 시작 요청하기
-      // const response = await fetch((process.env.SERVER_API_URL + '/lecture/' + clientInfo.roomId) as string, {
-      //   method: 'PATCH',
-      //   headers: { Authorization: socket.handshake.auth.accessToken }
-      // });
-      // console.log('response: ' + response.status);
+      fetch((process.env.SERVER_API_URL + '/lecture/' + clientInfo.roomId) as string, {
+        method: 'PATCH',
+        headers: { Authorization: socket.handshake.auth.accessToken }
+      }).then((response) => console.log('강의 시작:' + response.status));
     }
 
     socket.on('edit', async (data) => {
@@ -196,12 +195,11 @@ export class RelayServer {
         return;
       }
       // TODO: API 서버로 화이트보드 데이터 전달
-      // const response = await fetch(process.env.SERVER_API_URL + '/lecture/log/' + data.roomId, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data.content)
-      // });
-      // console.log('response: ' + response.status);
+      fetch(process.env.SERVER_API_URL + '/lecture/log/' + data.roomId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data.content)
+      });
       await Promise.all([
         updateWhiteboardData(data.roomId, data.content),
         this._io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content))

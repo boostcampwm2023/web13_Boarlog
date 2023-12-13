@@ -20,10 +20,10 @@ export class FfmpegCommand {
       })
       .on('end', async () => {
         streamInfo.recordEnd = true;
-        endRecording(roomId);
+        await endRecording(roomId);
         console.log(`${roomId} 강의실 음성 녹화 종료`);
       })
-      .output(recordFilePath);
+      .save(recordFilePath);
   }
 
   run = () => {
