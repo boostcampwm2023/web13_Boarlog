@@ -1,7 +1,5 @@
 import ProfileMedium from "@/assets/imgs/profileMedium.png";
 import UserIcon from "@/assets/svgs/user.svg?react";
-import CalendarIcon from "@/assets/svgs/calendar.svg?react";
-import PlayIcon from "@/assets/svgs/play.svg?react";
 
 interface ReplayLectureCardProps {
   user: string;
