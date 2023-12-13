@@ -80,7 +80,7 @@ class MediaConverter {
     this.deleteTempFile(streamInfo.audioTempFileName);
     this.peerStreamInfoList.delete(roomId);
 
-    this.requestToServer(roomId);
+    // this.requestToServer(roomId);
   };
 
   getOutputAbsolutePath = (fileName: string) => {

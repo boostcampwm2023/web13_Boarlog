@@ -137,6 +137,10 @@ export class RelayServer {
           findRoomInfoById(data.roomId),
           RTCPC.createAnswer()
         ]);
+        if (!roomInfo.currentWhiteboardData) {
+          console.log('정상적인 접근이 아닙니다');
+          return;
+        }
         const answerData = new ServerAnswerDto(JSON.parse(roomInfo.currentWhiteboardData), roomInfo.startTime, SDP);
         this._io.of('/enter-room').to(clientId).emit(`serverAnswer`, answerData);
         RTCPC.setLocalDescription(SDP);
@@ -150,7 +154,7 @@ export class RelayServer {
 
   // TODO: 클라이언트는 한 개의 방만 접속할 수 있는지? 만약 그렇다면, 이미 참여 중인 빙이 있을 때 요청 거부하도록 처리해야 함
   lecture = async (socket: Socket) => {
-    const email = getClientEmail(socket.handshake.auth.accesstToken);
+    const email = getClientEmail(socket);
     if (!email) {
       await this.guestLecture(socket);
       return;
@@ -178,11 +182,11 @@ export class RelayServer {
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
       // TODO: API 서버에 강의 시작 요청하기
-      const response = await fetch((process.env.SERVER_API_URL + '/lecture/' + clientInfo.roomId) as string, {
-        method: 'PATCH',
-        headers: { Authorization: socket.handshake.auth.accessToken }
-      });
-      console.log('response: ' + response.status);
+      // const response = await fetch((process.env.SERVER_API_URL + '/lecture/' + clientInfo.roomId) as string, {
+      //   method: 'PATCH',
+      //   headers: { Authorization: socket.handshake.auth.accessToken }
+      // });
+      // console.log('response: ' + response.status);
     }
 
     socket.on('edit', async (data) => {
@@ -192,13 +196,12 @@ export class RelayServer {
         return;
       }
       // TODO: API 서버로 화이트보드 데이터 전달
-      const response = await fetch(process.env.SERVER_API_URL + '/lecture/log/' + data.roomId, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data.content)
-      });
-      console.log('response: ' + response.status);
-
+      // const response = await fetch(process.env.SERVER_API_URL + '/lecture/log/' + data.roomId, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(data.content)
+      // });
+      // console.log('response: ' + response.status);
       await Promise.all([
         updateWhiteboardData(data.roomId, data.content),
         this._io.of('/lecture').to(clientInfo.roomId).emit('update', new Message(data.type, data.content))
@@ -266,7 +269,11 @@ export class RelayServer {
   };
 
   guestLecture = async (socket: Socket) => {
-    const clientId = socket.handshake.auth.accesstToken;
+    const clientId = socket.handshake.auth.accessToken;
+    if (!clientId) {
+      console.log('잘못 된 접근입니다.');
+      return;
+    }
     const clientInfo = await findClientInfoByEmail(clientId);
     const roomInfo = await findRoomInfoById(clientInfo.roomId);
     const clientConnectionInfo = await this._clientsConnectionInfo.get(clientId);
