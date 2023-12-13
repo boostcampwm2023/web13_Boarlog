@@ -19,17 +19,22 @@
   &nbsp; | &nbsp; 
   <a href="https://github.com/boostcampwm2023/web13_Boarlog/wiki">위키</a>
 </p>
+
 <p align=center>
   <a href="">시연 영상(예정)</a>
   &nbsp; | &nbsp; 
   <a href="https://boarlog.netlify.app/">서비스 링크</a>
 </p>
 
+<br/>
+
 <div align="center">
 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fboostcampwm2023%2Fweb13_Boarlog&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
 </div>
 
-## 주요 기능
+<br/>
+
+## Boarlog의 주요 기능
 
 ### 🧑‍🏫 강의 생성 및 진행
 
@@ -54,6 +59,8 @@
 </tr>
 </table>
 
+<br/>
+
 ### 🧑‍🎓 강의 참여 및 피드백
 
 > 강의자가 공유한 **강의번호**를 입력하여 강의에 참여하고, 강의자의 음성과 화이트보드 내용을 실시간으로 볼 수 있습니다. 강의자에게 질문을 보낼 수도 있습니다.
@@ -76,6 +83,8 @@
   </td>
 </tr>
 </table>
+
+<br/>
 
 ### 🎥 강의 다시보기
 
@@ -100,7 +109,9 @@
 </tr>
 </table>
 
-## 기술 스택
+<br/>
+
+## Boarlog의 기술 스택
 
 <table align=center>
     <thead>
@@ -181,6 +192,15 @@
     </tbody>
 </table>
 
+<br/>
+
+## 핵심 개발 일지
+> **🔗 프로젝트 진행 과정에서 고민하고 도전한 과정이 담긴 핵심 개발 일지입니다.**
+
+- []()
+
+<br/>
+
 ## 팀 소개: TEAM_528
 
 ```jsx
@@ -194,6 +214,8 @@ const teamName = camperIdArray.reduce((team, camperId) => {
 > 5명이 모여 **하나의** 개발자처럼 : J0**63** + J0**95** + J**105** + J**124** + J**141**
 
 `528`은 팀원 5명의 캠퍼 번호를 더한 숫자입니다. 5명의 캠퍼가 하나의 번호를 가지고 서로 다른 기술, 경험, 및 아이디어를 결합하여 시너지를 발휘하겠다는 의미입니다.
+
+<br/>
 
 <table align=center>
     <thead>
