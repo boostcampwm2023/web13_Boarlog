@@ -89,12 +89,13 @@ const Toolbar = () => {
 
       canvas.add(stickyMemo);
 
-      questionSocket?.emit("solved", {
-        type: "question",
-        roomId: roomId,
-        questionId: questionContents?.questionId
-      });
-      console.log("roomid:", roomId, questionContents?.questionId);
+      if (questionContents) {
+        questionSocket?.emit("solved", {
+          type: "question",
+          roomId: roomId,
+          questionId: questionContents?.questionId
+        });
+      }
 
       setDefaultQuestionContents();
 
