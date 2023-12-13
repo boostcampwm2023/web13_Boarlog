@@ -12,14 +12,12 @@ ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class MediaConverter {
   private readonly peerStreamInfoList: Map<string, PeerStreamInfo>;
-  private audioURL: string | undefined;
 
   constructor() {
     this.peerStreamInfoList = new Map();
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);
     }
-    this.audioURL = '';
   }
 
   setSink = (tracks: MediaStream, roomId: string) => {
