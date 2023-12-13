@@ -150,7 +150,11 @@ export class RelayServer {
 
   // TODO: 클라이언트는 한 개의 방만 접속할 수 있는지? 만약 그렇다면, 이미 참여 중인 빙이 있을 때 요청 거부하도록 처리해야 함
   lecture = async (socket: Socket) => {
-    const email: string = getEmailByJwtPayload(socket.handshake.auth.accessToken);
+    const email = getClientEmail(socket.handshake.auth.accesstToken);
+    if (!email) {
+      await this.guestLecture(socket);
+      return;
+    }
     const clientInfo = await findClientInfoByEmail(email);
     const clientConnectionInfo = await this._clientsConnectionInfo.get(email);
     if (!clientInfo || !clientConnectionInfo || !clientInfo.roomId) {
@@ -160,10 +164,6 @@ export class RelayServer {
     }
     const roomInfo = await findRoomInfoById(clientInfo.roomId);
     const roomConnectionInfo = this._roomsConnectionInfo.get(clientInfo.roomId);
-
-    const token = socket.handshake.auth.accessToken;
-    const code = clientInfo.roomId;
-
     if (!roomConnectionInfo) {
       // TODO: 추후 클라이언트로 에러처리 필요
       console.log('아직 열리지 않았거나 종료된 방입니다.');
@@ -178,9 +178,9 @@ export class RelayServer {
     if (clientInfo.type === ClientType.STUDENT) {
       roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
       // TODO: API 서버에 강의 시작 요청하기
-      const response = await fetch((process.env.SERVER_API_URL + '/lecture/' + code) as string, {
+      const response = await fetch((process.env.SERVER_API_URL + '/lecture/' + clientInfo.roomId) as string, {
         method: 'PATCH',
-        headers: { Authorization: token }
+        headers: { Authorization: socket.handshake.auth.accessToken }
       });
       console.log('response: ' + response.status);
     }
@@ -276,7 +276,56 @@ export class RelayServer {
     });
   };
 
-  guestLecture = () => {};
+  guestLecture = async (socket: Socket) => {
+    const clientId = socket.handshake.auth.accesstToken;
+    const clientInfo = await findClientInfoByEmail(clientId);
+    const roomInfo = await findRoomInfoById(clientInfo.roomId);
+    const clientConnectionInfo = await this._clientsConnectionInfo.get(clientId);
+    const roomConnectionInfo = this._roomsConnectionInfo.get(clientInfo.roomId);
+    if (!clientInfo || !clientConnectionInfo || !clientInfo.roomId) {
+      // TODO: 추후 클라이언트로 에러처리 필요
+      console.log('잘못된 요청입니다.');
+      return;
+    }
+    if (!roomConnectionInfo) {
+      // TODO: 추후 클라이언트로 에러처리 필요
+      console.log('아직 열리지 않았거나 종료된 방입니다.');
+      return;
+    }
+    socket.join(clientInfo.roomId);
+    roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
+
+    socket.on('ask', async (data) => {
+      if (clientInfo.type !== ClientType.GUEST || clientInfo.roomId !== data.roomId) {
+        // TODO: 추후 클라이언트로 에러처리 필요
+        console.log('해당 참여자가 존재하지 않습니다.');
+        return;
+      }
+      const presenterEmail = roomInfo.presenterEmail;
+      if (!presenterEmail) {
+        // TODO: 추후 클라이언트로 에러처리 필요
+        console.log('발표자가 없습니다.');
+        return;
+      }
+      await saveQuestion(data.roomId, data.content);
+      const streamData = (await findQuestion(data.roomId, presenterEmail)) as StreamReadRaw;
+      const question = getStreamKeyAndQuestionFromStream(streamData);
+      this._io
+        .of('/lecture')
+        .to(presenterEmail)
+        .emit('asked', new AskedRequestDto(data.type, question.content, question.streamKey));
+    });
+
+    socket.on('leave', (data) => {
+      if (clientInfo.type !== ClientType.GUEST || clientInfo.roomId !== data.roomId) {
+        // TODO: 추후 클라이언트로 에러처리 필요
+        console.log('해당 참여자가 존재하지 않습니다');
+        return;
+      }
+      this._roomsConnectionInfo.get(clientInfo.roomId)?.exitRoom(clientConnectionInfo, data.roomId);
+      this._io.of('/lecture').to(clientInfo.roomId).emit('response', new Message(data.type, 'success'));
+    });
+  };
 
   exchangeCandidate = (namespace: string, email: string, socket: Socket) => {
     try {
