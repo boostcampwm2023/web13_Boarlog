@@ -79,6 +79,8 @@ class MediaConverter {
     streamInfo.stopRecording();
     this.deleteTempFile(streamInfo.audioTempFileName);
     this.peerStreamInfoList.delete(roomId);
+
+    this.requestToServer(roomId);
   };
 
   getOutputAbsolutePath = (fileName: string) => {
@@ -93,7 +95,7 @@ class MediaConverter {
     });
   };
 
-  getAudioFileUrl = async (roomId: string) => {
+  saveAudioFile = async (roomId: string) => {
     const streamInfo = this.peerStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
@@ -102,6 +104,20 @@ class MediaConverter {
     const url = await uploadFileToObjectStorage(streamInfo.recordFileName, roomId);
     console.log(`${url}에 파일 저장`);
     return url;
+  };
+
+  requestToServer = async (roomId: string) => {
+    // TODO: API 서버에 강의 종료 요청하기
+    const url = await this.saveAudioFile(roomId);
+    const response = await fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: roomId,
+        audio: url
+      })
+    });
+    console.log('response: ' + response.status);
   };
 }
 
