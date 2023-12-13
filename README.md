@@ -68,10 +68,10 @@
 <table align=center>
 <tr>
   <td>
-<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/0e75f788-510b-4ed6-9906-b7349c8092fb" />
   </td>
   <td>
- <img src="https://user-images.githubusercontent.com/65100540/207755392-7a929720-80cf-4160-9f3e-5bc71e463750.gif" width=380 />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/ea59d6f4-b6d3-4f28-9d48-ff12dad66d3b" />
   </td>
 </tr>
 <tr>
@@ -93,10 +93,10 @@
 <table align=center>
 <tr>
   <td>
-<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/0e75f788-510b-4ed6-9906-b7349c8092fb" />
   </td>
   <td>
- <img src="https://user-images.githubusercontent.com/65100540/207755392-7a929720-80cf-4160-9f3e-5bc71e463750.gif" width=380 />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/0e75f788-510b-4ed6-9906-b7349c8092fb" />
   </td>
 </tr>
 <tr>
