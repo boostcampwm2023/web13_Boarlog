@@ -18,6 +18,9 @@ export class FfmpegCommand {
       .on('start', () => {
         console.log(`${roomId} 강의실 음성 녹화 시작`);
       })
+      .on('error', (err) => {
+        console.log(err);
+      })
       .on('end', async () => {
         streamInfo.recordEnd = true;
         await endRecording(roomId);

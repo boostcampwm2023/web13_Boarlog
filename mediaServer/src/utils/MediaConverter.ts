@@ -46,13 +46,13 @@ class MediaConverter {
     }
   };
 
-  setFfmpeg = (roomId: string): void => {
+  setFfmpeg = async (roomId: string): Promise<void> => {
     const streamInfo = this.peerStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
     }
-    this.mediaStreamToFile(streamInfo.audio, streamInfo.audioTempFileName);
+    await this.mediaStreamToFile(streamInfo.audio, streamInfo.audioTempFileName);
     streamInfo.proc = new FfmpegCommand(
       this.getOutputAbsolutePath(streamInfo.audioTempFileName),
       this.getOutputAbsolutePath(streamInfo.recordFileName),
@@ -60,10 +60,9 @@ class MediaConverter {
       streamInfo,
       this.endRecording
     );
-    streamInfo.proc.run();
   };
 
-  mediaStreamToFile = (stream: PassThrough, fileName: string): string => {
+  mediaStreamToFile = async (stream: PassThrough, fileName: string): Promise<string> => {
     const outputPath = path.join(outputDir, fileName);
     const outputFile = fs.createWriteStream(outputPath);
     stream.pipe(outputFile);
@@ -78,8 +77,8 @@ class MediaConverter {
     }
     streamInfo.stopRecording();
     this.deleteTempFile(streamInfo.audioTempFileName);
-    this.peerStreamInfoList.delete(roomId);
     await this.requestToServer(roomId);
+    this.peerStreamInfoList.delete(roomId);
   };
 
   getOutputAbsolutePath = (fileName: string) => {
@@ -100,7 +99,7 @@ class MediaConverter {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
     }
-    const url = await uploadFileToObjectStorage(streamInfo.recordFileName, roomId);
+    const url = await uploadFileToObjectStorage(path.join(outputDir, streamInfo.recordFileName), roomId);
     console.log(`${url}에 파일 저장`);
     return url;
   };
@@ -108,7 +107,6 @@ class MediaConverter {
   requestToServer = async (roomId: string) => {
     // TODO: API 서버에 강의 종료 요청하기
     const url = await this.saveAudioFile(roomId);
-    console.log(url);
     fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
