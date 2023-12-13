@@ -82,9 +82,7 @@ class MediaConverter {
     this.deleteTempFile(streamInfo.audioTempFileName);
     this.peerStreamInfoList.delete(roomId);
 
-    this.saveAudioFile(roomId).then((url) => {
-      this.audioURL = url;
-    });
+    this.requestToServer(roomId);
   };
 
   getOutputAbsolutePath = (fileName: string) => {
@@ -110,8 +108,18 @@ class MediaConverter {
     return url;
   };
 
-  getAudioFileURL = () => {
-    return this.audioURL;
+  requestToServer = async (roomId: string) => {
+    // TODO: API 서버에 강의 종료 요청하기
+    const url = await this.saveAudioFile(roomId);
+    const response = await fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: roomId,
+        audio: url
+      })
+    });
+    console.log('response: ' + response.status);
   };
 }
 

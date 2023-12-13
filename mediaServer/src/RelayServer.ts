@@ -265,18 +265,6 @@ export class RelayServer {
       this.roomsConnectionInfo.delete(clientInfo.roomId);
       this.clientsConnectionInfo.delete(email);
       await Promise.all([deleteRoomInfoById(data.roomId), deleteQuestionStream(data.roomId)]);
-
-      // TODO: API 서버에 강의 종료 요청하기
-      const url = mediaConverter.getAudioFileURL();
-      const response = await fetch((process.env.SERVER_API_URL + '/lecture/end') as string, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: data.roomId,
-          audio: url
-        })
-      });
-      console.log('response: ' + response.status);
     });
 
     socket.on('leave', (data) => {
