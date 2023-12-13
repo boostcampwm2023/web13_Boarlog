@@ -43,10 +43,10 @@
 <table align=center>
 <tr>
   <td>
-<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/f8e0c9db-1a4c-4df8-8319-fb6b2f4154af" />
   </td>
   <td>
-<img src="https://user-images.githubusercontent.com/65100540/207751155-288bc23a-4138-4252-b158-fd3578f29be7.gif" width=380 />
+	  <video height="180" width="288" src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/554b4f1e-95ea-473e-92e5-7d701bab9399" />
   </td>
 </tr>
 <tr>
