@@ -14,11 +14,10 @@ import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
 const NICKNAME_REGEXP = /^[a-zA-Z0-9가-힣]{3,15}$/;
 
 type Lecture = {
-  date: string;
-  duration: string;
-  user: string;
   title: string;
   description: string;
+  presenter_id: { username: string };
+  _id: string;
 };
 
 const MyPageSection = () => {
@@ -139,12 +138,10 @@ const MyPageSection = () => {
             lectureList.map((value, index) => (
               <ReplayLectureCard
                 key={index}
-                date={value.date}
-                duration={value.duration}
-                user={value.user}
+                user={value.presenter_id.username}
                 title={value.title}
                 description={value.description}
-                onClick={() => navigate("/")}
+                onClick={() => navigate(`/review?id=${value._id}`)}
               />
             ))
           ) : (

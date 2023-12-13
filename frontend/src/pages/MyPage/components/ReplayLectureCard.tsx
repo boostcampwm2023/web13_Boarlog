@@ -4,15 +4,13 @@ import CalendarIcon from "@/assets/svgs/calendar.svg?react";
 import PlayIcon from "@/assets/svgs/play.svg?react";
 
 interface ReplayLectureCardProps {
-  date: string;
-  duration: string;
   user: string;
   title: string;
   description: string;
   onClick: () => void;
 }
 
-const ReplayLectureCard = ({ date, duration, user, title, description, onClick }: ReplayLectureCardProps) => {
+const ReplayLectureCard = ({ user, title, description, onClick }: ReplayLectureCardProps) => {
   return (
     <div
       className="flex flex-col w-full p-6 gap-4 justify-between bg-grayscale-white border-default rounded-xl hover:shadow-xl duration-500 cursor-pointer break-keep"
@@ -30,8 +28,14 @@ const ReplayLectureCard = ({ date, duration, user, title, description, onClick }
       </div>
 
       <p className="medium-16 text-grayscale-darkgray">{description}</p>
+    </div>
+  );
+};
 
-      <div className="flex flex-row justify-between w-full items-center">
+export default ReplayLectureCard;
+
+/*
+<div className="flex flex-row justify-between w-full items-center">
         <div className="flex flex-row gap-1 items-center semibold-16 text-boarlog-100">
           <CalendarIcon className="w-4 h-4 fill-boarlog-100" />
           {date}
@@ -41,8 +45,4 @@ const ReplayLectureCard = ({ date, duration, user, title, description, onClick }
           {duration}
         </div>
       </div>
-    </div>
-  );
-};
-
-export default ReplayLectureCard;
+*/
