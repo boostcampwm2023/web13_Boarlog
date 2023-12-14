@@ -11,7 +11,7 @@
 <br/>
 
 <p align=center>
-  <a href="https://weak-sugar-603.notion.site/TEAM_528-7780e03d7e9847b89fdf9f926036987b?pvs=4">노션</a>
+  <a href="https://boarlog.notion.site/">노션</a>
   &nbsp; | &nbsp; 
   <a href="https://weak-sugar-603.notion.site/d1fb2080ff934e859d50c5cd3620e223">백로그</a>
   &nbsp; | &nbsp;
@@ -269,6 +269,6 @@ const teamName = camperIdArray.reduce((team, camperId) => {
 - [branch/conmmit 컨벤션](https://weak-sugar-603.notion.site/Git-Branch-Commmit-882a35cba1cc433eb0f01abf2e3b134d?pvs=4)
 - [기획/디자인](https://www.figma.com/file/vd1TPvzMNwy6OfVmNFw8cI/Untitled?type=design&node-id=4%3A22&mode=design&t=NS1IQkeFYsr7lSuf-1)
 - [위키](https://github.com/boostcampwm2023/web13_TEAM_528/wiki)
-- [노션](https://weak-sugar-603.notion.site/TEAM_528-7780e03d7e9847b89fdf9f926036987b?pvs=4)
+- [노션](https://boarlog.notion.site/)
 - [백로그](https://www.notion.so/d1fb2080ff934e859d50c5cd3620e223)
 - [데모 링크](https://boarlog.netlify.app)
