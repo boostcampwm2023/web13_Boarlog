@@ -206,7 +206,7 @@
 - ```이동령``` : [반응형 UX를 위한 Modernizr 적용기](https://velog.io/@pexe99/Boarlog-%EC%9A%B0%EB%A6%AC-%EC%84%9C%EB%B9%84%EC%8A%A4%EB%8A%94-%EB%AA%A8%EB%B0%94%EC%9D%BC-%EC%82%AC%EC%A0%88%EC%9E%85%EB%8B%88%EB%8B%A4)
 - ```정주완``` : [실시간 화이트보드 공유 구현 과정](https://boarlog.notion.site/ad59de67865345ff8a91eed36d074820)
 - ```이승연``` :
-- ```이현종``` :
+- ```이현종``` : [Redis를 사용하여 미디어 서버의 역할 분리하기](https://www.notion.so/boarlog/Redis-80b54e8dd957472fb7a79b4f9ad950bf)
 <br/>
 
 ## 팀 소개: TEAM_528
