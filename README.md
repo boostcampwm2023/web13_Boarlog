@@ -197,7 +197,7 @@
 > **🔗 프로젝트 진행 과정에서 고민하고 도전한 과정이 담긴 핵심 개발 일지입니다.**
 
 - ```변진상```: [프로그래스 바 구현과 성능 개선을 위한 트러블 슈팅](https://velog.io/@quswlstkd88/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EC%8A%A4-%EB%B0%94-%EA%B5%AC%ED%98%84%EA%B3%BC-%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0%EC%9D%84-%EC%9C%84%ED%95%9C-%ED%8A%B8%EB%9F%AC%EB%B8%94-%EC%8A%88%ED%8C%85)
-- ```이동령```: [저희 서비스는 모바일 사절입니다](https://velog.io/@pexe99/Boarlog-%EC%9A%B0%EB%A6%AC-%EC%84%9C%EB%B9%84%EC%8A%A4%EB%8A%94-%EB%AA%A8%EB%B0%94%EC%9D%BC-%EC%82%AC%EC%A0%88%EC%9E%85%EB%8B%88%EB%8B%A4)
+- ```이동령```: [우리 서비스는 모바일 사절입니다](https://velog.io/@pexe99/Boarlog-%EC%9A%B0%EB%A6%AC-%EC%84%9C%EB%B9%84%EC%8A%A4%EB%8A%94-%EB%AA%A8%EB%B0%94%EC%9D%BC-%EC%82%AC%EC%A0%88%EC%9E%85%EB%8B%88%EB%8B%A4)
 
 <br/>
 
