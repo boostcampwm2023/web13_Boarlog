@@ -21,7 +21,7 @@
 </p>
 
 <p align=center>
-  <a href="">시연 영상(예정)</a>
+  <a href="https://youtu.be/2WOme3P0Hw8?si=4e2pvwhAJANnHxjZ">시연 영상</a>
   &nbsp; | &nbsp; 
   <a href="https://boarlog.netlify.app/">서비스 링크</a>
 </p>
