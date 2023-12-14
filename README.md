@@ -111,6 +111,11 @@
 
 <br/>
 
+## 클라이언트 요청 흐름도
+![서버 아키텍처](https://github.com/boostcampwm2023/web13_Boarlog/assets/70827921/43e476a7-6493-4ce9-b244-aba01cbf8612)
+
+<br/>
+
 ## Boarlog의 기술 스택
 
 <table align=center>
@@ -259,7 +264,7 @@ const teamName = camperIdArray.reduce((team, camperId) => {
             <td width="150">깊이있게 고민하고 기록하기</td>
             <td width="150">괜한 걱정 하지 않고 차근차근 쌓아올리기</td>
             <td width="150">두려워하지 않고 문제 해결하기</td>
-            <td width="150">기술 선택에 나만의 근거를 만들기</td>
+            <td width="150">모든 선택에 나만의 근거 만들기</td>
             <td width="150">작성한 코드에 대한 의도를 잘 기록하기</td>
         </tr>
     </tbody>
