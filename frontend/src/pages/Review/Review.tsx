@@ -78,40 +78,21 @@ const Review = () => {
     fabricCanvasRef.current = newCanvas;
   };
   const handleLoadData = () => {
-    /* 
-    현재 /lecture/record/:id 에서 불러오는 임시 데이터의 canvasJSON 데이터가 
-    실제 canvasJSON 데이터와 다르기 때문에 임시로 더미 데이터를 불러오도록 설정했습니다.
-    */
-    axios("./dummyCanvasData.json")
-      .then(({ data }) => {
-        loadedDataRef.current = data;
-        setProgressBarState("paused");
-      })
-      .catch(() => {
-        showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
-      });
-
-    // 실제 데이터를 불러오는 코드
     axios
       .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture/record/${lectureId}`)
       .then((result) => {
-        // console.log(result.data);
-        // loadedDataRef.current = result.data.;
+        console.log(result.data.logs);
+        loadedDataRef.current = result.data.logs;
         scriptListRef.current = result.data.subtitles;
         localAudioRef.current!.src = result.data.audio_file;
         localAudioRef.current!.addEventListener("loadedmetadata", () => {
           totalTimeRef.current = localAudioRef.current!.duration * 1000;
         });
-        //setProgressBarState("paused");
+        setProgressBarState("paused");
       })
       .catch(() => {
         showToast({ message: "강의 데이터를 불러오는 데 실패했습니다.", type: "alert" });
       });
-
-    localAudioRef.current!.src = "https://cdn.freesound.org/previews/18/18765_18799-lq.mp3";
-    localAudioRef.current!.addEventListener("loadedmetadata", () => {
-      totalTimeRef.current = localAudioRef.current!.duration * 1000;
-    });
   };
   const handleResize = () => {
     updateCanvasSize({
@@ -124,7 +105,6 @@ const Review = () => {
     const LECTURE_TOTAL_PRAMES = loadedDataRef.current!.length;
     const eventTime = loadedDataRef.current![canvasCntRef.current]?.eventTime;
     const elapsedTime = Date.now() - startTime;
-    // 여기서 elapsedTime이 progressMsTime이랑 관련이 없어서 중간에 바꾸려 해도 먹히지 않음. 개선 필요
     setProgressMsTime(elapsedTime);
     if (elapsedTime > eventTime && canvasCntRef.current < LECTURE_TOTAL_PRAMES) {
       loadCanvasData({

@@ -31,7 +31,7 @@ const Header = ({ type }: HeaderProps) => {
             <HeaderCodeCopyButton lectureCode={lectureCode} />
           </>
         )}
-        {type === "review" && <HeaderLogo type="lecture" lectureTitle={lectureTitle} />}
+        {type === "review" && <HeaderLogo type="lecture" lectureTitle={"강의 다시보기"} />}
       </div>
 
       <div className="flex items-center gap-4 semibold-20">
