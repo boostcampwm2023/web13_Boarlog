@@ -93,10 +93,10 @@
 <table align=center>
 <tr>
   <td>
-	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/0e75f788-510b-4ed6-9906-b7349c8092fb" />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/54176384/67162997-fe6d-4fdc-b672-dbe8dcdebd02" />
   </td>
   <td>
-	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/0e75f788-510b-4ed6-9906-b7349c8092fb" />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/54176384/e679fc19-d9a8-4899-a274-b1f1a81c5c8c" />
   </td>
 </tr>
 <tr>
