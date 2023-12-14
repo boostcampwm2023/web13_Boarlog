@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateLectureDto } from './dto/create-lecture.dto';
-import { LectureInfoDto } from './dto/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { WhiteboardLog } from './schema/whiteboard-log.schema';
 import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
@@ -10,6 +9,7 @@ import { LectureSubtitle } from './lecture-subtitle.schema';
 import { Lecture } from './schema/lecture.schema';
 import { EnterCode } from './schema/lecture-code.schema';
 import { generateRandomNumber } from 'src/utils/GenerateUtils';
+import { LectureRecordDto } from './dto/response/response-lecture-record.dto';
 
 @Injectable()
 export class LectureService {
@@ -24,11 +24,11 @@ export class LectureService {
     private lectureSubtitleModel: Model<LectureSubtitle>
   ) {}
 
-  async createLecture(createLectureDto: CreateLectureDto, userId: string) {
+  async createLecture(createLectureDto: CreateLectureDto, id: Types.ObjectId) {
     const lecture = new this.lectureModel({
       title: createLectureDto.title,
       description: createLectureDto.description,
-      presenter_id: userId
+      presenter_id: id
     });
     const lectureCode = new this.enterCodeModel({
       code: await this.generateRoomCode(),
@@ -59,19 +59,20 @@ export class LectureService {
   }
 
   async findLectureByCode(code: string) {
-    return await this.enterCodeModel.findOne({ code: code });
+    return await this.enterCodeModel.findOne({ code: code }).exec();
   }
 
   async findLectureInfo(enterCode: EnterCode) {
-    const result = await this.lectureModel.findById(enterCode.lecture_id).exec();
-    return LectureInfoDto.of(result);
+    return await this.lectureModel.findById(enterCode.lecture_id).populate('presenter_id').exec();
   }
 
   async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {
     const whiteboardLog = new this.whiteboardLogModel({
       canvasJSON: whiteboardEventDto.canvasJSON,
-      viewPort: whiteboardEventDto.viewPort,
-      event_date: whiteboardEventDto.eventDate,
+      viewport: whiteboardEventDto.viewport,
+      eventTime: whiteboardEventDto.eventTime,
+      width: whiteboardEventDto.width,
+      height: whiteboardEventDto.height,
       lecture_id: lecture
     });
     return await whiteboardLog.save();
@@ -86,8 +87,20 @@ export class LectureService {
   async saveLectureSubtitle(lecture: EnterCode, data: any) {
     const subtitleInfo = this.extractAPIData(data);
     return await new this.lectureSubtitleModel({
-      lecture_id: lecture,
+      lecture_id: lecture.lecture_id,
       subtitle: subtitleInfo
     }).save();
+  }
+
+  async findLogs(lecture: Lecture) {
+    return await this.whiteboardLogModel.find({ lecture_id: lecture }, { _id: 0, lecture_id: 0, __v: 0 }).exec();
+  }
+
+  async findLectureRecord(id: Types.ObjectId) {
+    const lecture = await this.lectureModel.findById(id).exec();
+    const logs = await this.findLogs(lecture);
+    const subtitles = (await this.lectureSubtitleModel.findOne({ lecture_id: lecture }).exec()).subtitle;
+    const audioFile = lecture.audio_file;
+    return new LectureRecordDto(logs, subtitles, audioFile);
   }
 }

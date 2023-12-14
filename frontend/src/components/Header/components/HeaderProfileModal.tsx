@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import ProfileSmall from "@/assets/imgs/profileSmall.png";
-import LogoutIcon from "@/assets/svgs/logout.svg?react";
 import UserIcon from "@/assets/svgs/user.svg?react";
 import Button from "@/components/Button/Button";
-import { useToast } from "@/components/Toast/useToast";
 
 interface HeaderProfileModalProps {
   isProfileClicked: boolean;
@@ -12,15 +10,10 @@ interface HeaderProfileModalProps {
 
 const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderProfileModalProps) => {
   const navigate = useNavigate();
-  const showToast = useToast();
 
-  const handleLogoutButtonClicked = () => {
-    showToast({ message: "로그아웃에 성공했습니다.", type: "success" });
-    navigate("/login");
-  };
-
-  const moveToMyPage = () => {
-    navigate("/mypage");
+  const modalButtonClicked = () => {
+    if (localStorage.getItem("token")) navigate("/mypage");
+    else navigate("/userauth");
   };
 
   return (
@@ -39,18 +32,16 @@ const HeaderProfileModal = ({ isProfileClicked, setIsProfileClicked }: HeaderPro
         <div className="flex flex-row gap-3 w-full h-14 justify-start">
           <img className="w-14 h-14" src={ProfileSmall} alt="내 프로필" />
           <div className="flex flex-col justify-between h-full">
-            <p className="semibold-20">닉네임</p>
-            <p className="medium-16 text-grayscale-darkgray">user.exampleEmail@gmail.com</p>
+            <p className="semibold-20">{localStorage.getItem("username") || "Guest"}</p>
+            <p className="medium-16 text-grayscale-darkgray">
+              {localStorage.getItem("email") || "로그인이 필요합니다."}
+            </p>
           </div>
         </div>
         <div className="flex flex-row gap-4 w-full">
-          <Button type="grow" buttonStyle="black" onClick={handleLogoutButtonClicked}>
-            <LogoutIcon className="fill-grayscale-white" />
-            로그아웃
-          </Button>
-          <Button type="grow" buttonStyle="black" onClick={moveToMyPage}>
+          <Button type="full" buttonStyle="black" onClick={modalButtonClicked}>
             <UserIcon className="fill-grayscale-white" />
-            마이페이지
+            {localStorage.getItem("token") ? "마이페이지" : "로그인 하러가기"}
           </Button>
         </div>
       </div>

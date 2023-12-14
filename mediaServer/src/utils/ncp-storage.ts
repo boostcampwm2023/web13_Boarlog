@@ -12,7 +12,7 @@ const uploadFileToObjectStorage = async (file: any, filename: string) => {
     Body: fs.createReadStream(file)
   }).promise();
 
-  const url = endpoint + '/' + bucketName + '/' + filename;
+  const url = endpoint + '/' + bucketName + '/' + filename + '.mp3';
   return url;
 };
 

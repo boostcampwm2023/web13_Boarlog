@@ -1,109 +1,55 @@
-import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+import useAuth from "@/hooks/useAuth";
 import Button from "@/components/Button/Button";
-import ProfileBig from "@/assets/imgs/profileBig.png";
-import EnterIcon from "@/assets/svgs/enter.svg?react";
-import { useToast } from "@/components/Toast/useToast";
 import ReplayLectureCard from "./ReplayLectureCard";
+import { useToast } from "@/components/Toast/useToast";
 
-interface MyPageSectionProps {
-  profileImage: string;
-}
+import EnterIcon from "@/assets/svgs/enter.svg?react";
+import ProfileBig from "@/assets/imgs/profileBig.png";
+import SubLogoOriginal from "@/assets/imgs/subLogoOriginal.png";
 
-const NICKNAME_REGEXP = /^(?![0-9-_.]+$)[가-힣A-Za-z0-9-_.]{1,10}$/;
+const NICKNAME_REGEXP = /^[a-zA-Z0-9가-힣]{3,15}$/;
 
-const DUMMY_DATA = [
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.11",
-    title: "프로그래밍 기초",
-    description: "컴퓨터 프로그래밍의 기본 원리를 배우는 입문 강좌. 언어 선택부터 기본 구문까지."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.12",
-    title: "요리의 기초",
-    description: "기본적인 요리 기술과 요리법을 배우는 강좌. 초보자를 위한 쉬운 레시피와 요리 팁 제공."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.13",
-    title: "디지털 마케팅",
-    description: "디지털 마케팅 전략과 소셜 미디어 활용 방법을 배우는 실용적인 강좌."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.14",
-    title: "수학의 이해",
-    description: "기본적인 수학 개념과 문제 해결 기술을 배우는 강좌. 수학에 대한 두려움을 극복할 수 있도록 도움."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.15",
-    title: "역사 탐험",
-    description: "세계 역사의 주요 사건과 인물을 탐구하는 강좌. 역사를 통해 현재를 이해하는 데 도움."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.16",
-    title: "창의적 글쓰기",
-    description: "창의적인 글쓰기 기술과 아이디어 발상법을 배우는 강좌. 글쓰기를 통한 자기 표현 방법 탐구."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.17",
-    title: "영화 분석",
-    description: "영화의 기술적 요소와 예술적 가치를 분석하는 강좌. 영화를 깊이 있게 이해하는 방법 제공."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.18",
-    title: "피트니스 가이드",
-    description: "건강하고 효율적인 운동 방법을 배우는 강좌. 개인별 맞춤 운동 계획 설정 방법 제공."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.19",
-    title: "사진술 입문",
-    description: "기초 사진 기술과 구도, 조명 활용법을 배우는 강좌. 사진을 통해 예술적 감각 향상."
-  },
-  {
-    profileImage: "",
-    duration: "12:34",
-    user: "볼록이",
-    date: "2023.11.20",
-    title: "환경 보호",
-    description: "환경 보호와 지속 가능한 생활 방식에 대해 배우는 강좌. 일상에서 실천할 수 있는 환경 보호 활동 소개."
-  }
-];
+type Lecture = {
+  title: string;
+  description: string;
+  presenter_id: { username: string };
+  _id: string;
+};
 
-const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
+const MyPageSection = () => {
   const showToast = useToast();
-  const [nickname, setNickname] = useState("볼록이");
-  const [isNicknameEdit, setIsNicknameEdit] = useState(false);
+  const navigate = useNavigate();
+  const { checkAuth } = useAuth();
+  const [username, setUsername] = useState(localStorage.getItem("username") || "");
+  const [isUsernameEdit, setIsUsernameEdit] = useState(false);
   const [isValid, setIsValid] = useState(true);
+  const [lectureList, setLectureList] = useState<Lecture[]>([]);
+
+  useEffect(() => {
+    checkAuth();
+    axios
+      .get(`${import.meta.env.VITE_API_SERVER_URL}/lecture/list`, {
+        headers: { Authorization: localStorage.getItem("token") }
+      })
+      .then((result) => {
+        setLectureList(result.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          showToast({ message: "로그인이 만료되었어요.", type: "alert" });
+          navigate("/userauth");
+        } else showToast({ message: "정보를 불러오는데 오류가 발생했어요.", type: "alert" });
+      });
+  }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newNickname = event.target.value;
-    setNickname(newNickname);
-    setIsValid(NICKNAME_REGEXP.test(newNickname));
+    const newUsername = event.target.value;
+    setUsername(newUsername);
+    setIsValid(NICKNAME_REGEXP.test(newUsername));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -111,78 +57,100 @@ const MyPageSection = ({ profileImage }: MyPageSectionProps) => {
   };
 
   const handleEditButtonClicked = () => {
-    if (isNicknameEdit) {
+    if (isUsernameEdit) {
       if (isValid) {
+        axios
+          .post(
+            `${import.meta.env.VITE_API_SERVER_URL}/profile`,
+            { username },
+            {
+              headers: { Authorization: localStorage.getItem("token") }
+            }
+          )
+          .then((response) => {
+            const { username, email } = response.data;
+            localStorage.setItem("username", username);
+            localStorage.setItem("email", email);
+            setUsername(username);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              showToast({ message: "로그인이 만료되었어요.", type: "alert" });
+              navigate("/userauth");
+            } else showToast({ message: "정보를 불러오는데 오류가 발생했어요.", type: "alert" });
+          });
         showToast({ message: "닉네임 변경을 완료했습니다.", type: "success" });
-        setIsNicknameEdit(false);
+        setIsUsernameEdit(false);
       } else {
         showToast({ message: "올바르지 않은 닉네임입니다.", type: "alert" });
       }
     } else {
       showToast({ message: "닉네임을 변경합니다.", type: "default" });
-      setIsNicknameEdit(true);
+      setIsUsernameEdit(true);
     }
   };
 
   return (
     <div className="flex flex-col items-center my-32 sm:mt-36">
       <section className="flex relative w-11/12 max-w-3xl p-6 flex-col items-center gap-6 rounded-2xl border-default shadow-xl">
-        <img
-          src={profileImage ? profileImage : ProfileBig}
-          alt="프로필 이미지"
-          className="absolute -top-20 w-40 h-40 sm:w-56 sm:h-56 sm:-top-28"
-        />
+        <img src={ProfileBig} alt="프로필 이미지" className="absolute -top-20 w-40 h-40 sm:w-56 sm:h-56 sm:-top-28" />
 
         <input
           type="text"
-          value={nickname}
+          value={username}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          size={nickname.length + 1 || 3}
+          size={username.length + 1 || 3}
           placeholder="닉네임"
           maxLength={10}
-          disabled={!isNicknameEdit}
+          disabled={!isUsernameEdit}
           className="mt-20 sm:mt-28 semibold-32 text-center border-b-2 border-grayscale-gray focus:border-grayscale-black outline-none transition duration-200 rounded-none disabled:border-none disabled:text-grayscale-black disabled:bg-grayscale-white"
         />
 
         <div className="flex flex-col gap-1 justify-center items-center">
-          {isNicknameEdit ? (
+          {isUsernameEdit ? (
             <>
               {" "}
               <p className="semibold-18 text-grayscale-darkgray">사용할 닉네임을 입력해 주세요.</p>
               <p className={`medium-12 ${isValid ? "text-boarlog-100" : "text-alert-100"}`}>
-                한글, 영문, 숫자, -, _, ., 총 10자 이내
+                한글, 영문, 숫자 총 10자 이내
               </p>
             </>
           ) : (
-            <p className="semibold-16 text-grayscale-darkgray">boostcamp.team528@gmail.com</p>
+            <p className="semibold-16 text-grayscale-darkgray">{localStorage.getItem("email")}</p>
           )}
         </div>
 
         <div className="w-full max-w-sm">
           <Button
             type="full"
-            buttonStyle={isNicknameEdit && isValid ? "blue" : "black"}
+            buttonStyle={isUsernameEdit && isValid ? "blue" : "black"}
             onClick={handleEditButtonClicked}
           >
             <EnterIcon className="fill-grayscale-white" />
-            {isNicknameEdit ? "닉네임 변경 완료하기" : "닉네임 변경하기"}
+            {isUsernameEdit ? "닉네임 변경 완료하기" : "닉네임 변경하기"}
           </Button>
         </div>
 
         <h3 className="mt-12 semibold-32">강의 다시보기</h3>
-        <div className="flex flex-col w-full gap-6">
-          {DUMMY_DATA.map((value, index) => (
-            <ReplayLectureCard
-              key={index}
-              profileImage={value.profileImage}
-              date={value.date}
-              duration={value.duration}
-              user={value.user}
-              title={value.title}
-              description={value.description}
-            />
-          ))}
+        <div className="flex flex-col w-full gap-6 items-center">
+          {lectureList.length ? (
+            lectureList.map((value, index) => (
+              <ReplayLectureCard
+                key={index}
+                user={value.presenter_id.username}
+                title={value.title}
+                description={value.description}
+                onClick={() => navigate(`/review?id=${value._id}`)}
+              />
+            ))
+          ) : (
+            <>
+              <img className="max-w-sm w-full" src={SubLogoOriginal} />
+              <p className="semibold-16 text-grayscale-darkgray -mb-4">아직 수강한 강의가 존재하지 않아요.</p>
+              <p className="semibold-16 text-grayscale-darkgray mb-6">새로운 강의를 수강하러 가볼까요?</p>
+            </>
+          )}
         </div>
       </section>
     </div>

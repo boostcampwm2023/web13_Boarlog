@@ -10,10 +10,16 @@ export class WhiteboardLog {
   canvasJSON: string;
 
   @Prop({ required: true })
-  viewPort: number[];
+  viewport: number[];
 
   @Prop({ required: true })
-  event_date: Date;
+  eventTime: number;
+
+  @Prop({ required: true })
+  width: number;
+
+  @Prop({ required: true })
+  height: number;
 
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Lecture' })
   lecture_id: Lecture;

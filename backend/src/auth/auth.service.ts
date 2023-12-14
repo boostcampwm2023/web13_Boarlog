@@ -3,10 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/user/user.schema';
-import { SignUpDto } from './dto/auth.signup.dto';
-import { SignInDto } from './dto/auth.signin.dto';
 import { ConfigService } from '@nestjs/config';
 import { decryptPassword, encryptPassword } from 'src/utils/GenerateUtils';
+import { SignUpDto } from './dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto';
+import { ResponseSignInDto } from './dto/response-signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,14 +23,18 @@ export class AuthService {
     return { username: user.username, email: user.email };
   }
 
-  async signIn(signInDto: SignInDto): Promise<string> {
+  async signIn(signInDto: SignInDto): Promise<ResponseSignInDto> {
     const user = await this.findUserByEmail(signInDto.email);
-    const validatedPassword = await decryptPassword(signInDto.password, user.password);
-    if (!user || !validatedPassword) {
+    if (!user) {
       throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
     }
 
-    return await this.generateCookie({ username: user.username, email: user.email });
+    const validatedPassword = await decryptPassword(signInDto.password, user?.password);
+    if (!validatedPassword) {
+      throw new HttpException('해당 사용자가 없습니다.', HttpStatus.NOT_FOUND);
+    }
+    const token = await this.generateCookie({ username: user.username, email: user.email });
+    return new ResponseSignInDto(token, user.email, user.username);
   }
 
   async findUserByEmail(email: string): Promise<User> {

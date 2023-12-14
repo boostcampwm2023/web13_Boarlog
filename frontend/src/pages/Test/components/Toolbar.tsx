@@ -7,10 +7,11 @@ import HandIcon from "@/assets/svgs/whiteboard/hand.svg?react";
 import AddStickyNoteCursor from "@/assets/svgs/addStickyMemoCursor.svg";
 import EraserCursor from "@/assets/svgs/eraserMouseCursor.svg";
 
-import { useEffect } from "react";
-import { useRecoilValue, useSetRecoilState, useRecoilState, useResetRecoilState } from "recoil";
 import { fabric } from "fabric";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { getStickyNoteInstance } from "./getStickyNoteInstance";
+import { useRecoilValue, useSetRecoilState, useRecoilState, useResetRecoilState } from "recoil";
 
 import ToolButton from "./ToolButton";
 import ColorPanel from "./ColorPanel";
@@ -18,19 +19,24 @@ import QuestionButton from "./QuestionButton";
 
 import activeToolState from "./stateActiveTool";
 import canvasInstanceState from "./stateCanvasInstance";
+import isQuestionListOpenState from "./stateIsQuestionListOpen";
+import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
+import clickedQuestionContentsState from "./stateClickedQuestionContents";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
 import stickyNoteInstance, { fabricObjectWithAddWithUpdate, fabricObjectWithItem } from "./stateStickyNoteInstance";
-import clickedQuestionContentsState from "./stateClickedQuestionContents";
-import isQuestionListOpenState from "./stateIsQuestionListOpen";
+import isMemoEditingState from "@/stores/stateIsMemoEditing";
 
 const Toolbar = () => {
   const [activeTool, setActiveTool] = useRecoilState(activeToolState);
+  const setIsMemoEditing = useSetRecoilState(isMemoEditingState);
   const canvas = useRecoilValue(canvasInstanceState);
   const setVisibilityEditPanel = useSetRecoilState(stickyNoteEditPanelVisibilityState);
   const setStickyNoteInstance = useSetRecoilState(stickyNoteInstance);
   const questionContents = useRecoilValue(clickedQuestionContentsState);
   const setDefaultQuestionContents = useResetRecoilState(clickedQuestionContentsState);
   const setIsQuestionListOpen = useSetRecoilState(isQuestionListOpenState);
+  const questionSocket = useRecoilValue(instructorSocketRefState);
+  const roomId = new URLSearchParams(useLocation().search).get("roomid") || "999999";
 
   /**
    * @description 화이트 보드에 그려져 있는 요소들을 클릭을 통해 선택 가능한지 여부를 제어하기 위한 함수입니다.
@@ -77,11 +83,19 @@ const Toolbar = () => {
       const [mousePositionX, mousePositionY] = [absolutePointer.x, absolutePointer.y];
 
       const stickyMemo =
-        questionContents?.length === 0
+        questionContents?.content?.length === 0
           ? getStickyNoteInstance(mousePositionX, mousePositionY)
-          : getStickyNoteInstance(mousePositionX, mousePositionY, questionContents);
+          : getStickyNoteInstance(mousePositionX, mousePositionY, questionContents?.content);
 
       canvas.add(stickyMemo);
+
+      if (questionContents) {
+        questionSocket?.emit("solved", {
+          type: "question",
+          roomId: roomId,
+          questionId: questionContents?.questionId
+        });
+      }
 
       setDefaultQuestionContents();
 
@@ -123,6 +137,8 @@ const Toolbar = () => {
 
       const handleEditText = ({ target }: fabric.IEvent<MouseEvent>) => {
         if (!target) return;
+        setIsMemoEditing(true);
+
         const textBox = (target as fabricObjectWithItem).item(1);
         const backGround = (target as fabricObjectWithItem).item(0);
 
@@ -132,6 +148,7 @@ const Toolbar = () => {
 
         // 더미 텍스트박스를 생성합니다.
         const dummyTextBox = new fabric.Textbox(textBox.text, {
+          fontFamily: "Pretendard Variable",
           textAlign: textBox.textAlign,
           fontSize: textBox.fontSize,
           width: textBox.width,
@@ -175,12 +192,14 @@ const Toolbar = () => {
 
         // 텍스트의 수정을 마치는 이벤트 처리
         dummyTextBox.on("editing:exited", () => {
+          setIsMemoEditing(false);
           handleEditEnd(dummyTextBox, textBox, target as fabricObjectWithAddWithUpdate);
         });
       };
 
       stickyMemo.on("selected", ({ target }) => {
-        if (!target) return;
+        if (!target || canvas.getActiveObjects().length !== 1) return;
+
         setVisibilityEditPanel(true);
         setStickyNoteInstance(target as fabricObjectWithItem);
         canvas.on("selection:cleared", handleClear);
@@ -312,7 +331,7 @@ const Toolbar = () => {
             setIsQuestionListOpen(false);
           }}
           disabled={activeTool === "stickyNote"}
-          title="Add Stikynote (포스트잇 추가)"
+          title="Add StickyNote (포스트잇 추가)"
         />
         <ColorPanel className={`${activeTool === "pen" ? "block" : "hidden"}`} />
         {/* <ToolButton

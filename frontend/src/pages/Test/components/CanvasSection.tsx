@@ -1,5 +1,5 @@
 import { fabric } from "fabric";
-import { useRecoilValue, useSetRecoilState, useRecoilState } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import { useEffect, useRef } from "react";
 
 import Toolbar from "./Toolbar";
@@ -7,25 +7,27 @@ import StickyNoteEditPanel from "./StickyNoteEditPanel";
 import QuestionList from "./QuestionList";
 
 import questionListState from "./stateQuestionList";
-import cavasInstanceState from "./stateCanvasInstance";
+import canvasInstanceState from "./stateCanvasInstance";
 import isQuestionListOpenState from "./stateIsQuestionListOpen";
 import instructorSocketRefState from "@/stores/stateInstructorSocketRef";
 import stickyNoteEditPanelVisibilityState from "./stateStickyNoteEditPanelVisible";
+import isMemoEditingState from "@/stores/stateIsMemoEditing";
 
 const CanvasSection = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const setCanvas = useSetRecoilState(cavasInstanceState);
+  const [canvas, setCanvas] = useRecoilState(canvasInstanceState);
   const socket = useRecoilValue(instructorSocketRefState);
   const isEditPanelVisible = useRecoilValue(stickyNoteEditPanelVisibilityState);
   const isQuestionListOpen = useRecoilValue(isQuestionListOpenState);
   const [questions, setQuestions] = useRecoilState(questionListState);
+  const isMemoEditing = useRecoilValue(isMemoEditingState);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!socket) return;
     socket.on("asked", (data) => {
-      setQuestions([data.content, ...questions]);
+      setQuestions([{ content: data.content, questionId: data.questionId }, ...questions]);
     });
   }, [socket, questions]);
 
@@ -64,20 +66,6 @@ const CanvasSection = () => {
     };
     window.addEventListener("resize", handleResize);
 
-    // delete 키를 이용해서 선택된 객체 삭제
-    const handleDelete = ({ key, code }: { key: string; code: string }) => {
-      if (!(code === "Delete" || key === "Delete" || code === "Backspace" || key === "Backspace")) return;
-      const activeObjects = newCanvas.getActiveObjects();
-      if (activeObjects && activeObjects.length > 0) {
-        // 선택된 모든 객체 삭제
-        activeObjects.forEach((obj) => {
-          newCanvas.remove(obj);
-        });
-        newCanvas.discardActiveObject(); // 선택 해제
-      }
-    };
-    window.addEventListener("keyup", handleDelete);
-
     // 처음 접속했을 때 캔버스에 그리기 가능하도록 설정
     newCanvas.freeDrawingBrush.width = 10;
     newCanvas.isDrawingMode = true;
@@ -86,9 +74,34 @@ const CanvasSection = () => {
     return () => {
       newCanvas.dispose();
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("keyup", handleDelete);
     };
   }, []);
+
+  useEffect(() => {
+    // delete 키를 이용해서 선택된 객체 삭제
+    const handleDelete = ({ key, code }: { key: string; code: string }) => {
+      if (!canvas) return;
+      if (!(code === "Delete" || key === "Delete" || code === "Backspace" || key === "Backspace")) return;
+      const activeObjects = canvas!.getActiveObjects();
+      if (activeObjects && activeObjects.length > 0) {
+        // 선택된 모든 객체 삭제
+        activeObjects.forEach((obj) => {
+          canvas!.remove(obj);
+        });
+        canvas!.discardActiveObject(); // 선택 해제
+      }
+    };
+
+    if (isMemoEditing) {
+      window.removeEventListener("keyup", handleDelete);
+    } else {
+      window.addEventListener("keyup", handleDelete);
+    }
+
+    return () => {
+      window.removeEventListener("keyup", handleDelete);
+    };
+  }, [canvas, isMemoEditing]);
 
   return (
     <div className="relative w-screen h-[calc(100vh-5rem)]" ref={canvasContainerRef}>

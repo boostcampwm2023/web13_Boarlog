@@ -8,6 +8,7 @@ import { Lecture, LectureSchema } from './schema/lecture.schema';
 import { LectureService } from './lecture.service';
 import { WhiteboardLog, WhiteboardLogSchema } from './schema/whiteboard-log.schema';
 import { EnterCode, EnterCodeSchema } from './schema/lecture-code.schema';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -17,9 +18,11 @@ import { EnterCode, EnterCodeSchema } from './schema/lecture-code.schema';
       { name: User.name, schema: UserSchema },
       { name: WhiteboardLog.name, schema: WhiteboardLogSchema },
       { name: LectureSubtitle.name, schema: LectureSubtitleSchema }
-    ])
+    ]),
+    JwtModule
   ],
   controllers: [LectureController],
-  providers: [LectureService, UserService]
+  providers: [LectureService, UserService],
+  exports: [LectureService, MongooseModule]
 })
 export class LectureModule {}
