@@ -21,7 +21,7 @@
 </p>
 
 <p align=center>
-  <a href="">시연 영상(예정)</a>
+  <a href="https://youtu.be/2WOme3P0Hw8?si=4e2pvwhAJANnHxjZ">시연 영상</a>
   &nbsp; | &nbsp; 
   <a href="https://boarlog.netlify.app/">서비스 링크</a>
 </p>
@@ -93,10 +93,10 @@
 <table align=center>
 <tr>
   <td>
-	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/0e75f788-510b-4ed6-9906-b7349c8092fb" />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/54176384/67162997-fe6d-4fdc-b672-dbe8dcdebd02" />
   </td>
   <td>
-	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/86391351/0e75f788-510b-4ed6-9906-b7349c8092fb" />
+	  <video src="https://github.com/boostcampwm2023/web13_Boarlog/assets/54176384/e679fc19-d9a8-4899-a274-b1f1a81c5c8c" />
   </td>
 </tr>
 <tr>
@@ -108,6 +108,11 @@
   </td>
 </tr>
 </table>
+
+<br/>
+
+## 클라이언트 요청 흐름도
+![서버 아키텍처](https://github.com/boostcampwm2023/web13_Boarlog/assets/70827921/43e476a7-6493-4ce9-b244-aba01cbf8612)
 
 <br/>
 
@@ -154,14 +159,15 @@
                 <p align=center>Backend</p>
             </td>
             <td>
-                <img src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs">
+                <img src="https://img.shields.io/badge/NestJS-E0234E?logo=nestjs">
                 <img src="https://img.shields.io/badge/MongoDB-114411?logo=mongodb">
                 <img src="https://img.shields.io/badge/Mongoose-114411?logo=mongodb">
+                <img src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=ffffff">
             </td>
         </tr>
         <tr>
             <td>
-                <p align=center>Deployment</p>
+                <p align=center>CI/CD</p>
             </td>
             <td>
                  <img src="https://img.shields.io/badge/GitHub Actions-000000?logo=github-actions">
@@ -196,8 +202,11 @@
 ## 핵심 개발 일지
 > **🔗 프로젝트 진행 과정에서 고민하고 도전한 과정이 담긴 핵심 개발 일지입니다.**
 
-- []()
-
+- ```변진상``` : [프로그래스 바 구현과 성능 개선을 위한 트러블 슈팅](https://velog.io/@quswlstkd88/%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EC%8A%A4-%EB%B0%94-%EA%B5%AC%ED%98%84%EA%B3%BC-%EC%84%B1%EB%8A%A5-%EA%B0%9C%EC%84%A0%EC%9D%84-%EC%9C%84%ED%95%9C-%ED%8A%B8%EB%9F%AC%EB%B8%94-%EC%8A%88%ED%8C%85)
+- ```이동령``` : [반응형 UX를 위한 Modernizr 적용기](https://velog.io/@pexe99/Boarlog-%EC%9A%B0%EB%A6%AC-%EC%84%9C%EB%B9%84%EC%8A%A4%EB%8A%94-%EB%AA%A8%EB%B0%94%EC%9D%BC-%EC%82%AC%EC%A0%88%EC%9E%85%EB%8B%88%EB%8B%A4)
+- ```정주완``` : [실시간 화이트보드 공유 구현 과정](https://boarlog.notion.site/ad59de67865345ff8a91eed36d074820)
+- ```이승연``` :
+- ```이현종``` : [미디어 서버 메모리 누수 원인 찾고 해결하기](https://www.notion.so/boarlog/939c0576a3394a049b2c1bdd29bbd51f)
 <br/>
 
 ## 팀 소개: TEAM_528
@@ -255,7 +264,7 @@ const teamName = camperIdArray.reduce((team, camperId) => {
             <td width="150">깊이있게 고민하고 기록하기</td>
             <td width="150">괜한 걱정 하지 않고 차근차근 쌓아올리기</td>
             <td width="150">두려워하지 않고 문제 해결하기</td>
-            <td width="150">기술 선택에 나만의 근거를 만들기</td>
+            <td width="150">모든 선택에 나만의 근거 만들기</td>
             <td width="150">작성한 코드에 대한 의도를 잘 기록하기</td>
         </tr>
     </tbody>
