@@ -22,9 +22,9 @@ import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolumeGainState from "@/stores/stateMicVolumeGain";
 import micVolumeState from "@/stores/stateMicVolume";
-import canvasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+import canvasInstanceState from "@/pages/Canvas/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
-import questionListState from "@/pages/Test/components/stateQuestionList";
+import questionListState from "@/pages/Canvas/components/stateQuestionList";
 
 interface HeaderInstructorControlsProps {
   setLectureCode: React.Dispatch<React.SetStateAction<string>>;
