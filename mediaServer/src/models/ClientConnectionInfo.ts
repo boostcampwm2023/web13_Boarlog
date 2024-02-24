@@ -6,9 +6,9 @@ export class ClientConnectionInfo {
   private _enterSocket: Socket | null;
   private _lectureSocket: Socket | null;
 
-  constructor(RTCPC: RTCPeerConnection) {
+  constructor(RTCPC: RTCPeerConnection, enterSocket?: Socket) {
     this._RTCPC = RTCPC;
-    this._enterSocket = null;
+    this._enterSocket = enterSocket ?? null;
     this._lectureSocket = null;
   }
 
