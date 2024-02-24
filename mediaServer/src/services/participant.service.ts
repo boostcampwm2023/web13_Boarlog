@@ -12,6 +12,9 @@ import { AskedRequestDto } from '../dto/asked.request.dto';
 import { Message } from '../models/Message';
 import { MessageType } from '../constants/message-type.constant';
 import { sendDataToClient } from './socket.service';
+import { isGuest, isParticipant, isParticipatingClient } from '../validation/client.validation';
+import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
+import { canEnterLecture } from '../validation/lecture.validation';
 
 const getClientEmail = (socket: Socket) => {
   let clientId = '';
@@ -76,52 +79,29 @@ const enterAsGuest = async (socket: Socket) => {
   }
   const clientInfo = await findClientInfoByEmail(clientId);
   const roomInfo = await findRoomInfoById(clientInfo.roomId);
-  const clientConnectionInfo = await relayServer.clientsConnectionInfo.get(clientId);
-  const roomConnectionInfo = relayServer.roomsConnectionInfo.get(clientInfo.roomId);
-  if (!clientInfo || !clientConnectionInfo || !clientInfo.roomId) {
-    // TODO: 추후 클라이언트로 에러처리 필요
-    console.log('잘못된 요청입니다.');
+  const clientConnectionInfo = (await relayServer.clientsConnectionInfo.get(clientId)) as ClientConnectionInfo;
+  const roomConnectionInfo = relayServer.roomsConnectionInfo.get(clientInfo.roomId) as RoomConnectionInfo;
+  if (!isParticipatingClient(clientInfo, clientConnectionInfo, clientInfo.roomId)) {
     return;
   }
-  if (!roomConnectionInfo) {
-    // TODO: 추후 클라이언트로 에러처리 필요
-    console.log('아직 열리지 않았거나 종료된 방입니다.');
+  if (!canEnterLecture(roomConnectionInfo)) {
     return;
   }
   socket.join(clientInfo.roomId);
   roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
 
   socket.on('ask', async (data) => {
-    if (clientInfo.type !== ClientType.GUEST || clientInfo.roomId !== data.roomId) {
-      // TODO: 추후 클라이언트로 에러처리 필요
-      console.log('해당 참여자가 존재하지 않습니다.');
+    if (!isGuest(clientInfo.type, clientInfo.roomId, data.roomId)) {
       return;
     }
-    const presenterEmail = roomInfo.presenterEmail;
-    if (!presenterEmail) {
-      // TODO: 추후 클라이언트로 에러처리 필요
-      console.log('발표자가 없습니다.');
-      return;
-    }
-    await saveQuestion(data.roomId, data.content);
-    const streamData = (await findQuestion(data.roomId, presenterEmail)) as StreamReadRaw;
-    const question = getStreamKeyAndQuestionFromStream(streamData);
-    sendDataToClient(
-      '/lecture',
-      presenterEmail,
-      'asked',
-      new AskedRequestDto(data.type, question.content, question.streamKey)
-    );
+    await askQuestion(roomInfo.presenterEmail, data.roomId, data.content);
   });
 
   socket.on('leave', (data) => {
-    if (clientInfo.type !== ClientType.GUEST || clientInfo.roomId !== data.roomId) {
-      // TODO: 추후 클라이언트로 에러처리 필요
-      console.log('해당 참여자가 존재하지 않습니다');
+    if (isParticipant(clientInfo.type, clientInfo.roomId, data.roomId)) {
       return;
     }
-    relayServer.roomsConnectionInfo.get(clientInfo.roomId)?.exitRoom(clientConnectionInfo, data.roomId);
-    sendDataToClient('/lecture', clientInfo.roomId, 'response', new Message(data.type, 'success'));
+    leaveRoom(clientInfo.roomId, clientConnectionInfo);
   });
 };
 
