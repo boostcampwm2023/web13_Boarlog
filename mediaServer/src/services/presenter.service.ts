@@ -46,13 +46,11 @@ const editWhiteboard = async (roomId: string, content: ICanvasData) => {
     body: JSON.stringify(content)
   });
   await updateWhiteboardData(roomId, content);
-  // relayServer.socket.of('/lecture').to(roomId).emit('update', new Message(MessageType.WHITEBOARD, content))
   sendDataToClient('/lecture', roomId, 'update', new Message(MessageType.WHITEBOARD, content));
 };
 
 const endLecture = async (roomId: string, email: string) => {
   sendDataToClient('/lecture', roomId, 'ended', new Message(MessageType.LECTURE, 'finish'));
-  // relayServer.socket.of('/lecture').to(roomId).emit('ended', new Message(MessageType.LECTURE, 'finish'));
   mediaConverter.setFfmpeg(roomId);
   relayServer.roomsConnectionInfo.get(roomId)?.endLecture(roomId);
   relayServer.roomsConnectionInfo.delete(roomId);
