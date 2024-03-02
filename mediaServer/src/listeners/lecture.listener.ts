@@ -73,8 +73,13 @@ export class LectureListener {
     });
 
     socket.on('disconnect', (reason) => {
-      console.log(clientInfo.roomId + '번 강의실: ' + reason);
-      scheduleEndLecture(clientInfo.roomId, email);
+      if (isPresenter(clientInfo.type, clientInfo.roomId, clientInfo.roomId)) {
+        console.log(clientInfo.roomId + '번 강의실: ' + reason);
+        scheduleEndLecture(clientInfo.roomId, email);
+      }
+      if (isParticipant(clientInfo.type, clientInfo.roomId, clientInfo.roomId)) {
+        leaveRoom(clientInfo.roomId, email);
+      }
     });
   };
 
@@ -110,9 +115,8 @@ export class LectureListener {
       leaveRoom(clientInfo.roomId, clientId);
     });
 
-    socket.on('disconnect', (reason) => {
-      console.log(clientInfo.roomId + '번 강의실: ' + reason);
-      scheduleEndLecture(clientInfo.roomId, clientId);
+    socket.on('disconnect', () => {
+      leaveRoom(clientInfo.roomId, clientId);
     });
   };
 }
