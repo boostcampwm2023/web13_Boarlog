@@ -1,7 +1,6 @@
 import { RTCIceCandidate, RTCPeerConnection, RTCSessionDescriptionInit } from 'wrtc';
 import { relayServer } from '../main';
 import { Socket } from 'socket.io';
-import { ClientConnectionInfo } from '../models/ClientConnectionInfo';
 import { mediaConverter } from '../utils/media-converter';
 import { ServerAnswerDto } from '../dto/server-answer.dto';
 import { setPresenterMediaStream } from './participant.service';
@@ -12,10 +11,13 @@ const setTrackEvent = (RTCPC: RTCPeerConnection, roomId: string) => {
     const roomInfo = relayServer.roomsConnectionInfo.get(roomId);
     if (roomInfo) {
       roomInfo.stream = event.streams[0];
-      roomInfo.studentInfoList.forEach((clientConnectionInfo: ClientConnectionInfo) => {
-        event.streams[0].getTracks().forEach(async (track: MediaStreamTrack) => {
-          await clientConnectionInfo.RTCPC.getSenders()[0].replaceTrack(track);
-        });
+      roomInfo.participantIdList.forEach((participantId: string) => {
+        const participantConnectionInfo = relayServer.clientsConnectionInfo.get(participantId);
+        if (participantConnectionInfo) {
+          event.streams[0].getTracks().forEach(async (track: MediaStreamTrack) => {
+            await participantConnectionInfo.RTCPC.getSenders()[0].replaceTrack(track);
+          });
+        }
       });
       mediaConverter.setSink(event.streams[0], roomId);
     }

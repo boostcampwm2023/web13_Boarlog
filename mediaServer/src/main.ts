@@ -10,6 +10,6 @@ const lectureListener = new LectureListener();
 
 relayServer.listen('/create-room', 'connection', clientListener.createRoom);
 relayServer.listen('/enter-room', 'connection', clientListener.enterRoom);
-relayServer.listen('/lecture', 'connection', lectureListener.lecture);
+relayServer.listen('/lecture', 'connection', lectureListener.enterLecture);
 
 export { relayServer };

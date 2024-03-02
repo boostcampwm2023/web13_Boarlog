@@ -17,7 +17,7 @@ const startLecture = (
     socket.join(email);
   }
   if (clientInfo.type === ClientType.STUDENT) {
-    roomConnectionInfo.studentInfoList.add(clientConnectionInfo);
+    roomConnectionInfo.participantIdList.add(email);
     fetch((process.env.SERVER_API_URL + '/lecture/' + clientInfo.roomId) as string, {
       method: 'PATCH',
       headers: { Authorization: socket.handshake.auth.accessToken }

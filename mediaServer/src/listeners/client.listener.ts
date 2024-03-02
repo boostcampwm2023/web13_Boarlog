@@ -5,10 +5,10 @@ import { findRoomInfoById } from '../repositories/room.repository';
 import { ClientConnectionInfo } from '../models/ClientConnectionInfo';
 import { relayServer } from '../main';
 import { getEmailByJwtPayload } from '../utils/auth';
-import { isNotEqualPresenterEmail } from '../validation/client.validation';
+import { isNotEqualPresenterEmail, isReconnectPresenter } from '../validation/client.validation';
 import { RTCPeerConnection } from 'wrtc';
 import { pc_config } from '../config/pc.config';
-import { isReconnectPresenter, sendPrevLectureData, setPresenterConnection } from '../services/presenter.service';
+import { sendPrevLectureData, setPresenterConnection } from '../services/presenter.service';
 import { setParticipantWebRTCConnection, setPresenterWebRTCConnection } from '../services/webrtc-connection.service';
 import { hasCurrentBoardDataInLecture } from '../validation/lecture.validation';
 

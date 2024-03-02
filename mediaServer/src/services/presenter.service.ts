@@ -18,10 +18,6 @@ import { ClientType } from '../constants/client-type.constant';
 import { RoomInfoDto } from '../dto/room-info.dto';
 import { RTCPeerConnection } from 'wrtc';
 
-const isReconnectPresenter = (presenterEmail: string, email: string) => {
-  return presenterEmail === email;
-};
-
 const setPresenterConnection = async (
   roomId: string,
   email: string,
@@ -67,4 +63,4 @@ const sendPrevLectureData = async (roomId: string, email: string, roomInfo: Reco
   });
 };
 
-export { isReconnectPresenter, setPresenterConnection, editWhiteboard, endLecture, sendPrevLectureData };
+export { setPresenterConnection, editWhiteboard, endLecture, sendPrevLectureData };

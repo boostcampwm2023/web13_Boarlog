@@ -1,5 +1,5 @@
 import { ClientType } from '../constants/client-type.constant';
-import { ClientConnectionInfo } from '../models/ClientConnectionInfo';
+import { relayServer } from '../main';
 
 const isPresenter = (clientType: string, clientRoomId: string, roomId: string) => {
   if (clientType === ClientType.PRESENTER && clientRoomId === roomId) {
@@ -8,6 +8,10 @@ const isPresenter = (clientType: string, clientRoomId: string, roomId: string) =
   // TODO: 추후 클라이언트로 에러처리 필요
   console.log('해당 발표자가 존재하지 않습니다.');
   return false;
+};
+
+const isReconnectPresenter = (presenterEmail: string, email: string) => {
+  return presenterEmail === email;
 };
 
 const isParticipant = (clientType: string, clientRoomId: string, roomId: string) => {
@@ -36,11 +40,8 @@ const isNotEqualPresenterEmail = (email: string, roomInfo: Record<string, string
   return false;
 };
 
-const isParticipatingClient = (
-  clientInfo: Record<string, string>,
-  clientConnectionInfo: ClientConnectionInfo | undefined,
-  roomId: string
-) => {
+const isParticipatingClient = (clientId: string, clientInfo: Record<string, string>, roomId: string) => {
+  const clientConnectionInfo = relayServer.clientsConnectionInfo.get(clientId);
   if (clientInfo && clientConnectionInfo && roomId) {
     return true;
   }
@@ -49,4 +50,4 @@ const isParticipatingClient = (
   return false;
 };
 
-export { isPresenter, isParticipant, isGuest, isNotEqualPresenterEmail, isParticipatingClient };
+export { isPresenter, isReconnectPresenter, isParticipant, isGuest, isNotEqualPresenterEmail, isParticipatingClient };
