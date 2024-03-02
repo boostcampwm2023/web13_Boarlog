@@ -41,7 +41,7 @@ const isNotEqualPresenterEmail = (email: string, roomInfo: Record<string, string
 };
 
 const isParticipatingClient = (clientId: string, clientInfo: Record<string, string>, roomId: string) => {
-  const clientConnectionInfo = relayServer.clientsConnectionInfo.get(clientId);
+  const clientConnectionInfo = relayServer.clientConnectionInfoList.get(clientId);
   if (clientInfo && clientConnectionInfo && roomId) {
     return true;
   }

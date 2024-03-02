@@ -4,12 +4,14 @@ import { ClientConnectionInfo } from './models/ClientConnectionInfo';
 
 export class RelayServer {
   private readonly _io;
-  private readonly _roomsConnectionInfo: Map<string, RoomConnectionInfo>;
-  private readonly _clientsConnectionInfo: Map<string, ClientConnectionInfo>;
+  private readonly _roomConnectionInfoList: Map<string, RoomConnectionInfo>;
+  private readonly _clientConnectionInfoList: Map<string, ClientConnectionInfo>;
+  private readonly _scheduledEndLectureList: Map<string, NodeJS.Timeout>;
 
   constructor(port: number) {
-    this._roomsConnectionInfo = new Map();
-    this._clientsConnectionInfo = new Map();
+    this._roomConnectionInfoList = new Map();
+    this._clientConnectionInfoList = new Map();
+    this._scheduledEndLectureList = new Map();
     this._io = new Server(port, {
       cors: {
         // TODO: 특정 URL만 origin 하도록 수정 필요
@@ -23,15 +25,29 @@ export class RelayServer {
     return this._io;
   }
 
-  get roomsConnectionInfo() {
-    return this._roomsConnectionInfo;
+  get roomConnectionInfoList() {
+    return this._roomConnectionInfoList;
   }
 
-  get clientsConnectionInfo() {
-    return this._clientsConnectionInfo;
+  get clientConnectionInfoList() {
+    return this._clientConnectionInfoList;
+  }
+
+  get scheduledEndLectureList() {
+    return this._scheduledEndLectureList;
   }
 
   listen = (path: string, event: string, method: (socket: Socket) => void) => {
     this._io.of(path).on(event, method);
+  };
+
+  clearScheduledEndLecture = (roomId: string) => {
+    const timerId = this._scheduledEndLectureList.get(roomId);
+    if (!timerId) {
+      console.log('이미 종료됐거나 열리지 않은 강의실입니다.');
+      return;
+    }
+    clearTimeout(timerId);
+    this._scheduledEndLectureList.delete(roomId);
   };
 }

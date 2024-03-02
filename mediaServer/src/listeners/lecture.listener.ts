@@ -5,7 +5,7 @@ import { findRoomInfoById } from '../repositories/room.repository';
 import { editWhiteboard, endLecture } from '../services/presenter.service';
 import { updateQuestionStatus } from '../repositories/question-repository';
 import { relayServer } from '../main';
-import { startLecture } from '../services/lecture.service';
+import { scheduleEndLecture, startLecture } from '../services/lecture.service';
 import { isGuest, isParticipant, isParticipatingClient, isPresenter } from '../validation/client.validation';
 import { ClientConnectionInfo } from '../models/ClientConnectionInfo';
 import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
@@ -20,12 +20,12 @@ export class LectureListener {
       return;
     }
     const clientInfo = await findClientInfoByEmail(email);
-    const clientConnectionInfo = (await relayServer.clientsConnectionInfo.get(email)) as ClientConnectionInfo;
+    const clientConnectionInfo = (await relayServer.clientConnectionInfoList.get(email)) as ClientConnectionInfo;
     if (!isParticipatingClient(email, clientInfo, clientInfo.roomId)) {
       return;
     }
     const roomInfo = await findRoomInfoById(clientInfo.roomId);
-    const roomConnectionInfo = relayServer.roomsConnectionInfo.get(clientInfo.roomId) as RoomConnectionInfo;
+    const roomConnectionInfo = relayServer.roomConnectionInfoList.get(clientInfo.roomId) as RoomConnectionInfo;
     if (!canEnterLecture(roomConnectionInfo)) {
       return;
     }
@@ -71,6 +71,11 @@ export class LectureListener {
       }
       leaveRoom(clientInfo.roomId, email);
     });
+
+    socket.on('disconnect', (reason) => {
+      console.log(clientInfo.roomId + '번 강의실: ' + reason);
+      scheduleEndLecture(clientInfo.roomId, email);
+    });
   };
 
   enterLectureAsGuest = async (socket: Socket) => {
@@ -81,7 +86,7 @@ export class LectureListener {
     }
     const clientInfo = await findClientInfoByEmail(clientId);
     const roomInfo = await findRoomInfoById(clientInfo.roomId);
-    const roomConnectionInfo = relayServer.roomsConnectionInfo.get(clientInfo.roomId) as RoomConnectionInfo;
+    const roomConnectionInfo = relayServer.roomConnectionInfoList.get(clientInfo.roomId) as RoomConnectionInfo;
     if (!isParticipatingClient(clientId, clientInfo, clientInfo.roomId)) {
       return;
     }
@@ -103,6 +108,11 @@ export class LectureListener {
         return;
       }
       leaveRoom(clientInfo.roomId, clientId);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log(clientInfo.roomId + '번 강의실: ' + reason);
+      scheduleEndLecture(clientInfo.roomId, clientId);
     });
   };
 }

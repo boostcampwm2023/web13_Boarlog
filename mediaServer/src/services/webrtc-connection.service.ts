@@ -8,11 +8,11 @@ import { sendDataToClient } from './socket.service';
 
 const setTrackEvent = (RTCPC: RTCPeerConnection, roomId: string) => {
   RTCPC.ontrack = (event) => {
-    const roomInfo = relayServer.roomsConnectionInfo.get(roomId);
+    const roomInfo = relayServer.roomConnectionInfoList.get(roomId);
     if (roomInfo) {
       roomInfo.stream = event.streams[0];
       roomInfo.participantIdList.forEach((participantId: string) => {
-        const participantConnectionInfo = relayServer.clientsConnectionInfo.get(participantId);
+        const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
         if (participantConnectionInfo) {
           event.streams[0].getTracks().forEach(async (track: MediaStreamTrack) => {
             await participantConnectionInfo.RTCPC.getSenders()[0].replaceTrack(track);
@@ -26,7 +26,7 @@ const setTrackEvent = (RTCPC: RTCPeerConnection, roomId: string) => {
 
 const exchangeCandidate = (namespace: string, email: string, socket: Socket) => {
   try {
-    const RTCPC = relayServer.clientsConnectionInfo.get(email)?.RTCPC;
+    const RTCPC = relayServer.clientConnectionInfoList.get(email)?.RTCPC;
     if (!RTCPC) {
       console.log('candidate를 교환할 수 없습니다.');
       return;

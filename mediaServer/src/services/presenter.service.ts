@@ -24,7 +24,7 @@ const setPresenterConnection = async (
   RTCPC: RTCPeerConnection,
   initBoardData: ICanvasData
 ) => {
-  relayServer.roomsConnectionInfo.set(roomId, new RoomConnectionInfo(RTCPC));
+  relayServer.roomConnectionInfoList.set(roomId, new RoomConnectionInfo(RTCPC));
   if (await isQuestionStreamExisted(roomId)) {
     await deleteQuestionStream(roomId);
   }
@@ -48,9 +48,9 @@ const editWhiteboard = async (roomId: string, content: ICanvasData) => {
 const endLecture = async (roomId: string, email: string) => {
   sendDataToClient('/lecture', roomId, 'ended', new Message(MessageType.LECTURE, 'finish'));
   mediaConverter.setFfmpeg(roomId);
-  relayServer.roomsConnectionInfo.get(roomId)?.endLecture(roomId);
-  relayServer.roomsConnectionInfo.delete(roomId);
-  relayServer.clientsConnectionInfo.delete(email);
+  relayServer.roomConnectionInfoList.get(roomId)?.endLecture(roomId);
+  relayServer.roomConnectionInfoList.delete(roomId);
+  relayServer.clientConnectionInfoList.delete(email);
   await Promise.all([deleteRoomInfoById(roomId), deleteQuestionStream(roomId)]);
 };
 

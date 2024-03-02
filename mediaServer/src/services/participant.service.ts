@@ -33,7 +33,7 @@ const getClientIdAndClientType = (socket: Socket) => {
 };
 
 const setPresenterMediaStream = (participantRTCPC: RTCPeerConnection, roomId: string) => {
-  const presenterMediaStream = relayServer.roomsConnectionInfo.get(roomId)?.stream;
+  const presenterMediaStream = relayServer.roomConnectionInfoList.get(roomId)?.stream;
   if (!presenterMediaStream) {
     console.log('발표자의 MediaStream이 존재하지 않습니다.');
     return;
@@ -61,8 +61,8 @@ const askQuestion = async (presenterEmail: string, roomId: string, content: stri
 };
 
 const leaveRoom = (roomId: string, participantId: string) => {
-  relayServer.roomsConnectionInfo.get(roomId)?.exitRoom(participantId, roomId);
-  relayServer.clientsConnectionInfo.delete(participantId);
+  relayServer.roomConnectionInfoList.get(roomId)?.exitRoom(participantId, roomId);
+  relayServer.clientConnectionInfoList.delete(participantId);
   sendDataToClient('/lecture', roomId, 'response', new Message(MessageType.LECTURE, 'success'));
 };
 

@@ -34,20 +34,20 @@ export class RoomConnectionInfo {
   endLecture = (roomId: string) => {
     this._presenterRTCPC.close();
     this._participantIdList.forEach((participantId: string) => {
-      const participantConnectionInfo = relayServer.clientsConnectionInfo.get(participantId);
+      const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
       if (participantConnectionInfo) {
         participantConnectionInfo.enterSocket?.leave(roomId);
         participantConnectionInfo.enterSocket?.disconnect();
         participantConnectionInfo.lectureSocket?.leave(roomId);
         participantConnectionInfo.lectureSocket?.disconnect();
         participantConnectionInfo.RTCPC?.close();
-        relayServer.clientsConnectionInfo.delete(participantId);
+        relayServer.clientConnectionInfoList.delete(participantId);
       }
     });
   };
 
   exitRoom = (participantId: string, roomId: string) => {
-    const participantConnectionInfo = relayServer.clientsConnectionInfo.get(participantId);
+    const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
     if (participantConnectionInfo) {
       participantConnectionInfo.lectureSocket?.leave(roomId);
       this._participantIdList.delete(participantId);

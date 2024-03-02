@@ -24,8 +24,9 @@ export class ClientListener {
           return;
         }
         socket.join(email);
-        relayServer.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC, socket));
+        relayServer.clientConnectionInfoList.set(email, new ClientConnectionInfo(RTCPC, socket));
         if (isReconnectPresenter(roomInfo.presenterEmail, email)) {
+          relayServer.clearScheduledEndLecture(data.roomId);
           await sendPrevLectureData(data.roomId, email, roomInfo);
         } else {
           await setPresenterConnection(data.roomId, email, RTCPC, data.whiteboard);
@@ -44,7 +45,7 @@ export class ClientListener {
         const RTCPC = new RTCPeerConnection(pc_config);
         socket.join(clientId);
         await saveClientInfo(clientId, clientType, data.roomId);
-        relayServer.clientsConnectionInfo.set(clientId, new ClientConnectionInfo(RTCPC, socket));
+        relayServer.clientConnectionInfoList.set(clientId, new ClientConnectionInfo(RTCPC, socket));
         const roomInfo = await findRoomInfoById(data.roomId);
         if (!hasCurrentBoardDataInLecture(roomInfo.currentWhiteboardData)) {
           return;
