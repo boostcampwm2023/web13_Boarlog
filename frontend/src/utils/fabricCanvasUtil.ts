@@ -33,11 +33,13 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
 export const loadCanvasData = ({
   fabricCanvas,
   currentData,
-  newData
+  newData,
+  debugData
 }: {
   fabricCanvas: fabric.Canvas;
   currentData: ICanvasData;
   newData: ICanvasData;
+  debugData: any;
 }) => {
   const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
@@ -50,6 +52,16 @@ export const loadCanvasData = ({
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);
   // 캔버스 크기 업데이트
   if (isSizeChanged) updateCanvasSize({ fabricCanvas, whiteboardData: newData });
+
+  /* 실시간 데이터 전송 딜레이 체크 용도, 디버깅 끝나면 삭제 */
+  let jsonString = JSON.stringify(newData);
+  let sizeInBytes = new Blob([jsonString]).size;
+
+  const transmissionDelay = debugData.arriveTime - debugData.startTime - newData.eventTime;
+  const renderingDelay = Date.now() - debugData.arriveTime;
+
+  console.log(`사이즈: ${sizeInBytes}\n전송지연: ${transmissionDelay}\n그리기지연: ${renderingDelay}`);
+  /* ------------------------------------------------------- */
 };
 
 export const updateCanvasSize = ({
