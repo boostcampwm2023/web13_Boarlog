@@ -1,13 +1,7 @@
 import { relayServer } from '../main';
-import { EntryRaw } from '../types/redis-stream.type';
 
-const sendMessageUsingSocket = (
-  namespace: string,
-  target: string,
-  eventName: string,
-  data: Record<string, string | Array<EntryRaw>>
-) => {
+const sendDataToClient = (namespace: string, target: string, eventName: string, data: any) => {
   relayServer.socket.of(namespace).to(target).emit(eventName, data);
 };
 
-export { sendMessageUsingSocket };
+export { sendDataToClient };
