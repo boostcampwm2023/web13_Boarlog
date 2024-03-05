@@ -5,10 +5,10 @@ import { findRoomInfoById } from '../repositories/room.repository';
 import { ClientConnectionInfo } from '../models/ClientConnectionInfo';
 import { relayServer } from '../main';
 import { getEmailByJwtPayload } from '../utils/auth';
-import { isNotEqualPresenterEmail } from '../validation/client.validation';
+import { isNotEqualPresenterEmail, isReconnectPresenter } from '../validation/client.validation';
 import { RTCPeerConnection } from 'wrtc';
 import { pc_config } from '../config/pc.config';
-import { isReconnectPresenter, sendPrevLectureData, setPresenterConnection } from '../services/presenter.service';
+import { sendPrevLectureData, setPresenterConnection } from '../services/presenter.service';
 import { setParticipantWebRTCConnection, setPresenterWebRTCConnection } from '../services/webrtc-connection.service';
 import { hasCurrentBoardDataInLecture } from '../validation/lecture.validation';
 
@@ -24,8 +24,9 @@ export class ClientListener {
           return;
         }
         socket.join(email);
-        relayServer.clientsConnectionInfo.set(email, new ClientConnectionInfo(RTCPC, socket));
+        relayServer.clientConnectionInfoList.set(email, new ClientConnectionInfo(RTCPC, socket));
         if (isReconnectPresenter(roomInfo.presenterEmail, email)) {
+          relayServer.clearScheduledEndLecture(data.roomId);
           await sendPrevLectureData(data.roomId, email, roomInfo);
         } else {
           await setPresenterConnection(data.roomId, email, RTCPC, data.whiteboard);
@@ -44,7 +45,7 @@ export class ClientListener {
         const RTCPC = new RTCPeerConnection(pc_config);
         socket.join(clientId);
         await saveClientInfo(clientId, clientType, data.roomId);
-        relayServer.clientsConnectionInfo.set(clientId, new ClientConnectionInfo(RTCPC, socket));
+        relayServer.clientConnectionInfoList.set(clientId, new ClientConnectionInfo(RTCPC, socket));
         const roomInfo = await findRoomInfoById(data.roomId);
         if (!hasCurrentBoardDataInLecture(roomInfo.currentWhiteboardData)) {
           return;

@@ -16,19 +16,18 @@ export class ClientConnectionInfo {
     return this._RTCPC;
   }
 
-  get enterSocket(): Socket | null {
-    return this._enterSocket;
-  }
-
-  set enterSocket(socket: Socket) {
-    this._enterSocket = socket;
-  }
-
-  get lectureSocket(): Socket | null {
-    return this._lectureSocket;
-  }
-
   set lectureSocket(socket: Socket) {
     this._lectureSocket = socket;
   }
+
+  disconnectWebRTCConnection = () => {
+    this._RTCPC.close();
+  };
+
+  disconnectSocket = (clientId: string, roomId: string) => {
+    this._enterSocket?.leave(clientId);
+    this._enterSocket?.disconnect();
+    this._lectureSocket?.leave(roomId);
+    this._lectureSocket?.disconnect();
+  };
 }
