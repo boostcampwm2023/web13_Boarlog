@@ -8,6 +8,7 @@ export interface ICanvasData {
 
 export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: ICanvasData, startTime: number) => {
   if (!fabricCanvas.viewportTransform) return;
+  const startTime2 = Date.now();
 
   const newJSONData = JSON.stringify(fabricCanvas);
   const newViewport = fabricCanvas.viewportTransform;
@@ -24,6 +25,7 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
     currentData.eventTime = startTime === 0 ? 0 : Date.now() - startTime;
     currentData.width = newWidth;
     currentData.height = newHeight;
+    console.log("저장 지연: ", Date.now() - startTime2);
     return true;
   } else {
     return false;
@@ -60,7 +62,7 @@ export const loadCanvasData = ({
   const transmissionDelay = debugData.arriveTime - debugData.startTime - newData.eventTime;
   const renderingDelay = Date.now() - debugData.arriveTime;
 
-  console.log(`사이즈: ${sizeInBytes}\n전송지연: ${transmissionDelay}\n그리기지연: ${renderingDelay}`);
+  console.log(`json 크기: ${sizeInBytes}\n전송 지연: ${transmissionDelay}\n불러오기 지연: ${renderingDelay}`);
   /* ------------------------------------------------------- */
 };
 

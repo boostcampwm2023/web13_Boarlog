@@ -345,6 +345,16 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       }
     });
     setInstructorSocket(lectureSocketRef.current);
+
+    // 디버깅용. 끝나면 삭제할 것
+
+    axios("./dummy70.json")
+      .then(({ data }) => {
+        fabricCanvasRef!.loadFromJSON(data.canvasJSON, () => {});
+      })
+      .catch((error) => {
+        console.log("화이트보드 데이터 로딩 실패", error);
+      });
   };
   const handleServerError = (err: any) => {
     console.error(err.message);
