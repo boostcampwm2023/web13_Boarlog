@@ -18,17 +18,13 @@ import { ClientType } from '../constants/client-type.constant';
 import { RoomInfoDto } from '../dto/room-info.dto';
 import { RTCPeerConnection } from 'wrtc';
 
-const isReconnectPresenter = (presenterEmail: string, email: string) => {
-  return presenterEmail === email;
-};
-
 const setPresenterConnection = async (
   roomId: string,
   email: string,
   RTCPC: RTCPeerConnection,
   initBoardData: ICanvasData
 ) => {
-  relayServer.roomsConnectionInfo.set(roomId, new RoomConnectionInfo(RTCPC));
+  relayServer.roomConnectionInfoList.set(roomId, new RoomConnectionInfo(RTCPC));
   if (await isQuestionStreamExisted(roomId)) {
     await deleteQuestionStream(roomId);
   }
@@ -52,9 +48,7 @@ const editWhiteboard = async (roomId: string, content: ICanvasData) => {
 const endLecture = async (roomId: string, email: string) => {
   sendDataToClient('/lecture', roomId, 'ended', new Message(MessageType.LECTURE, 'finish'));
   mediaConverter.setFfmpeg(roomId);
-  relayServer.roomsConnectionInfo.get(roomId)?.endLecture(roomId);
-  relayServer.roomsConnectionInfo.delete(roomId);
-  relayServer.clientsConnectionInfo.delete(email);
+  relayServer.deleteRoom(email, roomId);
   await Promise.all([deleteRoomInfoById(roomId), deleteQuestionStream(roomId)]);
 };
 
@@ -67,4 +61,4 @@ const sendPrevLectureData = async (roomId: string, email: string, roomInfo: Reco
   });
 };
 
-export { isReconnectPresenter, setPresenterConnection, editWhiteboard, endLecture, sendPrevLectureData };
+export { setPresenterConnection, editWhiteboard, endLecture, sendPrevLectureData };

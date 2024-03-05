@@ -11,34 +11,47 @@ import { uploadFileToObjectStorage } from './ncp-storage';
 import { RETRIABLE_ERROR, SUCCEEDED } from '../constants/clova-api-response-type.constant';
 import { ClovaApiReponse } from '../dto/clova-api-response.dto';
 import { ClovaApiRequest } from '../dto/clova-api-request.dto';
+import { AUDIO_OUTPUT_DIR } from '../constants/media-converter.constant';
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class MediaConverter {
-  private readonly peerStreamInfoList: Map<string, PeerStreamInfo>;
+  private readonly _presenterStreamInfoList: Map<string, PeerStreamInfo>;
 
   constructor() {
-    this.peerStreamInfoList = new Map();
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir);
+    this._presenterStreamInfoList = new Map();
+    if (!fs.existsSync(AUDIO_OUTPUT_DIR)) {
+      fs.mkdirSync(AUDIO_OUTPUT_DIR);
     }
   }
 
-  setSink = (tracks: MediaStream, roomId: string) => {
-    let audioSink: any;
+  get presenterStreamInfoList() {
+    return this._presenterStreamInfoList;
+  }
+
+  getPresenterStreamInfo = (roomId: string) => {
+    return this._presenterStreamInfoList.get(roomId);
+  };
+
+  setSink = (tracks: MediaStream): RTCAudioSink | null => {
+    let audioSink = null;
     tracks.getTracks().forEach((track) => {
       if (track.kind === 'audio') {
         audioSink = new RTCAudioSink(track);
       }
     });
-    this.startRecording(audioSink, roomId);
+    return audioSink;
   };
 
   startRecording = (audioSink: RTCAudioSink, roomId: string) => {
+    if (this._presenterStreamInfoList.has(roomId)) {
+      const presenterStreamInfo = this._presenterStreamInfoList.get(roomId) as PeerStreamInfo;
+      presenterStreamInfo.pauseRecording();
+      presenterStreamInfo.replaceAudioSink(audioSink);
+    } else {
+      this._presenterStreamInfoList.set(roomId, new PeerStreamInfo(audioSink, roomId));
+    }
     audioSink.ondata = ({ samples: { buffer } }) => {
-      if (!this.peerStreamInfoList.has(roomId)) {
-        this.peerStreamInfoList.set(roomId, new PeerStreamInfo(audioSink, roomId));
-      }
-      const stream = this.peerStreamInfoList.get(roomId) as PeerStreamInfo;
+      const stream = this._presenterStreamInfoList.get(roomId) as PeerStreamInfo;
       this.pushAudioSample(stream, buffer);
     };
   };
@@ -50,7 +63,7 @@ class MediaConverter {
   };
 
   setFfmpeg = async (roomId: string): Promise<void> => {
-    const streamInfo = this.peerStreamInfoList.get(roomId);
+    const streamInfo = this._presenterStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
@@ -66,14 +79,14 @@ class MediaConverter {
   };
 
   mediaStreamToFile = async (stream: PassThrough, fileName: string): Promise<string> => {
-    const outputPath = path.join(outputDir, fileName);
+    const outputPath = path.join(AUDIO_OUTPUT_DIR, fileName);
     const outputFile = fs.createWriteStream(outputPath);
     stream.pipe(outputFile);
     return outputPath;
   };
 
   endRecording = async (roomId: string) => {
-    const streamInfo = this.peerStreamInfoList.get(roomId);
+    const streamInfo = this._presenterStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
@@ -81,15 +94,15 @@ class MediaConverter {
     streamInfo.stopRecording();
     this.deleteTempFile(streamInfo.audioTempFileName);
     await this.requestToServer(roomId);
-    this.peerStreamInfoList.delete(roomId);
+    this._presenterStreamInfoList.delete(roomId);
   };
 
   getOutputAbsolutePath = (fileName: string) => {
-    return path.join(outputDir, fileName);
+    return path.join(AUDIO_OUTPUT_DIR, fileName);
   };
 
   deleteTempFile = (tempFileName: string) => {
-    fs.unlink(path.join(outputDir, tempFileName), (err) => {
+    fs.unlink(path.join(AUDIO_OUTPUT_DIR, tempFileName), (err) => {
       if (err) {
         console.log(`${tempFileName}을 찾을 수 없습니다.`);
       }
@@ -97,12 +110,12 @@ class MediaConverter {
   };
 
   saveAudioFile = async (roomId: string) => {
-    const streamInfo = this.peerStreamInfoList.get(roomId);
+    const streamInfo = this._presenterStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
     }
-    const url = await uploadFileToObjectStorage(path.join(outputDir, streamInfo.recordFileName), roomId);
+    const url = await uploadFileToObjectStorage(path.join(AUDIO_OUTPUT_DIR, streamInfo.recordFileName), roomId);
     console.log(`${url}에 파일 저장`);
     return url;
   };
@@ -134,7 +147,6 @@ class MediaConverter {
   };
 }
 
-const outputDir = path.join(process.cwd(), 'output');
 const mediaConverter = new MediaConverter();
 
-export { outputDir, mediaConverter };
+export { mediaConverter };
