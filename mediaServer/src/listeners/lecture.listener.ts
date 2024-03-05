@@ -10,6 +10,8 @@ import { isGuest, isParticipant, isParticipatingClient, isPresenter } from '../v
 import { ClientConnectionInfo } from '../models/ClientConnectionInfo';
 import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
 import { canEnterLecture } from '../validation/lecture.validation';
+import { mediaConverter } from '../utils/media-converter';
+import { heapDumpUtil } from '../utils/heap-dump';
 
 export class LectureListener {
   // TODO: 클라이언트는 한 개의 방만 접속할 수 있는지? 만약 그렇다면, 이미 참여 중인 빙이 있을 때 요청 거부하도록 처리해야 함
@@ -63,6 +65,9 @@ export class LectureListener {
         return;
       }
       await endLecture(clientInfo.roomId, email);
+      heapDumpUtil.createHeapSnapshot();
+      setTimeout(heapDumpUtil.createHeapSnapshot, 1000 * 60 * 5);
+      console.log('dump 파일 생성 완료');
     });
 
     socket.on('leave', (data) => {
@@ -72,10 +77,15 @@ export class LectureListener {
       leaveRoom(clientInfo.roomId, email);
     });
 
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', () => {
       if (isPresenter(clientInfo.type, clientInfo.roomId, clientInfo.roomId)) {
-        console.log(clientInfo.roomId + '번 강의실: ' + reason);
         scheduleEndLecture(clientInfo.roomId, email);
+        const presenterStreamInfo = mediaConverter.getPresenterStreamInfo(clientInfo.roomId);
+        if (!presenterStreamInfo) {
+          console.log('존재하지 않는 강의실입니다.');
+          return;
+        }
+        presenterStreamInfo.pauseRecording();
       }
       if (isParticipant(clientInfo.type, clientInfo.roomId, clientInfo.roomId)) {
         leaveRoom(clientInfo.roomId, email);

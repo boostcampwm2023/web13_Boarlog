@@ -19,7 +19,12 @@ const setTrackEvent = (RTCPC: RTCPeerConnection, roomId: string) => {
           });
         }
       });
-      mediaConverter.setSink(event.streams[0], roomId);
+      const presenterAudioSink = mediaConverter.setSink(event.streams[0]);
+      if (presenterAudioSink === null) {
+        console.log('발표자의 audio-sink가 존재하지 않습니다.');
+        return;
+      }
+      mediaConverter.startRecording(presenterAudioSink, roomId);
     }
   };
 };
