@@ -6,7 +6,7 @@ export class RelayServer {
   private readonly _io;
   private readonly _roomConnectionInfoList: Map<string, RoomConnectionInfo>;
   private readonly _clientConnectionInfoList: Map<string, ClientConnectionInfo>;
-  private readonly _scheduledEndLectureList: Map<string, NodeJS.Timeout>;
+  private readonly _scheduledEndLectureList: Map<string, number>;
 
   constructor(port: number) {
     this._roomConnectionInfoList = new Map();
@@ -39,6 +39,25 @@ export class RelayServer {
 
   listen = (path: string, event: string, method: (socket: Socket) => void) => {
     this._io.of(path).on(event, method);
+  };
+
+  deleteRoom = (presenterEmail: string, roomId: string) => {
+    const roomConnectionInfo = this._roomConnectionInfoList.get(roomId);
+    if (!roomConnectionInfo) {
+      console.log('존재하지 않는 방입니다.');
+      return;
+    }
+    roomConnectionInfo.closeParticipantConnection(roomId);
+    this._roomConnectionInfoList.delete(roomId);
+    const presenterConnectionInfo = this._clientConnectionInfoList.get(presenterEmail);
+    if (!presenterConnectionInfo) {
+      console.log('존재하지 않는 발표자입니다.');
+      return;
+    }
+    presenterConnectionInfo.disconnectWebRTCConnection();
+    presenterConnectionInfo.disconnectSocket(presenterEmail, roomId);
+    this._clientConnectionInfoList.delete(presenterEmail);
+    this._scheduledEndLectureList.delete(roomId);
   };
 
   clearScheduledEndLecture = (roomId: string) => {

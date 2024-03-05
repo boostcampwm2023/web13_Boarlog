@@ -31,16 +31,12 @@ export class RoomConnectionInfo {
     return this._stream;
   }
 
-  endLecture = (roomId: string) => {
-    this._presenterRTCPC.close();
+  closeParticipantConnection = (roomId: string) => {
     this._participantIdList.forEach((participantId: string) => {
       const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
       if (participantConnectionInfo) {
-        participantConnectionInfo.enterSocket?.leave(roomId);
-        participantConnectionInfo.enterSocket?.disconnect();
-        participantConnectionInfo.lectureSocket?.leave(roomId);
-        participantConnectionInfo.lectureSocket?.disconnect();
-        participantConnectionInfo.RTCPC?.close();
+        participantConnectionInfo.disconnectSocket(participantId, roomId);
+        participantConnectionInfo.disconnectWebRTCConnection();
         relayServer.clientConnectionInfoList.delete(participantId);
       }
     });
@@ -49,7 +45,7 @@ export class RoomConnectionInfo {
   exitRoom = (participantId: string, roomId: string) => {
     const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
     if (participantConnectionInfo) {
-      participantConnectionInfo.lectureSocket?.leave(roomId);
+      participantConnectionInfo.disconnectSocket(participantId, roomId);
       this._participantIdList.delete(participantId);
     }
   };

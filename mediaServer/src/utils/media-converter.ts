@@ -21,6 +21,10 @@ class MediaConverter {
     }
   }
 
+  get presenterStreamInfoList() {
+    return this._presenterStreamInfoList;
+  }
+
   getPresenterStreamInfo = (roomId: string) => {
     return this._presenterStreamInfoList.get(roomId);
   };

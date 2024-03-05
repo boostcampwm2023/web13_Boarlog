@@ -29,7 +29,15 @@ const startLecture = (
 };
 
 const scheduleEndLecture = (roomId: string, presenterId: string) => {
-  const timerId = setTimeout(endLecture, RECONNECT_TIMEOUT, roomId, presenterId);
+  const timerId = setTimeout(
+    async () => {
+      await endLecture(roomId, presenterId);
+      relayServer.scheduledEndLectureList.delete(roomId);
+    },
+    RECONNECT_TIMEOUT,
+    roomId,
+    presenterId
+  );
   relayServer.scheduledEndLectureList.set(roomId, timerId);
 };
 

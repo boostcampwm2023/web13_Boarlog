@@ -1,4 +1,5 @@
 import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
+import { DisconnectReason } from 'socket.io';
 
 const canEnterLecture = (roomConnectionInfo: RoomConnectionInfo | undefined) => {
   if (roomConnectionInfo) {
@@ -17,4 +18,8 @@ const hasCurrentBoardDataInLecture = (currentBoardData: string) => {
   return false;
 };
 
-export { canEnterLecture, hasCurrentBoardDataInLecture };
+const isLectureOngoing = (reason: DisconnectReason) => {
+  return reason != 'server namespace disconnect';
+};
+
+export { canEnterLecture, hasCurrentBoardDataInLecture, isLectureOngoing };

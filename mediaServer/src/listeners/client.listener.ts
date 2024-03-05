@@ -11,7 +11,6 @@ import { pc_config } from '../config/pc.config';
 import { sendPrevLectureData, setPresenterConnection } from '../services/presenter.service';
 import { setParticipantWebRTCConnection, setPresenterWebRTCConnection } from '../services/webrtc-connection.service';
 import { hasCurrentBoardDataInLecture } from '../validation/lecture.validation';
-import { heapDumpUtil } from '../utils/heap-dump';
 
 export class ClientListener {
   createRoom = (socket: Socket) => {
@@ -31,7 +30,6 @@ export class ClientListener {
           await sendPrevLectureData(data.roomId, email, roomInfo);
         } else {
           await setPresenterConnection(data.roomId, email, RTCPC, data.whiteboard);
-          heapDumpUtil.createHeapSnapshot();
         }
         await setPresenterWebRTCConnection(data.roomId, email, RTCPC, socket, data.SDP);
       });
