@@ -1,17 +1,17 @@
 import { RTCPeerConnection } from 'wrtc';
 import { Socket } from 'socket.io';
-import { ClientConnectionInfo } from './ClientConnectionInfo';
+import { relayServer } from '../main';
 
 export class RoomConnectionInfo {
   private _presenterSocket: Socket | null;
   private readonly _presenterRTCPC: RTCPeerConnection;
-  private readonly _studentInfoList: Set<ClientConnectionInfo>;
+  private readonly _participantIdList: Set<string>;
   private _stream: MediaStream | null;
 
   constructor(RTCPC: RTCPeerConnection) {
     this._presenterSocket = null;
     this._presenterRTCPC = RTCPC;
-    this._studentInfoList = new Set();
+    this._participantIdList = new Set();
     this._stream = null;
   }
 
@@ -19,8 +19,8 @@ export class RoomConnectionInfo {
     this._presenterSocket = socket;
   }
 
-  get studentInfoList(): Set<ClientConnectionInfo> {
-    return this._studentInfoList;
+  get participantIdList(): Set<string> {
+    return this._participantIdList;
   }
 
   set stream(presenterStream: MediaStream) {
@@ -31,19 +31,22 @@ export class RoomConnectionInfo {
     return this._stream;
   }
 
-  endLecture = (roomId: string) => {
-    this._presenterRTCPC.close();
-    this._studentInfoList.forEach((studentInfo: ClientConnectionInfo) => {
-      studentInfo.enterSocket?.leave(roomId);
-      studentInfo.enterSocket?.disconnect();
-      studentInfo.lectureSocket?.leave(roomId);
-      studentInfo.lectureSocket?.disconnect();
-      studentInfo.RTCPC?.close();
+  closeParticipantConnection = (roomId: string) => {
+    this._participantIdList.forEach((participantId: string) => {
+      const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
+      if (participantConnectionInfo) {
+        participantConnectionInfo.disconnectSocket(participantId, roomId);
+        participantConnectionInfo.disconnectWebRTCConnection();
+        relayServer.clientConnectionInfoList.delete(participantId);
+      }
     });
   };
 
-  exitRoom = (clientInfo: ClientConnectionInfo, roomId: string) => {
-    clientInfo.lectureSocket?.leave(roomId);
-    this._studentInfoList.delete(clientInfo);
+  exitRoom = (participantId: string, roomId: string) => {
+    const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
+    if (participantConnectionInfo) {
+      participantConnectionInfo.disconnectSocket(participantId, roomId);
+      this._participantIdList.delete(participantId);
+    }
   };
 }

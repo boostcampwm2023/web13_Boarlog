@@ -8,9 +8,9 @@ interface MediaFileNameList {
 }
 
 export class PeerStreamInfo {
-  private readonly _audioSink: RTCAudioSink;
   private readonly _mediaFileNameList: MediaFileNameList;
   private readonly _audio: PassThrough;
+  private _audioSink: RTCAudioSink;
   private _recordEnd: boolean;
   private _proc: FfmpegCommand | null;
 
@@ -38,10 +38,6 @@ export class PeerStreamInfo {
     this._recordEnd = isRecordEnd;
   }
 
-  get proc(): FfmpegCommand | null {
-    return this._proc;
-  }
-
   set proc(FfmpegCommand: FfmpegCommand) {
     this._proc = FfmpegCommand;
   }
@@ -53,7 +49,16 @@ export class PeerStreamInfo {
     };
   };
 
+  replaceAudioSink = (audioSink: RTCAudioSink) => {
+    this._audioSink = audioSink;
+  };
+
+  pauseRecording = () => {
+    this._audioSink.stop();
+  };
+
   stopRecording = () => {
+    this._recordEnd = true;
     this._audioSink.stop();
     this._audio.end();
   };
