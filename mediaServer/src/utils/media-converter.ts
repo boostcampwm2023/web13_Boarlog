@@ -8,6 +8,9 @@ import path from 'path';
 import { PeerStreamInfo } from '../models/PeerStreamInfo';
 import { FfmpegCommand } from '../models/FfmpegCommand';
 import { uploadFileToObjectStorage } from './ncp-storage';
+import { RETRIABLE_ERROR, SUCCEEDED } from '../constants/clova-api-response-type.constant';
+import { ClovaApiReponse } from '../dto/clova-api-response.dto';
+import { ClovaApiRequest } from '../dto/clova-api-request.dto';
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class MediaConverter {
@@ -119,21 +122,15 @@ class MediaConverter {
   };
 
   extractSubtitle = async (url: any, code: string) => {
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
-    headers.append('X-CLOVASPEECH-API-KEY', process.env.CLOVA_API_KEY as string);
-
-    const response = await fetch(process.env.CLOVA_API_URL as string, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify({
-        language: process.env.CLOVA_API_LANGUAGE,
-        completion: process.env.CLOVA_API_COMPLETION,
-        url: url,
-        callback: `${process.env.SERVER_API_URL}/lecture/${code}/text`
-      })
-    });
-    console.log(`[${response.status}] 강의 자막 저장`);
+    const response = await fetch(process.env.CLOVA_API_URL as string, ClovaApiRequest(url, code));
+    const result = await response.json() as ClovaApiReponse;
+    
+    if (result.result == SUCCEEDED) {
+      console.log(`[${result.result}] 강의 자막 저장`);
+    }
+    if (result.result in RETRIABLE_ERROR) {
+      const response = await fetch(process.env.CLOVA_API_URL as string, ClovaApiRequest(url, code));
+    }
   };
 }
 
