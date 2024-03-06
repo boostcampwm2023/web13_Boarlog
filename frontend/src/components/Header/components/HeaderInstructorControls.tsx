@@ -246,15 +246,29 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     updatedStreamRef.current = mediaStreamDestination.stream;
 
     startTime = Date.now();
+    console.log("setupAudioAnalysis");
     const onFrame = () => {
-      saveCanvasData(fabricCanvasRef!, canvasData, startTime).then((isChanged) => {
-        if (isChanged) submitData(canvasData);
-      });
+      saveCanvasData(fabricCanvasRef!, canvasData, startTime).then(
+        ([isCanvasDataChanged, isViewportChanged, isSizeChanged]) => {
+          if (!isCanvasDataChanged && (isViewportChanged || isSizeChanged)) {
+            const reducedCanvasData: ICanvasData = {
+              canvasJSON: "",
+              viewport: canvasData.viewport,
+              eventTime: canvasData.eventTime,
+              width: canvasData.width,
+              height: canvasData.width
+            };
+            submitData(reducedCanvasData);
+          } else if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
+            submitData(canvasData);
+          }
+        }
+      );
       gainNode.gain.value = inputMicVolumeRef.current;
       setMicVolumeState(calcNormalizedVolume(analyser));
-      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+      window.requestAnimationFrame(onFrame);
     };
-    onFrameIdRef.current = window.requestAnimationFrame(onFrame);
+    window.requestAnimationFrame(onFrame);
   };
 
   // 경과 시간을 표시하기 위한 부분입니다
@@ -307,7 +321,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     width: 0,
     height: 0
   };
-  //let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
     if (!lectureSocketRef.current) return;
@@ -316,11 +329,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       roomId: roomid,
       content: data
     });
-    /*
-    화이트보드 다시보기 더미 데이터를 만들기 위한 코드입니다.
-    replayFileArray.push({ ...data });
-    console.log(replayFileArray);
-    */
   };
 
   const handleServerAnswer = (data: any) => {

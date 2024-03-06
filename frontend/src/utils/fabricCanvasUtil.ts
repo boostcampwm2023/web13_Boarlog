@@ -7,7 +7,7 @@ export interface ICanvasData {
 }
 
 export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: ICanvasData, startTime: number) => {
-  if (!fabricCanvas.viewportTransform) return;
+  if (!fabricCanvas.viewportTransform) return [false, false, false];
   const startTime2 = Date.now();
 
   const newJSONData = JSON.stringify(fabricCanvas);
@@ -26,10 +26,9 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
     currentData.width = newWidth;
     currentData.height = newHeight;
     console.log("저장 지연: ", Date.now() - startTime2);
-    return true;
-  } else {
-    return false;
   }
+
+  return [isCanvasDataChanged, isViewportChanged, isSizeChanged];
 };
 
 export const loadCanvasData = ({
