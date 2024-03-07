@@ -200,7 +200,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     }
   };
 
-  async function createStudentOffer() {
+  const createStudentOffer = async () => {
     try {
       if (!pcRef.current || !socketRef.current) return;
       const SDP = await pcRef.current.createOffer({
@@ -218,9 +218,9 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     } catch (e) {
       console.error(e);
     }
-  }
+  };
 
-  function getStudentCandidate() {
+  const getStudentCandidate = () => {
     if (!pcRef.current) return;
     pcRef.current.onicecandidate = (e) => {
       if (e.candidate && socketRef.current) {
@@ -230,7 +230,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
         });
       }
     };
-  }
+  };
 
   const startAnalyse = () => {
     if (!mediaStreamRef.current) return;

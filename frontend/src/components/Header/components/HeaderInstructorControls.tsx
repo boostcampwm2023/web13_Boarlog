@@ -187,7 +187,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     }
   };
 
-  async function createPresenterOffer() {
+  const createPresenterOffer = async () => {
     // 4. 발표자의 offer 생성
     try {
       if (!pcRef.current || !socketRef.current) throw new Error("RTCPeerConnection 또는 소켓 연결 실패");
@@ -207,9 +207,9 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
-  function getPresenterCandidate() {
+  const getPresenterCandidate = () => {
     // 5. 발표자의 candidate 수집
     if (!pcRef.current) return;
     pcRef.current.onicecandidate = (e) => {
@@ -220,7 +220,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         });
       }
     };
-  }
+  };
 
   // 사용자에게 입력받은 MediaStream을 분석/변환하여 updatedStream으로 바꿔주는 함수
   const setupAudioAnalysis = (stream: MediaStream) => {
