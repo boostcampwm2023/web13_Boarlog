@@ -32,10 +32,10 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
 };
 
 export const loadCanvasData = ({
-  fabricCanvas,
-  currentData,
-  newData,
-  debugData
+  fabricCanvas, // 현재 참여자 페이지의 fabric.Canvas
+  currentData, // 현재 참여자 페이지의 캔버스 데이터
+  newData, // 발표자 페이지에게 받은 캔버스 데이터
+  debugData // 지연 시간 체크용 데이터
 }: {
   fabricCanvas: fabric.Canvas;
   currentData: ICanvasData;
@@ -45,23 +45,20 @@ export const loadCanvasData = ({
   const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
-  //console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
 
-  // 캔버스 데이터 업데이트
+  // [1] 캔버스 데이터 업데이트
   if (isCanvasDataChanged) fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
-  // 캔버스 뷰포트 업데이트
+  // [2] 캔버스 뷰포트 업데이트
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);
-  // 캔버스 크기 업데이트
+  // [3] 캔버스 크기 업데이트
   if (isSizeChanged) updateCanvasSize({ fabricCanvas, whiteboardData: newData });
 
   /* 실시간 데이터 전송 딜레이 체크 용도, 디버깅 끝나면 삭제 */
-  let jsonString = JSON.stringify(newData);
-  let sizeInBytes = new Blob([jsonString]).size;
-
   const transmissionDelay = debugData.arriveTime - debugData.startTime - newData.eventTime;
   const renderingDelay = Date.now() - debugData.arriveTime;
+  const dataSizeInBytes = new Blob([JSON.stringify(newData)]).size;
 
-  console.log(`json 크기: ${sizeInBytes}\n전송 지연: ${transmissionDelay}\n불러오기 지연: ${renderingDelay}`);
+  console.log(`json 크기: ${dataSizeInBytes}\n전송 지연: ${transmissionDelay}\n불러오기 지연: ${renderingDelay}`);
   /* ------------------------------------------------------- */
 };
 
