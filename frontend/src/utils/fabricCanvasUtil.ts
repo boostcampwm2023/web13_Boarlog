@@ -1,9 +1,20 @@
+import { fabric } from "fabric";
+
 export interface ICanvasData {
   canvasJSON: string;
   viewport: number[];
   eventTime: number;
   width: number;
   height: number;
+}
+
+export interface ICanvasData2 {
+  canvasJSON: string;
+  viewport: number[];
+  eventTime: number;
+  width: number;
+  height: number;
+  objects?: fabric.Object[];
 }
 
 export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: ICanvasData, startTime: number) => {
@@ -35,19 +46,55 @@ export const loadCanvasData = ({
   fabricCanvas, // 현재 참여자 페이지의 fabric.Canvas
   currentData, // 현재 참여자 페이지의 캔버스 데이터
   newData, // 발표자 페이지에게 받은 캔버스 데이터
-  debugData // 지연 시간 체크용 데이터
+  debugData, // 지연 시간 체크용 데이터
+  canvasObjects
 }: {
   fabricCanvas: fabric.Canvas;
   currentData: ICanvasData;
   newData: ICanvasData;
   debugData: any;
+  canvasObjects: fabric.Object[];
 }) => {
-  const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON;
+  const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON && newData.canvasJSON !== "";
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
 
+  //console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
   // [1] 캔버스 데이터 업데이트
-  if (isCanvasDataChanged) fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
+  if (isCanvasDataChanged) {
+    //fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
+
+    console.log("지연1", Date.now() - debugData.arriveTime);
+
+    // 20ms
+    const receiveObjects = newData.canvasJSON === "" ? [] : JSON.parse(newData.canvasJSON).objects;
+    let myObjects = fabricCanvas.getObjects();
+    console.log("지연2", Date.now() - debugData.arriveTime);
+
+    // 50ms
+    const deletedObjects = myObjects.filter((item) => !newData.canvasJSON.includes(JSON.stringify(item)));
+    const newObjects = receiveObjects.filter(
+      (item: fabric.Object) => !currentData.canvasJSON.includes(JSON.stringify(item))
+    );
+    console.log("지연3", Date.now() - debugData.arriveTime);
+
+    for (var i = 0; i < deletedObjects.length; i++) {
+      fabricCanvas.remove(deletedObjects[i]);
+    }
+    console.log("지연4", Date.now() - debugData.arriveTime);
+    fabric.util.enlivenObjects(
+      newObjects,
+      (objs: fabric.Object[]) => {
+        objs.forEach((item) => {
+          fabricCanvas.add(item);
+        });
+      },
+      ""
+    );
+    console.log("지연5", Date.now() - debugData.arriveTime);
+    fabricCanvas.renderAll(); // Make sure to call once we're ready!
+    console.log("지연6", Date.now() - debugData.arriveTime);
+  }
   // [2] 캔버스 뷰포트 업데이트
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);
   // [3] 캔버스 크기 업데이트

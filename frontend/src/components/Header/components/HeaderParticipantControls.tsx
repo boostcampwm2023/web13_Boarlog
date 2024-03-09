@@ -128,6 +128,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     width: 0,
     height: 0
   };
+  let canvasObjects: fabric.Object[] = [];
 
   const leaveLecture = ({ isLectureEnd }: { isLectureEnd: boolean }) => {
     if (!lectureSocketRef.current) return;
@@ -285,7 +286,8 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
       newData: data.whiteboard,
-      debugData: {}
+      debugData: {},
+      canvasObjects: canvasObjects
     });
     canvasData = data.whiteboard;
     pcRef.current.setRemoteDescription(data.SDP);
@@ -304,9 +306,11 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
       newData: data.content,
-      debugData: debugData
+      debugData: debugData,
+      canvasObjects: canvasObjects
     });
     canvasData = data.content;
+    canvasObjects = JSON.parse(data.content.canvasJSON).objects;
   };
   const handleLectureEnd = () => {
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
