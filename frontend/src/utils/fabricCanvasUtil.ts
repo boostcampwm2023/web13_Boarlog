@@ -59,41 +59,52 @@ export const loadCanvasData = ({
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
 
-  //console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
   // [1] 캔버스 데이터 업데이트
   if (isCanvasDataChanged) {
     //fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
 
-    console.log("지연1", Date.now() - debugData.arriveTime);
-
     // 20ms
-    const receiveObjects = newData.canvasJSON === "" ? [] : JSON.parse(newData.canvasJSON).objects;
-    let myObjects = fabricCanvas.getObjects();
-    console.log("지연2", Date.now() - debugData.arriveTime);
+    const parseReceiveData = () => {
+      return JSON.parse(newData.canvasJSON).objects;
+    };
+    const getCurrentObjects = () => {
+      return fabricCanvas.getObjects();
+    };
+
+    const receiveObjects = parseReceiveData();
+    const currentObjects = getCurrentObjects();
 
     // 50ms
-    const deletedObjects = myObjects.filter((item) => !newData.canvasJSON.includes(JSON.stringify(item)));
-    const newObjects = receiveObjects.filter(
-      (item: fabric.Object) => !currentData.canvasJSON.includes(JSON.stringify(item))
-    );
-    console.log("지연3", Date.now() - debugData.arriveTime);
+    const getDeletedObjects = () => {
+      return currentObjects.filter((item) => !newData.canvasJSON.includes(JSON.stringify(item)));
+    };
+    const getNewObjects = () => {
+      return receiveObjects.filter((item: fabric.Object) => !currentData.canvasJSON.includes(JSON.stringify(item)));
+    };
 
-    for (var i = 0; i < deletedObjects.length; i++) {
-      fabricCanvas.remove(deletedObjects[i]);
-    }
-    console.log("지연4", Date.now() - debugData.arriveTime);
-    fabric.util.enlivenObjects(
-      newObjects,
-      (objs: fabric.Object[]) => {
-        objs.forEach((item) => {
-          fabricCanvas.add(item);
-        });
-      },
-      ""
-    );
-    console.log("지연5", Date.now() - debugData.arriveTime);
-    fabricCanvas.renderAll(); // Make sure to call once we're ready!
-    console.log("지연6", Date.now() - debugData.arriveTime);
+    const deletedObjects = getDeletedObjects();
+    const newObjects = getNewObjects();
+
+    const deleteObject = () => {
+      for (var i = 0; i < deletedObjects.length; i++) {
+        fabricCanvas.remove(deletedObjects[i]);
+      }
+    };
+    const addObject = () => {
+      fabric.util.enlivenObjects(
+        newObjects,
+        (objs: fabric.Object[]) => {
+          objs.forEach((item) => {
+            fabricCanvas.add(item);
+          });
+        },
+        ""
+      );
+    };
+    deleteObject();
+    addObject();
+
+    fabricCanvas.renderAll();
   }
   // [2] 캔버스 뷰포트 업데이트
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);

@@ -310,7 +310,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
       canvasObjects: canvasObjects
     });
     canvasData = data.content;
-    canvasObjects = JSON.parse(data.content.canvasJSON).objects;
+    //canvasObjects = JSON.parse(data.content.canvasJSON).objects;
   };
   const handleLectureEnd = () => {
     showToast({ message: "강의가 종료되었습니다.", type: "alert" });
