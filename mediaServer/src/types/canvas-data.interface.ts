@@ -1,5 +1,5 @@
 export interface ICanvasData {
-  canvasJSON: string;
+  objects: fabric.Object[];
   viewport: number[];
   eventTime: number;
   width: number;

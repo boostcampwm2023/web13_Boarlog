@@ -1,42 +1,36 @@
 import { fabric } from "fabric";
 
 export interface ICanvasData {
-  canvasJSON: string;
+  objects: fabric.Object[];
   viewport: number[];
   eventTime: number;
   width: number;
   height: number;
-}
-
-export interface ICanvasData2 {
-  canvasJSON: string;
-  viewport: number[];
-  eventTime: number;
-  width: number;
-  height: number;
-  objects?: fabric.Object[];
+  canvasJSON?: string;
 }
 
 export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: ICanvasData, startTime: number) => {
   if (!fabricCanvas.viewportTransform) return [false, false, false];
   const startTime2 = Date.now();
 
-  const newJSONData = JSON.stringify(fabricCanvas);
+  const newObjects = fabricCanvas.getObjects();
   const newViewport = fabricCanvas.viewportTransform;
   const newWidth = fabricCanvas.getWidth();
   const newHeight = fabricCanvas.getHeight();
 
-  const isCanvasDataChanged = currentData.canvasJSON !== newJSONData;
+  const isCanvasDataChanged = currentData.canvasJSON !== JSON.stringify(fabricCanvas);
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newViewport);
   const isSizeChanged = currentData.width !== newWidth || currentData.height !== newHeight;
 
   if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
-    currentData.canvasJSON = newJSONData;
+    console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
+    currentData.objects = newObjects;
     currentData.viewport = newViewport;
     currentData.eventTime = startTime === 0 ? 0 : Date.now() - startTime;
     currentData.width = newWidth;
     currentData.height = newHeight;
     console.log("저장 지연: ", Date.now() - startTime2);
+    currentData.canvasJSON = JSON.stringify(fabricCanvas);
   }
 
   return [isCanvasDataChanged, isViewportChanged, isSizeChanged];
@@ -46,16 +40,15 @@ export const loadCanvasData = ({
   fabricCanvas, // 현재 참여자 페이지의 fabric.Canvas
   currentData, // 현재 참여자 페이지의 캔버스 데이터
   newData, // 발표자 페이지에게 받은 캔버스 데이터
-  debugData, // 지연 시간 체크용 데이터
-  canvasObjects
+  debugData // 지연 시간 체크용 데이터
 }: {
   fabricCanvas: fabric.Canvas;
   currentData: ICanvasData;
   newData: ICanvasData;
   debugData: any;
-  canvasObjects: fabric.Object[];
 }) => {
-  const isCanvasDataChanged = currentData.canvasJSON !== newData.canvasJSON && newData.canvasJSON !== "";
+  const isCanvasDataChanged =
+    JSON.stringify(currentData.objects) !== JSON.stringify(newData.objects) && newData.objects.length !== 0;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
 
@@ -63,27 +56,19 @@ export const loadCanvasData = ({
   if (isCanvasDataChanged) {
     //fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
 
-    // 20ms
-    const parseReceiveData = () => {
-      return JSON.parse(newData.canvasJSON).objects;
-    };
-    const getCurrentObjects = () => {
-      return fabricCanvas.getObjects();
-    };
+    const receiveObjects = newData.objects;
+    const currentObjects = fabricCanvas.getObjects();
 
-    const receiveObjects = parseReceiveData();
-    const currentObjects = getCurrentObjects();
+    const findUniqueObjects = (a, b) => {
+      const aSet = new Set(a.map(JSON.stringify));
+      const bSet = new Set(b.map(JSON.stringify));
 
-    // 50ms
-    const getDeletedObjects = () => {
-      return currentObjects.filter((item) => !newData.canvasJSON.includes(JSON.stringify(item)));
-    };
-    const getNewObjects = () => {
-      return receiveObjects.filter((item: fabric.Object) => !currentData.canvasJSON.includes(JSON.stringify(item)));
-    };
+      const uniqueInA = a.filter((obj) => !bSet.has(JSON.stringify(obj)));
+      const uniqueInB = b.filter((obj) => !aSet.has(JSON.stringify(obj)));
 
-    const deletedObjects = getDeletedObjects();
-    const newObjects = getNewObjects();
+      return [uniqueInA, uniqueInB];
+    };
+    const [deletedObjects, newObjects] = findUniqueObjects(currentObjects, receiveObjects);
 
     const deleteObject = () => {
       for (var i = 0; i < deletedObjects.length; i++) {

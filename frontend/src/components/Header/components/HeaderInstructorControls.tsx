@@ -252,7 +252,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         ([isCanvasDataChanged, isViewportChanged, isSizeChanged]) => {
           if (!isCanvasDataChanged && (isViewportChanged || isSizeChanged)) {
             const reducedCanvasData: ICanvasData = {
-              canvasJSON: "",
+              objects: [],
               viewport: canvasData.viewport,
               eventTime: canvasData.eventTime,
               width: canvasData.width,
@@ -260,7 +260,14 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
             };
             submitData(reducedCanvasData);
           } else if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
-            submitData(canvasData);
+            const reducedCanvasData: ICanvasData = {
+              objects: canvasData.objects,
+              viewport: canvasData.viewport,
+              eventTime: canvasData.eventTime,
+              width: canvasData.width,
+              height: canvasData.width
+            };
+            submitData(reducedCanvasData);
           }
         }
       );
@@ -315,7 +322,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   };
 
   let canvasData: ICanvasData = {
-    canvasJSON: "",
+    objects: [],
     viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,
