@@ -280,7 +280,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     };
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
-
+    fabricCanvasRef!.backgroundColor = "white";
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
