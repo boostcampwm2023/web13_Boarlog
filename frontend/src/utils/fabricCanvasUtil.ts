@@ -45,7 +45,7 @@ export const loadCanvasData = ({
   fabricCanvas: fabric.Canvas;
   currentData: ICanvasData;
   newData: ICanvasData;
-  debugData: any;
+  debugData?: any;
 }) => {
   const isCanvasDataChanged =
     JSON.stringify(currentData.objects) !== JSON.stringify(newData.objects) && newData.objects.length !== 0;
