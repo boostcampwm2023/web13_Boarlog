@@ -250,6 +250,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     const onFrame = () => {
       saveCanvasData(fabricCanvasRef!, canvasData, startTime).then(
         ([isCanvasDataChanged, isViewportChanged, isSizeChanged]) => {
+          // 캔버스 내부 객체가 변경되지 않은 경우에는 oobjects를 제외한 나머지 데이터만 전송
           if (!isCanvasDataChanged && (isViewportChanged || isSizeChanged)) {
             const reducedCanvasData: ICanvasData = {
               objects: [],
@@ -273,9 +274,9 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       );
       gainNode.gain.value = inputMicVolumeRef.current;
       setMicVolumeState(calcNormalizedVolume(analyser));
-      window.requestAnimationFrame(onFrame);
+      onFrameIdRef.current = window.requestAnimationFrame(onFrame);
     };
-    window.requestAnimationFrame(onFrame);
+    onFrameIdRef.current = window.requestAnimationFrame(onFrame);
   };
 
   // 경과 시간을 표시하기 위한 부분입니다
@@ -361,8 +362,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     });
     setInstructorSocket(lectureSocketRef.current);
 
-    // 디버깅용. 끝나면 삭제할 것
-
+    // 지연 시간 체크를 위해 큰 크기의 더미 데이터를 화이트보드에 로드합니다. 개선이 끝나면 제거 예정입니다.
     axios("./dummy70.json")
       .then(({ data }) => {
         fabricCanvasRef!.loadFromJSON(data.canvasJSON, () => {});

@@ -59,9 +59,9 @@ export const loadCanvasData = ({
     const receiveObjects = newData.objects;
     const currentObjects = fabricCanvas.getObjects();
 
-    const findUniqueObjects = (a, b) => {
-      const aSet = new Set(a.map(JSON.stringify));
-      const bSet = new Set(b.map(JSON.stringify));
+    const findUniqueObjects = (a: any[], b: fabric.Object[]) => {
+      const aSet = new Set(a.map((item) => JSON.stringify(item)));
+      const bSet = new Set(b.map((item) => JSON.stringify(item)));
 
       const uniqueInA = a.filter((obj) => !bSet.has(JSON.stringify(obj)));
       const uniqueInB = b.filter((obj) => !aSet.has(JSON.stringify(obj)));
