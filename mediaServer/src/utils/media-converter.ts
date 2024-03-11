@@ -1,17 +1,16 @@
 import wrtc, { RTCAudioSink } from 'wrtc';
-import { PassThrough } from 'stream';
 import fs from 'fs';
 const { RTCAudioSink } = wrtc.nonstandard;
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegPath from '@ffmpeg-installer/ffmpeg';
 import path from 'path';
 import { PeerStreamInfo } from '../models/PeerStreamInfo';
-import { FfmpegCommand } from '../models/FfmpegCommand';
 import { uploadFileToObjectStorage } from './ncp-storage';
 import { RETRIABLE_ERROR, SUCCEEDED } from '../constants/clova-api-response-type.constant';
 import { ClovaApiReponse } from '../dto/clova-api-response.dto';
 import { ClovaApiRequest } from '../dto/clova-api-request.dto';
 import { AUDIO_OUTPUT_DIR } from '../constants/media-converter.constant';
+import { runFfmpegCommand } from './ffmpeg';
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class MediaConverter {
@@ -24,25 +23,19 @@ class MediaConverter {
     }
   }
 
-  get presenterStreamInfoList() {
-    return this._presenterStreamInfoList;
-  }
-
   getPresenterStreamInfo = (roomId: string) => {
     return this._presenterStreamInfoList.get(roomId);
   };
 
-  setSink = (tracks: MediaStream): RTCAudioSink | null => {
-    let audioSink = null;
-    tracks.getTracks().forEach((track) => {
-      if (track.kind === 'audio') {
-        audioSink = new RTCAudioSink(track);
-      }
-    });
-    return audioSink;
+  startRecording = (roomId: string, tracks: MediaStream) => {
+    tracks.getTracks().forEach((track) => this.setAudioSampleDataEventListener(roomId, track));
   };
 
-  startRecording = (audioSink: RTCAudioSink, roomId: string) => {
+  setAudioSampleDataEventListener = (roomId: string, track: MediaStreamTrack) => {
+    if (track.kind !== 'audio') {
+      return;
+    }
+    const audioSink = new RTCAudioSink(track);
     if (this._presenterStreamInfoList.has(roomId)) {
       const presenterStreamInfo = this._presenterStreamInfoList.get(roomId) as PeerStreamInfo;
       presenterStreamInfo.pauseRecording();
@@ -62,30 +55,29 @@ class MediaConverter {
     }
   };
 
-  setFfmpeg = async (roomId: string): Promise<void> => {
+  endRecording = async (roomId: string): Promise<void> => {
     const streamInfo = this._presenterStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
     }
-    await this.mediaStreamToFile(streamInfo.audio, streamInfo.audioTempFileName);
-    streamInfo.proc = new FfmpegCommand(
-      this.getOutputAbsolutePath(streamInfo.audioTempFileName),
-      this.getOutputAbsolutePath(streamInfo.recordFileName),
+    this.pipeMediaStreamToFile(roomId);
+    runFfmpegCommand(
+      this.getAbsoluteOutputPath(streamInfo.audioTempFileName),
+      this.getAbsoluteOutputPath(streamInfo.recordFileName),
       roomId,
       streamInfo,
-      this.endRecording
+      this.finalizeRecording
     );
   };
 
-  mediaStreamToFile = async (stream: PassThrough, fileName: string): Promise<string> => {
-    const outputPath = path.join(AUDIO_OUTPUT_DIR, fileName);
-    const outputFile = fs.createWriteStream(outputPath);
-    stream.pipe(outputFile);
-    return outputPath;
+  pipeMediaStreamToFile = (roomId: string) => {
+    const streamInfo = this._presenterStreamInfoList.get(roomId) as PeerStreamInfo;
+    const outputFile = fs.createWriteStream(this.getAbsoluteOutputPath(streamInfo.audioTempFileName));
+    streamInfo.audio.pipe(outputFile);
   };
 
-  endRecording = async (roomId: string) => {
+  finalizeRecording = async (roomId: string) => {
     const streamInfo = this._presenterStreamInfoList.get(roomId);
     if (!streamInfo) {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
@@ -97,7 +89,7 @@ class MediaConverter {
     this._presenterStreamInfoList.delete(roomId);
   };
 
-  getOutputAbsolutePath = (fileName: string) => {
+  getAbsoluteOutputPath = (fileName: string) => {
     return path.join(AUDIO_OUTPUT_DIR, fileName);
   };
 
@@ -136,8 +128,8 @@ class MediaConverter {
 
   extractSubtitle = async (url: any, code: string) => {
     const response = await fetch(process.env.CLOVA_API_URL as string, ClovaApiRequest(url, code));
-    const result = await response.json() as ClovaApiReponse;
-    
+    const result = (await response.json()) as ClovaApiReponse;
+
     if (result.result == SUCCEEDED) {
       console.log(`[${result.result}] 강의 자막 저장`);
     }

@@ -1,5 +1,4 @@
 import { PassThrough } from 'stream';
-import { FfmpegCommand } from './FfmpegCommand';
 import { RTCAudioSink } from 'wrtc';
 
 interface MediaFileNameList {
@@ -12,14 +11,12 @@ export class PeerStreamInfo {
   private readonly _audio: PassThrough;
   private _audioSink: RTCAudioSink;
   private _recordEnd: boolean;
-  private _proc: FfmpegCommand | null;
 
   constructor(audioSink: RTCAudioSink, roomId: string) {
     this._audioSink = audioSink;
     this._mediaFileNameList = this.setFileName(roomId);
     this._audio = new PassThrough();
     this._recordEnd = false;
-    this._proc = null;
   }
 
   get audioTempFileName(): string {
@@ -36,10 +33,6 @@ export class PeerStreamInfo {
 
   set recordEnd(isRecordEnd: boolean) {
     this._recordEnd = isRecordEnd;
-  }
-
-  set proc(FfmpegCommand: FfmpegCommand) {
-    this._proc = FfmpegCommand;
   }
 
   setFileName = (roomId: string): MediaFileNameList => {

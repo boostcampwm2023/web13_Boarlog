@@ -47,7 +47,7 @@ const editWhiteboard = async (roomId: string, content: ICanvasData) => {
 
 const endLecture = async (roomId: string, email: string) => {
   sendDataToClient('/lecture', roomId, 'ended', new Message(MessageType.LECTURE, 'finish'));
-  mediaConverter.setFfmpeg(roomId);
+  mediaConverter.endRecording(roomId);
   relayServer.deleteRoom(email, roomId);
   await Promise.all([deleteRoomInfoById(roomId), deleteQuestionStream(roomId)]);
 };
