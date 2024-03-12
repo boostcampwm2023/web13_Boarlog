@@ -12,6 +12,7 @@ import Participant from "./pages/Participant/Participant";
 import Review from "./pages/Review/Review";
 import LectureEnd from "./pages/LectureEnd/LectureEnd";
 import ErrorPage from "./pages/ErrorPage/ErrorPage";
+import CanvasPage from "./pages/Canvas/CanvasPage";
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
           <Route path="/lecture-end" element={<LectureEnd />} />
           <Route path="/error" element={<ErrorPage />} />
           <Route path="/*" element={<Navigate to="/error" />} />
+          <Route path="/canvas" element={<CanvasPage />} />
         </Routes>
       </BrowserRouter>
     </RecoilRoot>

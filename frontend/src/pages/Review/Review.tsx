@@ -37,7 +37,7 @@ const Review = () => {
   const lectureId = new URLSearchParams(useLocation().search).get("id") || "nodata";
   let startTime = Date.now();
   let canvasData: ICanvasData = {
-    canvasJSON: "",
+    objects: [],
     viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,

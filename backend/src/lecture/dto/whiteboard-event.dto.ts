@@ -1,5 +1,5 @@
 export class WhiteboardEventDto {
-  canvasJSON: string;
+  objects: fabric.Object[];
 
   viewport: number[];
 

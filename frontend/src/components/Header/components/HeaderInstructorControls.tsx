@@ -22,9 +22,9 @@ import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 import selectedMicrophoneState from "@/stores/stateSelectedMicrophone";
 import micVolumeGainState from "@/stores/stateMicVolumeGain";
 import micVolumeState from "@/stores/stateMicVolume";
-import canvasInstanceState from "@/pages/Test/components/stateCanvasInstance";
+import canvasInstanceState from "@/pages/Canvas/components/stateCanvasInstance";
 import instructorSocketState from "@//stores/stateInstructorSocketRef";
-import questionListState from "@/pages/Test/components/stateQuestionList";
+import questionListState from "@/pages/Canvas/components/stateQuestionList";
 
 interface HeaderInstructorControlsProps {
   setLectureCode: React.Dispatch<React.SetStateAction<string>>;
@@ -187,7 +187,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     }
   };
 
-  async function createPresenterOffer() {
+  const createPresenterOffer = async () => {
     // 4. 발표자의 offer 생성
     try {
       if (!pcRef.current || !socketRef.current) throw new Error("RTCPeerConnection 또는 소켓 연결 실패");
@@ -207,9 +207,9 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
-  function getPresenterCandidate() {
+  const getPresenterCandidate = () => {
     // 5. 발표자의 candidate 수집
     if (!pcRef.current) return;
     pcRef.current.onicecandidate = (e) => {
@@ -220,7 +220,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         });
       }
     };
-  }
+  };
 
   // 사용자에게 입력받은 MediaStream을 분석/변환하여 updatedStream으로 바꿔주는 함수
   const setupAudioAnalysis = (stream: MediaStream) => {
@@ -246,10 +246,32 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     updatedStreamRef.current = mediaStreamDestination.stream;
 
     startTime = Date.now();
+    console.log("setupAudioAnalysis");
     const onFrame = () => {
-      saveCanvasData(fabricCanvasRef!, canvasData, startTime).then((isChanged) => {
-        if (isChanged) submitData(canvasData);
-      });
+      saveCanvasData(fabricCanvasRef!, canvasData, startTime).then(
+        ([isCanvasDataChanged, isViewportChanged, isSizeChanged]) => {
+          // 캔버스 내부 객체가 변경되지 않은 경우에는 oobjects를 제외한 나머지 데이터만 전송
+          if (!isCanvasDataChanged && (isViewportChanged || isSizeChanged)) {
+            const reducedCanvasData: ICanvasData = {
+              objects: [],
+              viewport: canvasData.viewport,
+              eventTime: canvasData.eventTime,
+              width: canvasData.width,
+              height: canvasData.width
+            };
+            submitData(reducedCanvasData);
+          } else if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
+            const reducedCanvasData: ICanvasData = {
+              objects: canvasData.objects,
+              viewport: canvasData.viewport,
+              eventTime: canvasData.eventTime,
+              width: canvasData.width,
+              height: canvasData.width
+            };
+            submitData(reducedCanvasData);
+          }
+        }
+      );
       gainNode.gain.value = inputMicVolumeRef.current;
       setMicVolumeState(calcNormalizedVolume(analyser));
       onFrameIdRef.current = window.requestAnimationFrame(onFrame);
@@ -301,13 +323,12 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   };
 
   let canvasData: ICanvasData = {
-    canvasJSON: "",
+    objects: [],
     viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,
     height: 0
   };
-  //let replayFileArray: ICanvasData[] = [];
 
   const submitData = (data: ICanvasData) => {
     if (!lectureSocketRef.current) return;
@@ -316,11 +337,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       roomId: roomid,
       content: data
     });
-    /*
-    화이트보드 다시보기 더미 데이터를 만들기 위한 코드입니다.
-    replayFileArray.push({ ...data });
-    console.log(replayFileArray);
-    */
   };
 
   const handleServerAnswer = (data: any) => {
@@ -345,6 +361,15 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       }
     });
     setInstructorSocket(lectureSocketRef.current);
+
+    // 지연 시간 체크를 위해 큰 크기의 더미 데이터를 화이트보드에 로드합니다. 개선이 끝나면 제거 예정입니다.
+    axios("./dummy70.json")
+      .then(({ data }) => {
+        fabricCanvasRef!.loadFromJSON(data.canvasJSON, () => {});
+      })
+      .catch((error) => {
+        console.log("화이트보드 데이터 로딩 실패", error);
+      });
   };
   const handleServerError = (err: any) => {
     console.error(err.message);

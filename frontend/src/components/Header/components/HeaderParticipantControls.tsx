@@ -93,6 +93,11 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     (audioContextRef.current as any).setSinkId(selectedSpeaker);
   }, [selectedSpeaker]);
 
+  /* ------------------------------------------------------------------------------- */
+  // 화이트보드 지연 시간 체크를 위해 임시로 추가한 코드입니다. 추후 삭제될 예정입니다.
+  let startTime = Date.now();
+  /* ------------------------------------------------------------------------------- */
+
   const enterLecture = async () => {
     await checkAuth();
     await initConnection();
@@ -117,7 +122,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   };
 
   let canvasData: ICanvasData = {
-    canvasJSON: "",
+    objects: [],
     viewport: [1, 0, 0, 1, 0, 0],
     eventTime: 0,
     width: 0,
@@ -195,7 +200,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     }
   };
 
-  async function createStudentOffer() {
+  const createStudentOffer = async () => {
     try {
       if (!pcRef.current || !socketRef.current) return;
       const SDP = await pcRef.current.createOffer({
@@ -213,9 +218,9 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     } catch (e) {
       console.error(e);
     }
-  }
+  };
 
-  function getStudentCandidate() {
+  const getStudentCandidate = () => {
     if (!pcRef.current) return;
     pcRef.current.onicecandidate = (e) => {
       if (e.candidate && socketRef.current) {
@@ -225,7 +230,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
         });
       }
     };
-  }
+  };
 
   const startAnalyse = () => {
     if (!mediaStreamRef.current) return;
@@ -267,18 +272,20 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
 
   const handleServerAnswer = (data: any) => {
     if (!pcRef.current) return;
-    const startTime = new Date(data.startTime).getTime();
+    // const startTime = new Date(data.startTime).getTime();
+    startTime = new Date(data.startTime).getTime();
     const updateElapsedTime = () => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsedTime);
     };
     const timer = setInterval(updateElapsedTime, 1000);
     timerIdRef.current = timer;
-
+    fabricCanvasRef!.backgroundColor = "white";
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
-      newData: data.whiteboard
+      newData: data.whiteboard,
+      debugData: {}
     });
     canvasData = data.whiteboard;
     pcRef.current.setRemoteDescription(data.SDP);
@@ -292,10 +299,12 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
   };
   const handleWhiteboardUpdate = (data: any) => {
+    const debugData = { startTime: startTime, arriveTime: Date.now() };
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
-      newData: data.content
+      newData: data.content,
+      debugData: debugData
     });
     canvasData = data.content;
   };
