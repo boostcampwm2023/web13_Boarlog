@@ -1,7 +1,8 @@
 import { fabric } from "fabric";
+import pako from "pako";
 
 export interface ICanvasData {
-  objects: fabric.Object[];
+  objects: Uint8Array;
   viewport: number[];
   eventTime: number;
   width: number;
@@ -24,7 +25,7 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
 
   if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
     console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
-    currentData.objects = newObjects;
+    currentData.objects = pako.gzip(JSON.stringify(newObjects));
     currentData.viewport = newViewport;
     currentData.eventTime = startTime === 0 ? 0 : Date.now() - startTime;
     currentData.width = newWidth;
@@ -47,8 +48,9 @@ export const loadCanvasData = ({
   newData: ICanvasData;
   debugData?: any;
 }) => {
-  const isCanvasDataChanged =
-    JSON.stringify(currentData.objects) !== JSON.stringify(newData.objects) && newData.objects.length !== 0;
+  console.log("길이", newData.objects, newData.objects.byteLength);
+  const isCanvasDataChanged = newData.objects?.byteLength !== 0 && newData.objects?.byteLength !== undefined;
+  //  const isCanvasDataChanged =  JSON.stringify(currentData.objects) !== JSON.stringify(newData.objects) && newData.objects.length !== 0;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
 
@@ -56,7 +58,7 @@ export const loadCanvasData = ({
   if (isCanvasDataChanged) {
     //fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
 
-    const receiveObjects = newData.objects;
+    const receiveObjects = JSON.parse(pako.inflate(newData.objects, { to: "string" }));
     const currentObjects = fabricCanvas.getObjects();
 
     const findUniqueObjects = (a: any[], b: fabric.Object[]) => {

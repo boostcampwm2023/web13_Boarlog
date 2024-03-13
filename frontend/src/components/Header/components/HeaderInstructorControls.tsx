@@ -108,6 +108,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     }
     setIsStartModalOpen(false);
     await initConnection();
+    await saveCanvasData(fabricCanvasRef!, canvasData, startTime);
     await createPresenterOffer();
   };
 
@@ -195,9 +196,10 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         offerToReceiveAudio: false,
         offerToReceiveVideo: false
       });
-      saveCanvasData(fabricCanvasRef!, canvasData, startTime);
+      console.log("전송 전", SDP);
+      //saveCanvasData(fabricCanvasRef!, canvasData, startTime);
       socketRef.current.emit("presenterOffer", {
-        whiteboard: canvasData,
+        //whiteboard: canvasData, -------------------------------------------------------------------------------------------------------------------------------------
         socketId: socketRef.current.id,
         roomId: roomid,
         SDP: SDP
@@ -253,7 +255,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
           // 캔버스 내부 객체가 변경되지 않은 경우에는 oobjects를 제외한 나머지 데이터만 전송
           if (!isCanvasDataChanged && (isViewportChanged || isSizeChanged)) {
             const reducedCanvasData: ICanvasData = {
-              objects: [],
+              objects: new Uint8Array(),
               viewport: canvasData.viewport,
               eventTime: canvasData.eventTime,
               width: canvasData.width,
@@ -323,7 +325,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   };
 
   let canvasData: ICanvasData = {
-    objects: [],
+    objects: new Uint8Array(),
     viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,

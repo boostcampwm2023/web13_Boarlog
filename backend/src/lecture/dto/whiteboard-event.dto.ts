@@ -1,5 +1,5 @@
 export class WhiteboardEventDto {
-  objects: fabric.Object[];
+  objects: Uint8Array[];
 
   viewport: number[];
 

@@ -122,7 +122,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   };
 
   let canvasData: ICanvasData = {
-    objects: [],
+    objects: new Uint8Array(),
     viewport: [1, 0, 0, 1, 0, 0],
     eventTime: 0,
     width: 0,
