@@ -252,17 +252,8 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     const onFrame = () => {
       saveCanvasData(fabricCanvasRef!, canvasData, startTime).then(
         ([isCanvasDataChanged, isViewportChanged, isSizeChanged]) => {
-          // 캔버스 내부 객체가 변경되지 않은 경우에는 oobjects를 제외한 나머지 데이터만 전송
-          if (!isCanvasDataChanged && (isViewportChanged || isSizeChanged)) {
-            const reducedCanvasData: ICanvasData = {
-              objects: new Uint8Array(),
-              viewport: canvasData.viewport,
-              eventTime: canvasData.eventTime,
-              width: canvasData.width,
-              height: canvasData.width
-            };
-            submitData(reducedCanvasData);
-          } else if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
+          if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
+            // 캔버스 내부 객체 변화 여부를 확인하기 위한 canvasJSON 데이터는 제외하고 전송
             const reducedCanvasData: ICanvasData = {
               objects: canvasData.objects,
               viewport: canvasData.viewport,

@@ -24,8 +24,7 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
   const isSizeChanged = currentData.width !== newWidth || currentData.height !== newHeight;
 
   if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
-    console.log(isCanvasDataChanged, isViewportChanged, isSizeChanged);
-    currentData.objects = pako.gzip(JSON.stringify(newObjects));
+    currentData.objects = isCanvasDataChanged ? pako.gzip(JSON.stringify(newObjects)) : new Uint8Array(0);
     currentData.viewport = newViewport;
     currentData.eventTime = startTime === 0 ? 0 : Date.now() - startTime;
     currentData.width = newWidth;
@@ -51,17 +50,15 @@ export const loadCanvasData = ({
   // 서버에 저장되어있던 currentWhiteboardData 의 newData.objects는 ArrayBuffer가 아닌 Node.js Buffer 형태로 전달되어 와서 변환이 필요함
   // TODO: 서버에서 ArrayBuffer로 전달되도록 수정 필요
   if (newData.objects?.byteLength === undefined) {
+    // @ts-ignore : newData.objects가 Uint8Array로 변환되어있지 않은 상태라서 임시로 처리했습니다.
     newData.objects = new Uint8Array(newData.objects.data);
   }
   const isCanvasDataChanged = newData.objects?.byteLength !== 0;
-  //  const isCanvasDataChanged =  JSON.stringify(currentData.objects) !== JSON.stringify(newData.objects) && newData.objects.length !== 0;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
 
   // [1] 캔버스 데이터 업데이트
   if (isCanvasDataChanged) {
-    //fabricCanvas.loadFromJSON(newData.canvasJSON, () => {});
-
     const receiveObjects = JSON.parse(pako.inflate(newData.objects, { to: "string" }));
     const currentObjects = fabricCanvas.getObjects();
 
@@ -105,7 +102,7 @@ export const loadCanvasData = ({
   /* 실시간 데이터 전송 딜레이 체크 용도, 디버깅 끝나면 삭제 */
   const transmissionDelay = debugData.arriveTime - debugData.startTime - newData.eventTime;
   const renderingDelay = Date.now() - debugData.arriveTime;
-  const dataSizeInBytes = new Blob([JSON.stringify(newData)]).size;
+  const dataSizeInBytes = new Blob([JSON.stringify(newData)]).size + newData.objects.byteLength;
 
   console.log(`json 크기: ${dataSizeInBytes}\n전송 지연: ${transmissionDelay}\n불러오기 지연: ${renderingDelay}`);
   /* ------------------------------------------------------- */
