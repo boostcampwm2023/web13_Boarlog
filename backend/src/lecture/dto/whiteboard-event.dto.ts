@@ -1,5 +1,5 @@
 export class WhiteboardEventDto {
-  objects: Uint8Array[];
+  objects: Uint8Array;
 
   viewport: number[];
 

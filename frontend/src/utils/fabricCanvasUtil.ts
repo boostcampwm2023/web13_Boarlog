@@ -48,8 +48,12 @@ export const loadCanvasData = ({
   newData: ICanvasData;
   debugData?: any;
 }) => {
-  console.log("길이", newData.objects, newData.objects.byteLength);
-  const isCanvasDataChanged = newData.objects?.byteLength !== 0 && newData.objects?.byteLength !== undefined;
+  // 서버에 저장되어있던 currentWhiteboardData 의 newData.objects는 ArrayBuffer가 아닌 Node.js Buffer 형태로 전달되어 와서 변환이 필요함
+  // TODO: 서버에서 ArrayBuffer로 전달되도록 수정 필요
+  if (newData.objects?.byteLength === undefined) {
+    newData.objects = new Uint8Array(newData.objects.data);
+  }
+  const isCanvasDataChanged = newData.objects?.byteLength !== 0;
   //  const isCanvasDataChanged =  JSON.stringify(currentData.objects) !== JSON.stringify(newData.objects) && newData.objects.length !== 0;
   const isViewportChanged = JSON.stringify(currentData.viewport) !== JSON.stringify(newData.viewport);
   const isSizeChanged = currentData.width !== newData.width || currentData.height !== newData.height;
