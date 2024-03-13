@@ -5,27 +5,18 @@ import { mediaConverter } from '../utils/media-converter';
 import { ServerAnswerDto } from '../dto/server-answer.dto';
 import { setPresenterMediaStream } from './participant.service';
 import { sendDataToClient } from './socket.service';
+import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
 
 const setTrackEvent = (RTCPC: RTCPeerConnection, roomId: string) => {
   RTCPC.ontrack = (event) => {
     const roomInfo = relayServer.roomConnectionInfoList.get(roomId);
-    if (roomInfo) {
-      roomInfo.stream = event.streams[0];
-      roomInfo.participantIdList.forEach((participantId: string) => {
-        const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
-        if (participantConnectionInfo) {
-          event.streams[0].getTracks().forEach(async (track: MediaStreamTrack) => {
-            await participantConnectionInfo.RTCPC.getSenders()[0].replaceTrack(track);
-          });
-        }
-      });
-      const presenterAudioSink = mediaConverter.setSink(event.streams[0]);
-      if (presenterAudioSink === null) {
-        console.log('발표자의 audio-sink가 존재하지 않습니다.');
-        return;
-      }
-      mediaConverter.startRecording(presenterAudioSink, roomId);
+    if (!roomInfo) {
+      console.log('강의실이 존재하지 않습니다.');
+      return;
     }
+    roomInfo.stream = event.streams[0];
+    setPresenterAudioTrack(roomInfo, roomInfo.stream);
+    mediaConverter.startRecording(roomId, roomInfo.stream);
   };
 };
 
@@ -83,6 +74,17 @@ const setParticipantWebRTCConnection = async (
   const answerData = new ServerAnswerDto(JSON.parse(roomInfo.currentWhiteboardData), roomInfo.startTime, answer);
   sendDataToClient('/enter-room', clientId, 'serverAnswer', answerData);
   RTCPC.setLocalDescription(answer);
+};
+
+const setPresenterAudioTrack = (roomInfo: RoomConnectionInfo, presenterMediaStream: MediaStream) => {
+  roomInfo.participantIdList.forEach((participantId: string) => {
+    const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
+    if (participantConnectionInfo) {
+      presenterMediaStream.getTracks().forEach(async (track: MediaStreamTrack) => {
+        await participantConnectionInfo.RTCPC.getSenders()[0].replaceTrack(track);
+      });
+    }
+  });
 };
 
 export { setTrackEvent, exchangeCandidate, setPresenterWebRTCConnection, setParticipantWebRTCConnection };
