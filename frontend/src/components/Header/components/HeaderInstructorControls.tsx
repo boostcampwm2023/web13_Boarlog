@@ -108,7 +108,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     }
     setIsStartModalOpen(false);
     await initConnection();
-    await saveCanvasData(fabricCanvasRef!, canvasData, startTime);
+    //await saveCanvasData(fabricCanvasRef!, canvasData, startTime);
     await createPresenterOffer();
   };
 
@@ -196,13 +196,19 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         offerToReceiveAudio: false,
         offerToReceiveVideo: false
       });
-      console.log("전송 전", SDP);
-      //saveCanvasData(fabricCanvasRef!, canvasData, startTime);
+      saveCanvasData(fabricCanvasRef!, canvasData, startTime);
+      const reducedCanvasData: object = {
+        //objects: new Uint8Array(), // Uint8Array 형태의 데이턱는 서버로 전송시 오류가 나서 일단 보내지 않습니다.
+        viewport: canvasData.viewport,
+        eventTime: canvasData.eventTime,
+        width: canvasData.width,
+        height: canvasData.height
+      };
       socketRef.current.emit("presenterOffer", {
-        //whiteboard: canvasData, -------------------------------------------------------------------------------------------------------------------------------------
         socketId: socketRef.current.id,
         roomId: roomid,
-        SDP: SDP
+        SDP: SDP,
+        whiteboard: reducedCanvasData // TODO: 현재 whiteboard의 objects 데이터를 보내는 경우 서버에 SDP 값이 누락되는 문제를 해결해야 합니다.
       });
       pcRef.current.setLocalDescription(SDP);
       getPresenterCandidate();
@@ -259,7 +265,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
               viewport: canvasData.viewport,
               eventTime: canvasData.eventTime,
               width: canvasData.width,
-              height: canvasData.width
+              height: canvasData.height
             };
             submitData(reducedCanvasData);
           }
@@ -356,6 +362,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     setInstructorSocket(lectureSocketRef.current);
 
     // 지연 시간 체크를 위해 큰 크기의 더미 데이터를 화이트보드에 로드합니다. 개선이 끝나면 제거 예정입니다.
+    /*
     axios("./dummy70.json")
       .then(({ data }) => {
         fabricCanvasRef!.loadFromJSON(data.canvasJSON, () => {});
@@ -363,6 +370,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       .catch((error) => {
         console.log("화이트보드 데이터 로딩 실패", error);
       });
+      */
   };
   const handleServerError = (err: any) => {
     console.error(err.message);
