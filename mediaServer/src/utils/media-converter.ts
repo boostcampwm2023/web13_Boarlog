@@ -11,6 +11,7 @@ import { ClovaApiReponse } from '../dto/clova-api-response.dto';
 import { ClovaApiRequest } from '../dto/clova-api-request.dto';
 import { AUDIO_OUTPUT_DIR } from '../constants/media-converter.constant';
 import { runFfmpegCommand } from './ffmpeg';
+import { pipeline } from 'stream';
 ffmpeg.setFfmpegPath(ffmpegPath.path);
 
 class MediaConverter {
@@ -42,6 +43,7 @@ class MediaConverter {
       presenterStreamInfo.replaceAudioSink(audioSink);
     } else {
       this._presenterStreamInfoList.set(roomId, new PeerStreamInfo(audioSink, roomId));
+      this.pipeMediaStreamToFile(roomId);
     }
     audioSink.ondata = ({ samples: { buffer } }) => {
       const stream = this._presenterStreamInfoList.get(roomId) as PeerStreamInfo;
@@ -61,7 +63,6 @@ class MediaConverter {
       console.log('해당 강의실 발표자가 존재하지 않습니다.');
       return;
     }
-    this.pipeMediaStreamToFile(roomId);
     runFfmpegCommand(
       this.getAbsoluteOutputPath(streamInfo.audioTempFileName),
       this.getAbsoluteOutputPath(streamInfo.recordFileName),
@@ -73,8 +74,15 @@ class MediaConverter {
 
   pipeMediaStreamToFile = (roomId: string) => {
     const streamInfo = this._presenterStreamInfoList.get(roomId) as PeerStreamInfo;
-    const outputFile = fs.createWriteStream(this.getAbsoluteOutputPath(streamInfo.audioTempFileName));
-    streamInfo.audio.pipe(outputFile);
+    pipeline(
+      streamInfo.audio,
+      fs.createWriteStream(this.getAbsoluteOutputPath(streamInfo.audioTempFileName)),
+      (err) => {
+        if (err) {
+          console.log(err);
+        }
+      }
+    );
   };
 
   finalizeRecording = async (roomId: string) => {
