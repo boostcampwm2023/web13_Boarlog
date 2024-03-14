@@ -20,29 +20,31 @@ export class UserService {
   async updateUsername(email: string, username: string) {
     const user = await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
     if (!user) {
-      throw new NotFoundException('업데이트에 실패했습니다.');
+      throw new NotFoundException('사용자 정보가 존재하지 않습니다.');
     }
-    return await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
+    return user;
   }
 
   async findLectureList(email: string) {
-    return (
-      await (
-        await this.findOneByEmail(email)
-      ).populate({
-        path: 'lecture_id',
-        select: '-__v',
-        match: { is_end: true },
-        populate: { path: 'presenter_id', select: '-_id username' }
-      })
-    ).lecture_id;
+    let user = await this.findOneByEmail(email);
+    user = await user.populate({
+      path: 'lecture_id',
+      select: '-__v',
+      match: { is_end: true },
+      populate: { path: 'presenter_id', select: '-_id username' }
+    });
+    return user.lecture_id;
   }
 
   async updateLectureList(email: string, id: Types.ObjectId) {
-    return await this.userModel.findOneAndUpdate(
+    const user = await this.userModel.findOneAndUpdate(
       { email: email },
       { $push: { lecture_id: id } },
       { new: true }
     ); 
+    if (!user) {
+      throw new NotFoundException('사용자 정보가 존재하지 않습니다.');
+    }
+    return user;
   }
 }
