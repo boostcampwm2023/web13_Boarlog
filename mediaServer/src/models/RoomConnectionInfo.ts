@@ -31,7 +31,7 @@ export class RoomConnectionInfo {
     return this._stream;
   }
 
-  closeParticipantConnection = (roomId: string) => {
+  closeAllParticipantConnection = (roomId: string) => {
     this._participantIdList.forEach((participantId: string) => {
       const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
       if (participantConnectionInfo) {
@@ -46,6 +46,7 @@ export class RoomConnectionInfo {
     const participantConnectionInfo = relayServer.clientConnectionInfoList.get(participantId);
     if (participantConnectionInfo) {
       participantConnectionInfo.disconnectSocket(participantId, roomId);
+      participantConnectionInfo.disconnectWebRTCConnection();
       this._participantIdList.delete(participantId);
     }
   };

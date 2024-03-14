@@ -82,6 +82,7 @@ export class LectureListener {
           return;
         }
         presenterStreamInfo.pauseRecording();
+        clientConnectionInfo.disconnectWebRTCConnection();
       }
       if (isParticipant(clientInfo.type, clientInfo.roomId, clientInfo.roomId)) {
         leaveRoom(clientInfo.roomId, email);
