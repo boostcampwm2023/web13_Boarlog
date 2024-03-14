@@ -108,7 +108,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     }
     setIsStartModalOpen(false);
     await initConnection();
-    //await saveCanvasData(fabricCanvasRef!, canvasData, startTime);
     await createPresenterOffer();
   };
 
@@ -360,17 +359,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       }
     });
     setInstructorSocket(lectureSocketRef.current);
-
-    // 지연 시간 체크를 위해 큰 크기의 더미 데이터를 화이트보드에 로드합니다. 개선이 끝나면 제거 예정입니다.
-    /*
-    axios("./dummy70.json")
-      .then(({ data }) => {
-        fabricCanvasRef!.loadFromJSON(data.canvasJSON, () => {});
-      })
-      .catch((error) => {
-        console.log("화이트보드 데이터 로딩 실패", error);
-      });
-      */
   };
   const handleServerError = (err: any) => {
     console.error(err.message);

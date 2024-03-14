@@ -39,13 +39,11 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
 export const loadCanvasData = ({
   fabricCanvas, // 현재 참여자 페이지의 fabric.Canvas
   currentData, // 현재 참여자 페이지의 캔버스 데이터
-  newData, // 발표자 페이지에게 받은 캔버스 데이터
-  debugData // 지연 시간 체크용 데이터
+  newData // 발표자 페이지에게 받은 캔버스 데이터
 }: {
   fabricCanvas: fabric.Canvas;
   currentData: ICanvasData;
   newData: ICanvasData;
-  debugData?: any;
 }) => {
   // 서버에 저장되어있던 currentWhiteboardData 의 newData.objects는 ArrayBuffer가 아닌 Node.js Buffer 형태로 전달되어 와서 변환이 필요함
   // TODO: 서버에서 ArrayBuffer로 전달되도록 수정 필요
@@ -98,14 +96,6 @@ export const loadCanvasData = ({
   if (isViewportChanged) fabricCanvas.setViewportTransform(newData.viewport);
   // [3] 캔버스 크기 업데이트
   if (isSizeChanged) updateCanvasSize({ fabricCanvas, whiteboardData: newData });
-
-  /* 실시간 데이터 전송 딜레이 체크 용도, 디버깅 끝나면 삭제 */
-  const transmissionDelay = debugData.arriveTime - debugData.startTime - newData.eventTime;
-  const renderingDelay = Date.now() - debugData.arriveTime;
-  const dataSizeInBytes = new Blob([JSON.stringify(newData)]).size + newData.objects.byteLength;
-
-  console.log(`json 크기: ${dataSizeInBytes}\n전송 지연: ${transmissionDelay}\n불러오기 지연: ${renderingDelay}`);
-  /* ------------------------------------------------------- */
 };
 
 export const updateCanvasSize = ({
