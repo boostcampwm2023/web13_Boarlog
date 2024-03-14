@@ -47,7 +47,7 @@ export class RelayServer {
       console.log('존재하지 않는 방입니다.');
       return;
     }
-    roomConnectionInfo.closeParticipantConnection(roomId);
+    roomConnectionInfo.closeAllParticipantConnection(roomId);
     this._roomConnectionInfoList.delete(roomId);
     const presenterConnectionInfo = this._clientConnectionInfoList.get(presenterEmail);
     if (!presenterConnectionInfo) {
