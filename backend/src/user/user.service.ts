@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './user.schema';
 import { Model, Types } from 'mongoose';
@@ -10,10 +10,18 @@ export class UserService {
   ) {}
 
   async findOneByEmail(email: string): Promise<UserDocument> {
+    const user = await this.userModel.findOne({ email: email });
+    if (!user) {
+      throw new NotFoundException('사용자 정보가 존재하지 않습니다.');
+    }
     return await this.userModel.findOne({ email: email });
   }
 
   async updateUsername(email: string, username: string) {
+    const user = await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
+    if (!user) {
+      throw new NotFoundException('업데이트에 실패했습니다.');
+    }
     return await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
   }
 

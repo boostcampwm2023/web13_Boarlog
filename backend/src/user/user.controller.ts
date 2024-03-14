@@ -20,10 +20,6 @@ export class UserController {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
     }
     const userInfo = await this.userService.findOneByEmail(req.user.email);
-
-    if (!userInfo) {
-      throw new HttpException('사용자 정보가 존재하지 않습니다.', HttpStatus.NOT_FOUND);
-    }
     res.status(HttpStatus.OK).send(new UserInfoDto(userInfo));
   }
 
@@ -39,10 +35,6 @@ export class UserController {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
     }
     const result = await this.userService.updateUsername(req.user.email, userUpdateDto.username);
-    if (!result) {
-      res.status(HttpStatus.NOT_FOUND).send();
-      throw new HttpException('업데이트에 실패했습니다.', HttpStatus.NOT_FOUND);
-    }
     res.status(HttpStatus.OK).send(new UserInfoDto(result));
   }
 }
