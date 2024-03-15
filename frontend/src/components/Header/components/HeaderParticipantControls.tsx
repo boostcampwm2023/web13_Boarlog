@@ -20,7 +20,7 @@ import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
 import speakerVolumeState from "@/stores/stateSpeakerVolume";
 import micVolumeState from "@/stores/stateMicVolume";
-import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
+import participantCanvasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 interface HeaderParticipantControlsProps {
@@ -36,7 +36,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
   const speakerVolume = useRecoilValue(speakerVolumeState);
-  const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
+  const fabricCanvasRef = useRecoilValue(participantCanvasInstanceState);
   const setSpeakerVolume = useSetRecoilState(speakerVolumeState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setParticipantSocket = useSetRecoilState(participantSocketRefState);

@@ -12,7 +12,6 @@ export interface ICanvasData {
 
 export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: ICanvasData, startTime: number) => {
   if (!fabricCanvas.viewportTransform) return [false, false, false];
-  const startTime2 = Date.now();
 
   const newObjects = fabricCanvas.getObjects();
   const newViewport = fabricCanvas.viewportTransform;
@@ -29,7 +28,6 @@ export const saveCanvasData = async (fabricCanvas: fabric.Canvas, currentData: I
     currentData.eventTime = startTime === 0 ? 0 : Date.now() - startTime;
     currentData.width = newWidth;
     currentData.height = newHeight;
-    console.log("저장 지연: ", Date.now() - startTime2);
     currentData.canvasJSON = JSON.stringify(fabricCanvas);
   }
 
@@ -60,6 +58,7 @@ export const loadCanvasData = ({
     const receiveObjects = JSON.parse(pako.inflate(newData.objects, { to: "string" }));
     const currentObjects = fabricCanvas.getObjects();
 
+    // TODO: 더 빠르게 삭제, 추가할 객체 찾는 방법 찾기
     const findUniqueObjects = (a: any[], b: fabric.Object[]) => {
       const aSet = new Set(a.map((item) => JSON.stringify(item)));
       const bSet = new Set(b.map((item) => JSON.stringify(item)));

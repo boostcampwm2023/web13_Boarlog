@@ -197,7 +197,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       });
       saveCanvasData(fabricCanvasRef!, canvasData, startTime);
       const reducedCanvasData: object = {
-        //objects: new Uint8Array(), // Uint8Array 형태의 데이턱는 서버로 전송시 오류가 나서 일단 보내지 않습니다.
+        //objects: new Uint8Array(), // Uint8Array 형태의 데이터는 서버로 전송시 오류가 나서 일단 보내지 않습니다.
         viewport: canvasData.viewport,
         eventTime: canvasData.eventTime,
         width: canvasData.width,
