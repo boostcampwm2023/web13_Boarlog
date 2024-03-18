@@ -7,7 +7,7 @@ export type WhiteBoardLogDocument = HydratedDocument<WhiteboardLog>;
 @Schema()
 export class WhiteboardLog {
   @Prop({ required: true })
-  objects: fabric.Object[];
+  objects: Uint8Array;
 
   @Prop({ required: true })
   viewport: number[];

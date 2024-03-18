@@ -196,11 +196,18 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         offerToReceiveVideo: false
       });
       saveCanvasData(fabricCanvasRef!, canvasData, startTime);
+      const reducedCanvasData: object = {
+        //objects: new Uint8Array(), // Uint8Array 형태의 데이터는 서버로 전송시 오류가 나서 일단 보내지 않습니다.
+        viewport: canvasData.viewport,
+        eventTime: canvasData.eventTime,
+        width: canvasData.width,
+        height: canvasData.height
+      };
       socketRef.current.emit("presenterOffer", {
-        whiteboard: canvasData,
         socketId: socketRef.current.id,
         roomId: roomid,
-        SDP: SDP
+        SDP: SDP,
+        whiteboard: reducedCanvasData // TODO: 현재 whiteboard의 objects 데이터를 보내는 경우 서버에 SDP 값이 누락되는 문제를 해결해야 합니다.
       });
       pcRef.current.setLocalDescription(SDP);
       getPresenterCandidate();
@@ -250,23 +257,14 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
     const onFrame = () => {
       saveCanvasData(fabricCanvasRef!, canvasData, startTime).then(
         ([isCanvasDataChanged, isViewportChanged, isSizeChanged]) => {
-          // 캔버스 내부 객체가 변경되지 않은 경우에는 oobjects를 제외한 나머지 데이터만 전송
-          if (!isCanvasDataChanged && (isViewportChanged || isSizeChanged)) {
-            const reducedCanvasData: ICanvasData = {
-              objects: [],
-              viewport: canvasData.viewport,
-              eventTime: canvasData.eventTime,
-              width: canvasData.width,
-              height: canvasData.width
-            };
-            submitData(reducedCanvasData);
-          } else if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
+          if (isCanvasDataChanged || isViewportChanged || isSizeChanged) {
+            // 캔버스 내부 객체 변화 여부를 확인하기 위한 canvasJSON 데이터는 제외하고 전송
             const reducedCanvasData: ICanvasData = {
               objects: canvasData.objects,
               viewport: canvasData.viewport,
               eventTime: canvasData.eventTime,
               width: canvasData.width,
-              height: canvasData.width
+              height: canvasData.height
             };
             submitData(reducedCanvasData);
           }
@@ -323,7 +321,7 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
   };
 
   let canvasData: ICanvasData = {
-    objects: [],
+    objects: new Uint8Array(),
     viewport: [0, 0, 0, 0, 0, 0],
     eventTime: 0,
     width: 0,
@@ -361,15 +359,6 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
       }
     });
     setInstructorSocket(lectureSocketRef.current);
-
-    // 지연 시간 체크를 위해 큰 크기의 더미 데이터를 화이트보드에 로드합니다. 개선이 끝나면 제거 예정입니다.
-    axios("./dummy70.json")
-      .then(({ data }) => {
-        fabricCanvasRef!.loadFromJSON(data.canvasJSON, () => {});
-      })
-      .catch((error) => {
-        console.log("화이트보드 데이터 로딩 실패", error);
-      });
   };
   const handleServerError = (err: any) => {
     console.error(err.message);

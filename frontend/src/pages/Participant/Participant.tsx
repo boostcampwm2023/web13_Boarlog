@@ -3,7 +3,7 @@ import { useSetRecoilState, useRecoilValue } from "recoil";
 import { fabric } from "fabric";
 
 import Header from "@/components/Header/Header";
-import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
+import participantCanvasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import CloseIcon from "@/assets/svgs/close.svg?react";
 import QuestionIcon from "@/assets/svgs/whiteboard/question.svg?react";
 import LogToggleButton from "@/components/Button/LogToggleButton";
@@ -13,7 +13,7 @@ import isQuestionLogOpenState from "@/stores/stateIsQuestionLogOpen";
 
 const Participant = () => {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const setCanvas = useSetRecoilState(participantCavasInstanceState);
+  const setCanvas = useSetRecoilState(participantCanvasInstanceState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isQuestionLogOpen = useRecoilValue(isQuestionLogOpenState);
   useEffect(() => {

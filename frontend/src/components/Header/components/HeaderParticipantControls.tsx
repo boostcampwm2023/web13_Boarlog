@@ -20,7 +20,7 @@ import calcNormalizedVolume from "@/utils/calcNormalizedVolume";
 import selectedSpeakerState from "@/stores/stateSelectedSpeaker";
 import speakerVolumeState from "@/stores/stateSpeakerVolume";
 import micVolumeState from "@/stores/stateMicVolume";
-import participantCavasInstanceState from "@/stores/stateParticipantCanvasInstance";
+import participantCanvasInstanceState from "@/stores/stateParticipantCanvasInstance";
 import participantSocketRefState from "@/stores/stateParticipantSocketRef";
 
 interface HeaderParticipantControlsProps {
@@ -36,7 +36,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
 
   const selectedSpeaker = useRecoilValue(selectedSpeakerState);
   const speakerVolume = useRecoilValue(speakerVolumeState);
-  const fabricCanvasRef = useRecoilValue(participantCavasInstanceState);
+  const fabricCanvasRef = useRecoilValue(participantCanvasInstanceState);
   const setSpeakerVolume = useSetRecoilState(speakerVolumeState);
   const setMicVolumeState = useSetRecoilState(micVolumeState);
   const setParticipantSocket = useSetRecoilState(participantSocketRefState);
@@ -93,11 +93,6 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     (audioContextRef.current as any).setSinkId(selectedSpeaker);
   }, [selectedSpeaker]);
 
-  /* ------------------------------------------------------------------------------- */
-  // 화이트보드 지연 시간 체크를 위해 임시로 추가한 코드입니다. 추후 삭제될 예정입니다.
-  let startTime = Date.now();
-  /* ------------------------------------------------------------------------------- */
-
   const enterLecture = async () => {
     await checkAuth();
     await initConnection();
@@ -122,7 +117,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
   };
 
   let canvasData: ICanvasData = {
-    objects: [],
+    objects: new Uint8Array(),
     viewport: [1, 0, 0, 1, 0, 0],
     eventTime: 0,
     width: 0,
@@ -272,8 +267,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
 
   const handleServerAnswer = (data: any) => {
     if (!pcRef.current) return;
-    // const startTime = new Date(data.startTime).getTime();
-    startTime = new Date(data.startTime).getTime();
+    const startTime = new Date(data.startTime).getTime();
     const updateElapsedTime = () => {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
       setElapsedTime(elapsedTime);
@@ -284,8 +278,7 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
-      newData: data.whiteboard,
-      debugData: {}
+      newData: data.whiteboard
     });
     canvasData = data.whiteboard;
     pcRef.current.setRemoteDescription(data.SDP);
@@ -299,12 +292,10 @@ const HeaderParticipantControls = ({ setLectureCode, setLectureTitle }: HeaderPa
     showToast({ message: "서버 연결에 실패했습니다", type: "alert" });
   };
   const handleWhiteboardUpdate = (data: any) => {
-    const debugData = { startTime: startTime, arriveTime: Date.now() };
     loadCanvasData({
       fabricCanvas: fabricCanvasRef!,
       currentData: canvasData,
-      newData: data.content,
-      debugData: debugData
+      newData: data.content
     });
     canvasData = data.content;
   };

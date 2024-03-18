@@ -1,5 +1,5 @@
 export interface ICanvasData {
-  objects: fabric.Object[];
+  objects: Uint8Array;
   viewport: number[];
   eventTime: number;
   width: number;
