@@ -14,7 +14,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('사용자 정보가 존재하지 않습니다.');
     }
-    return await this.userModel.findOne({ email: email });
+    return user;
   }
 
   async updateUsername(email: string, username: string) {

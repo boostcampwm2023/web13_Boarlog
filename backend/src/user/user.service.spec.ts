@@ -28,6 +28,7 @@ describe('UserModule', () => {
   });
 
   describe('findOneByEmail', () => {
+    const id = new Types.ObjectId();
     const email = "test@gmail.com";
 
     it('should throw NotFoundException', async () => {
@@ -37,14 +38,17 @@ describe('UserModule', () => {
 
     it('should find user', async () => {
       jest.spyOn(model, 'findOne').mockResolvedValue({
+        _id: id,
         email: email
       });
       const user = await service.findOneByEmail(email);
-      await expect(service.findOneByEmail(email)).resolves.toEqual({email: email});
+      expect(user._id).toEqual(id);
+      expect(user.email).toEqual(email);
     })
   });
   
   describe('updateUsername', () => {
+    const id = new Types.ObjectId();
     const email = "test@gmail.com";
     const username = "testname";
 
@@ -52,10 +56,27 @@ describe('UserModule', () => {
       jest.spyOn(model, 'findOneAndUpdate').mockResolvedValue(null);
       await expect(service.updateUsername(email, username)).rejects.toThrow(NotFoundException);
     })
+
+    it('should update username', async () => {
+      jest.spyOn(model, 'findOneAndUpdate').mockResolvedValue({
+        _id: id,
+        email: email,
+        username: username
+      });
+      
+      const user = await service.updateUsername(email, username);
+      expect(user.username).toEqual(username);
+    })
   });
 
+  
   describe('findLectureList', () => {
+    const email = "test@gmail.com";
 
+    it('should throw NotFoundException', async () => {
+      jest.spyOn(model, 'findOne').mockResolvedValue(null);
+      await expect(service.findLectureList(email)).rejects.toThrow(NotFoundException);
+    })
   });
 
   describe('updateLectureList', () => {
@@ -65,6 +86,17 @@ describe('UserModule', () => {
     it('should throw NotFoundException', async () => {
       jest.spyOn(model, 'findOneAndUpdate').mockResolvedValue(null);
       await expect(service.updateLectureList(email, id)).rejects.toThrow(NotFoundException);
+    })
+
+    it('should call with', async () => {
+      const findOneAndUpdateMock = jest.spyOn(model, 'findOneAndUpdate').mockResolvedValue({});
+      
+      await service.updateLectureList(email, id);
+      expect(findOneAndUpdateMock).toHaveBeenCalledWith(
+        { email: email },
+        { $push: { lecture_id: id } },
+        { new: true }
+      );
     })
   });
 });
