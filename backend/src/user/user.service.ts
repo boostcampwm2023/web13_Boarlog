@@ -1,44 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './user.schema';
-import { Model } from 'mongoose';
-import { LectureService } from 'src/lecture/lecture.service';
-import { EnterCode } from 'src/lecture/schema/lecture-code.schema';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    private lectureService: LectureService
+    @InjectModel(User.name) private userModel: Model<User>
   ) {}
 
   async findOneByEmail(email: string): Promise<UserDocument> {
-    return await this.userModel.findOne({ email: email });
+    const user = await this.userModel.findOne({ email: email });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return user;
   }
 
   async updateUsername(email: string, username: string) {
-    return await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
-  }
-
-  async updateLecture(email: string, enterCode: EnterCode) {
-    const lecture = await this.lectureService.findLectureInfo(enterCode);
-    return await this.userModel.findOneAndUpdate(
-      { email: email },
-      { $push: { lecture_id: lecture.id } },
-      { new: true }
-    );
+    const user = await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return user;
   }
 
   async findLectureList(email: string) {
-    return (
-      await (
-        await this.findOneByEmail(email)
-      ).populate({
-        path: 'lecture_id',
-        select: '-__v',
-        match: { is_end: true },
-        populate: { path: 'presenter_id', select: '-_id username' }
-      })
-    ).lecture_id;
+    let user = await this.findOneByEmail(email);
+    user = await user.populate({
+      path: 'lecture_id',
+      select: '-__v',
+      match: { is_end: true },
+      populate: { path: 'presenter_id', select: '-_id username' }
+    });
+    return user.lecture_id;
+  }
+
+  async updateLectureList(email: string, id: Types.ObjectId) {
+    const user = await this.userModel.findOneAndUpdate(
+      { email: email },
+      { $push: { lecture_id: id } },
+      { new: true }
+    ); 
+    if (!user) {
+      throw new NotFoundException('user not found');
+    }
+    return user;
   }
 }

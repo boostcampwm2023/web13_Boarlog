@@ -19,10 +19,9 @@ import { JwtModule } from '@nestjs/jwt';
       { name: WhiteboardLog.name, schema: WhiteboardLogSchema },
       { name: LectureSubtitle.name, schema: LectureSubtitleSchema }
     ]),
-    JwtModule
+    JwtModule,
   ],
   controllers: [LectureController],
-  providers: [LectureService, UserService],
-  exports: [LectureService, MongooseModule]
+  providers: [LectureService, UserService]
 })
 export class LectureModule {}

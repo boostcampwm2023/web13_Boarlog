@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { UserService } from 'src/user/user.service';
 import { CreateLectureDto } from './dto/create-lecture.dto';
 import { LectureInfoDto } from './dto/response/response-lecture-info.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
@@ -28,8 +27,7 @@ import { Types } from 'mongoose';
 @Controller('lecture')
 export class LectureController {
   constructor(
-    private readonly lectureService: LectureService,
-    private readonly userService: UserService
+    private readonly lectureService: LectureService
   ) {}
 
   @UseGuards(CustomAuthGuard)
@@ -43,8 +41,7 @@ export class LectureController {
     if (!req.user) {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
     }
-    const user = await this.userService.findOneByEmail(req.user.email);
-    const code = await this.lectureService.createLecture(createLecture, user._id);
+    const code = await this.lectureService.createLecture(createLecture, req.user.email);
     res.status(HttpStatus.CREATED).send({ code: code });
   }
 
@@ -73,7 +70,7 @@ export class LectureController {
       throw new HttpException('유효하지 않은 강의 참여코드입니다.', HttpStatus.NOT_FOUND);
     }
 
-    await this.userService.updateLecture(req.user.email, enterCodeDocument);
+    await this.lectureService.updateLecture(req.user.email, enterCodeDocument);
     res.status(HttpStatus.OK).send();
   }
 
@@ -140,7 +137,7 @@ export class LectureController {
       throw new HttpException('로그인 되지 않은 사용자입니다.', HttpStatus.UNAUTHORIZED);
     }
 
-    const result = await this.userService.findLectureList(req.user.email);
+    const result = await this.lectureService.findLectureList(req.user.email);
     return res.status(HttpStatus.OK).send(result);
   }
 }

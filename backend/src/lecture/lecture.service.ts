@@ -10,6 +10,7 @@ import { Lecture } from './schema/lecture.schema';
 import { EnterCode } from './schema/lecture-code.schema';
 import { generateRandomNumber } from 'src/utils/GenerateUtils';
 import { LectureRecordDto } from './dto/response/response-lecture-record.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class LectureService {
@@ -21,14 +22,16 @@ export class LectureService {
     @InjectModel(WhiteboardLog.name)
     private whiteboardLogModel: Model<WhiteboardLog>,
     @InjectModel(LectureSubtitle.name)
-    private lectureSubtitleModel: Model<LectureSubtitle>
+    private lectureSubtitleModel: Model<LectureSubtitle>,
+    private readonly userService: UserService
   ) {}
 
-  async createLecture(createLectureDto: CreateLectureDto, id: Types.ObjectId) {
+  async createLecture(createLectureDto: CreateLectureDto, email: string) {
+    const user = await this.userService.findOneByEmail(email);
     const lecture = new this.lectureModel({
       title: createLectureDto.title,
       description: createLectureDto.description,
-      presenter_id: id
+      presenter_id: user._id
     });
     const lectureCode = new this.enterCodeModel({
       code: await this.generateRoomCode(),
@@ -102,5 +105,14 @@ export class LectureService {
     const subtitles = (await this.lectureSubtitleModel.findOne({ lecture_id: lecture }).exec()).subtitle;
     const audioFile = lecture.audio_file;
     return new LectureRecordDto(logs, subtitles, audioFile);
+  }
+
+  async updateLecture(email: string, enterCode: EnterCode) {
+    const lecture = await this.findLectureInfo(enterCode);
+    return await this.userService.updateLectureList(email, lecture.id);
+  }
+
+  async findLectureList(email: string) {
+    return await this.userService.findLectureList(email);
   }
 }
