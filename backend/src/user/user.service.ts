@@ -12,7 +12,7 @@ export class UserService {
   async findOneByEmail(email: string): Promise<UserDocument> {
     const user = await this.userModel.findOne({ email: email });
     if (!user) {
-      throw new NotFoundException('사용자 정보가 존재하지 않습니다.');
+      throw new NotFoundException('user not found');
     }
     return user;
   }
@@ -20,7 +20,7 @@ export class UserService {
   async updateUsername(email: string, username: string) {
     const user = await this.userModel.findOneAndUpdate({ email: email }, { username: username }, { new: true });
     if (!user) {
-      throw new NotFoundException('사용자 정보가 존재하지 않습니다.');
+      throw new NotFoundException('user not found');
     }
     return user;
   }
@@ -43,7 +43,7 @@ export class UserService {
       { new: true }
     ); 
     if (!user) {
-      throw new NotFoundException('사용자 정보가 존재하지 않습니다.');
+      throw new NotFoundException('user not found');
     }
     return user;
   }
