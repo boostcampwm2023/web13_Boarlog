@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { Subtitle } from './interfaces/Subtitle';
-import { Lecture } from './schema/lecture.schema';
+import { Subtitle } from '../interfaces/Subtitle';
+import { Lecture } from './lecture.schema';
 
 @Schema()
 export class LectureSubtitle {

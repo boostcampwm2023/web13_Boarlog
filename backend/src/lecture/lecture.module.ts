@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/user/user.schema';
 import { UserService } from 'src/user/user.service';
-import { LectureSubtitle, LectureSubtitleSchema } from './lecture-subtitle.schema';
+import { LectureSubtitle, LectureSubtitleSchema } from './schema/lecture-subtitle.schema';
 import { LectureController } from './lecture.controller';
 import { Lecture, LectureSchema } from './schema/lecture.schema';
 import { LectureService } from './lecture.service';
