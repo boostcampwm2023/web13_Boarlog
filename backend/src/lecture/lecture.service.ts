@@ -102,7 +102,7 @@ export class LectureService {
   async findLectureRecord(id: Types.ObjectId) {
     const lecture = await this.lectureModel.findById(id).exec();
     const logs = await this.findLogs(lecture);
-    const subtitles = (await this.lectureSubtitleModel.findOne({ lecture_id: lecture }).exec()).subtitle;
+    const subtitles = (await this.lectureSubtitleModel.findOne({ lecture_id: lecture }).exec())?.subtitle;
     const audioFile = lecture.audio_file;
     return new LectureRecordDto(logs, subtitles, audioFile);
   }
