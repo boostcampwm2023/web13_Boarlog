@@ -3,7 +3,7 @@ import { Socket } from 'socket.io';
 import { ClientStatus } from '../constants/client-status.constant';
 
 export class ClientConnectionInfo {
-  private readonly _RTCPC: RTCPeerConnection;
+  private _RTCPC: RTCPeerConnection;
   private _enterSocket: Socket | null;
   private _lectureSocket: Socket | null;
   private _status: ClientStatus;
@@ -19,9 +19,18 @@ export class ClientConnectionInfo {
     return this._RTCPC;
   }
 
+  get status() {
+    return this._status;
+  }
+
   set lectureSocket(socket: Socket) {
     this._lectureSocket = socket;
   }
+
+  updateConnection = (RTCPC: RTCPeerConnection, socket: Socket) => {
+    this._RTCPC = RTCPC;
+    this._enterSocket = socket;
+  };
 
   disconnectWebRTCConnection = () => {
     this._RTCPC.close();
@@ -36,5 +45,9 @@ export class ClientConnectionInfo {
 
   setOfflineStatus = () => {
     this._status = ClientStatus.OFFLINE;
+  };
+
+  setOnlineStatus = () => {
+    this._status = ClientStatus.ONLINE;
   };
 }

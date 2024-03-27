@@ -196,18 +196,21 @@ const HeaderInstructorControls = ({ setLectureCode, setLectureTitle }: HeaderIns
         offerToReceiveVideo: false
       });
       saveCanvasData(fabricCanvasRef!, canvasData, startTime);
+      socketRef.current.emit("presenterOffer", {
+        socketId: socketRef.current.id,
+        roomId: roomid,
+        SDP: SDP
+      });
       const reducedCanvasData: object = {
-        //objects: new Uint8Array(), // Uint8Array 형태의 데이터는 서버로 전송시 오류가 나서 일단 보내지 않습니다.
+        objects: canvasData.objects,
         viewport: canvasData.viewport,
         eventTime: canvasData.eventTime,
         width: canvasData.width,
         height: canvasData.height
       };
-      socketRef.current.emit("presenterOffer", {
-        socketId: socketRef.current.id,
+      socketRef.current.emit("whiteboardInit", {
         roomId: roomid,
-        SDP: SDP,
-        whiteboard: reducedCanvasData // TODO: 현재 whiteboard의 objects 데이터를 보내는 경우 서버에 SDP 값이 누락되는 문제를 해결해야 합니다.
+        whiteboardDetails: reducedCanvasData
       });
       pcRef.current.setLocalDescription(SDP);
       getPresenterCandidate();

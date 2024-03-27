@@ -1,16 +1,22 @@
 import { Socket } from 'socket.io';
 import { getClientIdAndClientType } from '../services/participant.service';
 import { saveClientInfo } from '../repositories/client.repsitory';
-import { findRoomInfoById } from '../repositories/room.repository';
+import { findRoomInfoById, saveRoomInfo } from '../repositories/room.repository';
 import { ClientConnectionInfo } from '../models/ClientConnectionInfo';
 import { relayServer } from '../main';
 import { getEmailByJwtPayload } from '../utils/auth';
 import { isNotEqualPresenterEmail, isReconnectPresenter } from '../validation/client.validation';
 import { RTCPeerConnection } from 'wrtc';
 import { pc_config } from '../config/pc.config';
-import { sendPrevLectureData, setPresenterConnection } from '../services/presenter.service';
+import {
+  sendPrevLectureData,
+  setPresenterConnection,
+  updatePresenterConnectionInfo
+} from '../services/presenter.service';
 import { setParticipantWebRTCConnection, setPresenterWebRTCConnection } from '../services/webrtc-connection.service';
 import { canEnterRoom } from '../validation/lecture.validation';
+import { ClientStatus } from '../constants/client-status.constant';
+import { RoomInfoRequestDto } from '../dto/room-info-request.dto';
 
 export class ClientListener {
   createRoom = (socket: Socket) => {
@@ -24,14 +30,22 @@ export class ClientListener {
           return;
         }
         socket.join(email);
-        relayServer.clientConnectionInfoList.set(email, new ClientConnectionInfo(RTCPC, socket));
         if (isReconnectPresenter(roomInfo.presenterEmail, email)) {
           relayServer.clearScheduledEndLecture(data.roomId);
+          updatePresenterConnectionInfo(email, RTCPC, socket);
           await sendPrevLectureData(data.roomId, email, roomInfo);
         } else {
-          await setPresenterConnection(data.roomId, email, RTCPC, data.whiteboard);
+          await setPresenterConnection(data.roomId, email, RTCPC, socket);
         }
         await setPresenterWebRTCConnection(data.roomId, email, RTCPC, socket, data.SDP);
+      });
+      socket.on('whiteboardInit', async (data) => {
+        const clientConnectionInfo = relayServer.clientConnectionInfoList.get(email);
+        if (clientConnectionInfo && clientConnectionInfo.status == ClientStatus.OFFLINE) {
+          clientConnectionInfo.setOnlineStatus();
+          return;
+        }
+        saveRoomInfo(data.roomId, new RoomInfoRequestDto(email, data.whiteboardDetails));
       });
     } catch (e) {
       console.log(e);
