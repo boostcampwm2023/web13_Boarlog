@@ -10,7 +10,7 @@ import { RTCPeerConnection } from 'wrtc';
 import { pc_config } from '../config/pc.config';
 import { sendPrevLectureData, setPresenterConnection } from '../services/presenter.service';
 import { setParticipantWebRTCConnection, setPresenterWebRTCConnection } from '../services/webrtc-connection.service';
-import { hasCurrentBoardDataInLecture } from '../validation/lecture.validation';
+import { canEnterRoom } from '../validation/lecture.validation';
 
 export class ClientListener {
   createRoom = (socket: Socket) => {
@@ -47,7 +47,7 @@ export class ClientListener {
         await saveClientInfo(clientId, clientType, data.roomId);
         relayServer.clientConnectionInfoList.set(clientId, new ClientConnectionInfo(RTCPC, socket));
         const roomInfo = await findRoomInfoById(data.roomId);
-        if (!hasCurrentBoardDataInLecture(roomInfo.currentWhiteboardData)) {
+        if (!canEnterRoom(roomInfo)) {
           return;
         }
         await setParticipantWebRTCConnection(data.roomId, clientId, RTCPC, roomInfo, socket, data.SDP);

@@ -1,6 +1,6 @@
 import { ICanvasData } from '../types/canvas-data.interface';
 
-export class RoomInfoDto {
+export class RoomInfoRequestDto {
   presenterEmail: string;
   startTime: Date;
   currentWhiteboardData: string;

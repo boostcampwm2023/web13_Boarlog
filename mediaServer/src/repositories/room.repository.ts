@@ -1,13 +1,14 @@
-import { RoomInfoDto } from '../dto/room-info.dto';
+import { RoomInfoRequestDto } from '../dto/room-info-request.dto';
 import { redis } from '../config/redis.config';
 import { ROOM_INFO_KEY_PREFIX } from '../constants/redis-key.constant';
 import { ICanvasData } from '../types/canvas-data.interface';
+import { RoomInfoResponseDto } from '../dto/room-info-response.dto';
 
-const findRoomInfoById = (roomId: string) => {
-  return redis.hgetall(ROOM_INFO_KEY_PREFIX + roomId);
+const findRoomInfoById = async (roomId: string) => {
+  return new RoomInfoResponseDto(await redis.hgetall(ROOM_INFO_KEY_PREFIX + roomId));
 };
 
-const saveRoomInfo = async (roomId: string, roomInfo: RoomInfoDto) => {
+const saveRoomInfo = async (roomId: string, roomInfo: RoomInfoRequestDto) => {
   await redis.hset(ROOM_INFO_KEY_PREFIX + roomId, roomInfo);
 };
 

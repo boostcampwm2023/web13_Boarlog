@@ -1,5 +1,6 @@
 import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
 import { DisconnectReason } from 'socket.io';
+import { RoomInfoResponseDto } from '../dto/room-info-response.dto';
 
 const canEnterLecture = (roomConnectionInfo: RoomConnectionInfo | undefined) => {
   if (roomConnectionInfo) {
@@ -10,8 +11,8 @@ const canEnterLecture = (roomConnectionInfo: RoomConnectionInfo | undefined) => 
   return false;
 };
 
-const hasCurrentBoardDataInLecture = (currentBoardData: string) => {
-  if (currentBoardData) {
+const canEnterRoom = (roomInfo: RoomInfoResponseDto) => {
+  if (roomInfo.presenterEmail) {
     return true;
   }
   console.log('정상적인 접근이 아닙니다');
@@ -22,4 +23,4 @@ const isLectureOngoing = (reason: DisconnectReason) => {
   return reason != 'server namespace disconnect';
 };
 
-export { canEnterLecture, hasCurrentBoardDataInLecture, isLectureOngoing };
+export { canEnterLecture, canEnterRoom, isLectureOngoing };

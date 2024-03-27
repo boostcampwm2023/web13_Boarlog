@@ -5,7 +5,7 @@ import {
   setQuestionStreamAndGroup
 } from '../repositories/question-repository';
 import { StreamReadRaw } from '../types/redis-stream.type';
-import { sendDataToClient } from './socket.service';
+import { sendDataToClient, sendRoomDetailsToReconnectedPresenter } from './socket.service';
 import { Message } from '../models/Message';
 import { mediaConverter } from '../utils/media-converter';
 import { deleteRoomInfoById, saveRoomInfo, updateWhiteboardData } from '../repositories/room.repository';
@@ -15,8 +15,9 @@ import { ICanvasData } from '../types/canvas-data.interface';
 import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
 import { saveClientInfo } from '../repositories/client.repsitory';
 import { ClientType } from '../constants/client-type.constant';
-import { RoomInfoDto } from '../dto/room-info.dto';
+import { RoomInfoRequestDto } from '../dto/room-info-request.dto';
 import { RTCPeerConnection } from 'wrtc';
+import { RoomInfoResponseDto } from '../dto/room-info-response.dto';
 
 const setPresenterConnection = async (
   roomId: string,
@@ -31,7 +32,7 @@ const setPresenterConnection = async (
   await setQuestionStreamAndGroup(roomId);
   await Promise.all([
     saveClientInfo(email, ClientType.PRESENTER, roomId),
-    saveRoomInfo(roomId, new RoomInfoDto(email, initBoardData))
+    saveRoomInfo(roomId, new RoomInfoRequestDto(email, initBoardData))
   ]);
 };
 
@@ -52,13 +53,9 @@ const endLecture = async (roomId: string, email: string) => {
   await Promise.all([deleteRoomInfoById(roomId), deleteQuestionStream(roomId)]);
 };
 
-const sendPrevLectureData = async (roomId: string, email: string, roomInfo: Record<string, string>) => {
+const sendPrevLectureData = async (roomId: string, email: string, roomInfo: RoomInfoResponseDto) => {
   const unsolvedQuestions = (await findUnsolvedQuestions(roomId, email)) as StreamReadRaw;
-  sendDataToClient('/create-room', email, 'reconnectPresenter', {
-    whiteboard: JSON.parse(roomInfo.currentWhiteboardData),
-    startTime: roomInfo.startTime,
-    questions: unsolvedQuestions[0][1]
-  });
+  sendRoomDetailsToReconnectedPresenter(email, roomInfo, unsolvedQuestions);
 };
 
 export { setPresenterConnection, editWhiteboard, endLecture, sendPrevLectureData };

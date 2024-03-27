@@ -2,7 +2,7 @@ import { RelayServer } from './RelayServer';
 import { ClientListener } from './listeners/client.listener';
 import { LectureListener } from './listeners/lecture.listener';
 
-const PORT = 3000;
+const PORT = 3001;
 
 const relayServer = new RelayServer(PORT);
 const clientListener = new ClientListener();
