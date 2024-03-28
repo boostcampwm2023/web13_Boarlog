@@ -41,4 +41,17 @@ const scheduleEndLecture = (roomId: string, presenterId: string) => {
   relayServer.scheduledEndLectureList.set(roomId, timerId);
 };
 
-export { startLecture, scheduleEndLecture };
+const convertBoardObjectToBuffer = (currentBoardDetails: string | undefined) => {
+  if (!currentBoardDetails) {
+    return currentBoardDetails;
+  }
+  const boardDetails = JSON.parse(currentBoardDetails);
+  if (!boardDetails.objects) {
+    boardDetails.objects = Buffer.alloc(0);
+  } else {
+    boardDetails.objects = Buffer.from(boardDetails.objects);
+  }
+  return boardDetails;
+};
+
+export { startLecture, scheduleEndLecture, convertBoardObjectToBuffer };
