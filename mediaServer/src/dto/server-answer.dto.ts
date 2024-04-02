@@ -1,11 +1,13 @@
+import { RoomInfoResponseDto } from './room-info-response.dto';
+
 export class ServerAnswerDto {
-  whiteboard: Record<string, string>;
+  whiteboard: Record<string, string | Buffer>;
   startTime: string;
   SDP: RTCSessionDescriptionInit;
 
-  constructor(whiteboard: Record<string, string>, startTime: string, SDP: RTCSessionDescriptionInit) {
-    this.whiteboard = whiteboard;
-    this.startTime = startTime;
+  constructor(roomInfo: RoomInfoResponseDto, SDP: RTCSessionDescriptionInit) {
+    this.whiteboard = roomInfo.currentWhiteboardData;
+    this.startTime = roomInfo.startTime;
     this.SDP = SDP;
   }
 }

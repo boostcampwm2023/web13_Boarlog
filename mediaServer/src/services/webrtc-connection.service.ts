@@ -6,6 +6,7 @@ import { ServerAnswerDto } from '../dto/server-answer.dto';
 import { setPresenterMediaStream } from './participant.service';
 import { sendDataToClient } from './socket.service';
 import { RoomConnectionInfo } from '../models/RoomConnectionInfo';
+import { RoomInfoResponseDto } from '../dto/room-info-response.dto';
 
 const setTrackEvent = (RTCPC: RTCPeerConnection, roomId: string) => {
   RTCPC.ontrack = (event) => {
@@ -63,7 +64,7 @@ const setParticipantWebRTCConnection = async (
   roomId: string,
   clientId: string,
   RTCPC: RTCPeerConnection,
-  roomInfo: Record<string, string>,
+  roomInfo: RoomInfoResponseDto,
   socket: Socket,
   offer: RTCSessionDescriptionInit
 ) => {
@@ -71,7 +72,7 @@ const setParticipantWebRTCConnection = async (
   exchangeCandidate('/enter-room', clientId, socket);
   RTCPC.setRemoteDescription(offer);
   const answer = await RTCPC.createAnswer();
-  const answerData = new ServerAnswerDto(JSON.parse(roomInfo.currentWhiteboardData), roomInfo.startTime, answer);
+  const answerData = new ServerAnswerDto(roomInfo, answer);
   sendDataToClient('/enter-room', clientId, 'serverAnswer', answerData);
   RTCPC.setLocalDescription(answer);
 };
