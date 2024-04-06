@@ -5,7 +5,7 @@ import { CreateLectureDto } from './dto/create-lecture.dto';
 import { UpdateLectureDto } from './dto/update-lecture.dto';
 import { WhiteboardLog } from './schema/whiteboard-log.schema';
 import { WhiteboardEventDto } from './dto/whiteboard-event.dto';
-import { LectureSubtitle } from './lecture-subtitle.schema';
+import { LectureSubtitle } from './schema/lecture-subtitle.schema';
 import { Lecture } from './schema/lecture.schema';
 import { EnterCode } from './schema/lecture-code.schema';
 import { generateRandomNumber } from 'src/utils/GenerateUtils';
@@ -71,7 +71,7 @@ export class LectureService {
 
   async saveWhiteBoardLog(lecture: Lecture, whiteboardEventDto: WhiteboardEventDto) {
     const whiteboardLog = new this.whiteboardLogModel({
-      objects: whiteboardEventDto.objects,
+      objects: whiteboardEventDto.objects['data'],
       viewport: whiteboardEventDto.viewport,
       eventTime: whiteboardEventDto.eventTime,
       width: whiteboardEventDto.width,
@@ -102,7 +102,7 @@ export class LectureService {
   async findLectureRecord(id: Types.ObjectId) {
     const lecture = await this.lectureModel.findById(id).exec();
     const logs = await this.findLogs(lecture);
-    const subtitles = (await this.lectureSubtitleModel.findOne({ lecture_id: lecture }).exec()).subtitle;
+    const subtitles = (await this.lectureSubtitleModel.findOne({ lecture_id: lecture }).exec())?.subtitle;
     const audioFile = lecture.audio_file;
     return new LectureRecordDto(logs, subtitles, audioFile);
   }

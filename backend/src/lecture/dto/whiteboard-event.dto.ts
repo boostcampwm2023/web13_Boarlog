@@ -1,3 +1,5 @@
+import { WhiteboardLog } from "../schema/whiteboard-log.schema";
+
 export class WhiteboardEventDto {
   objects: Uint8Array;
 
@@ -8,4 +10,14 @@ export class WhiteboardEventDto {
   width: number;
 
   height: number;
+
+  constructor(log?: WhiteboardLog) {
+    if (log) {
+      this.objects = new Uint8Array(log.objects);
+      this.viewport = log.viewport;
+      this.eventTime = log.eventTime;
+      this.width = log.width;
+      this.height = log.height;
+    }
+  }
 }

@@ -107,7 +107,7 @@ export class LectureController {
     if (!enterCodeDocument) {
       throw new HttpException('해당 강의가 없습니다.', HttpStatus.NOT_FOUND);
     }
-
+    
     await this.lectureService.saveWhiteBoardLog(enterCodeDocument.lecture_id, whiteboardEventDto);
     res.status(HttpStatus.CREATED).send();
   }
