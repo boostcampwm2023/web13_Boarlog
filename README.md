@@ -11,9 +11,9 @@
 <br/>
 
 <p align=center>
-  <a href="https://boarlog.notion.site/">노션</a>
+  <a href="https://boarlog.notion.site/?pvs=74">노션</a>
   &nbsp; | &nbsp; 
-  <a href="https://weak-sugar-603.notion.site/d1fb2080ff934e859d50c5cd3620e223">백로그</a>
+  <a href="https://boarlog.notion.site/d1fb2080ff934e859d50c5cd3620e223?pvs=74">백로그</a>
   &nbsp; | &nbsp;
   <a href="https://www.figma.com/file/1wp3yrrwOU6M7y7v5WOXet/%EB%94%94%EC%9E%90%EC%9D%B8-%EC%8B%9C%EC%95%88?type=design&node-id=33-8035&mode=design&t=kKUoymq1TBmjD0HR-0">피그마</a>
   &nbsp; | &nbsp; 
@@ -21,16 +21,10 @@
 </p>
 
 <p align=center>
-  <a href="https://youtu.be/2WOme3P0Hw8?si=4e2pvwhAJANnHxjZ">시연 영상</a>
+  <a href="https://www.youtube.com/watch?v=2WOme3P0Hw8">시연 영상</a>
   &nbsp; | &nbsp; 
-  <a href="https://boarlog.netlify.app/">서비스 링크</a>
+  <a href="https://boarlog.netlify.app/">서비스 링크(미동작)</a>
 </p>
-
-<br/>
-
-<div align="center">
-<a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fboostcampwm2023%2Fweb13_Boarlog&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
-</div>
 
 <br/>
 
@@ -274,10 +268,10 @@ const teamName = camperIdArray.reduce((team, camperId) => {
 
 ## 바로가기
 
-- [그라운드 룰](https://weak-sugar-603.notion.site/Ground-Rules-43ebfd44b76c482a983c4a47481028ca?pvs=4)
-- [branch/conmmit 컨벤션](https://weak-sugar-603.notion.site/Git-Branch-Commmit-882a35cba1cc433eb0f01abf2e3b134d?pvs=4)
+- [그라운드 룰](https://boarlog.notion.site/Ground-Rules-43ebfd44b76c482a983c4a47481028ca)
+- [branch/conmmit 컨벤션](https://boarlog.notion.site/Git-Branch-Commit-882a35cba1cc433eb0f01abf2e3b134d)
 - [기획/디자인](https://www.figma.com/file/vd1TPvzMNwy6OfVmNFw8cI/Untitled?type=design&node-id=4%3A22&mode=design&t=NS1IQkeFYsr7lSuf-1)
 - [위키](https://github.com/boostcampwm2023/web13_TEAM_528/wiki)
-- [노션](https://boarlog.notion.site/)
-- [백로그](https://www.notion.so/d1fb2080ff934e859d50c5cd3620e223)
+- [노션](https://boarlog.notion.site/?pvs=74)
+- [백로그](https://boarlog.notion.site/d1fb2080ff934e859d50c5cd3620e223?pvs=74)
 - [데모 링크](https://boarlog.netlify.app)
