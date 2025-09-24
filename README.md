@@ -249,7 +249,7 @@ const teamName = camperIdArray.reduce((team, camperId) => {
         </tr>
         <tr>
             <td><a href="https://github.com/Byeonjin">@Byeonjin</a></td>
-            <td><a href="https://github.com/LellowMellow">@LellowMellow</a></td>
+            <td><a href="https://github.com/pexe99">@pexe99</a></td>
             <td><a href="https://github.com/tmddus2">@tmddus2</a></td>
             <td><a href="https://github.com/platinouss">@platinouss</a></td>
             <td><a href="https://github.com/Jw705">@Jw705</a></td>
